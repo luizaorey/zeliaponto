@@ -1,0 +1,117 @@
+:root{
+  --teal:#0B2A33; --orange:#E1592A; --orange-d:#C64A20; --navy:#1F2A3A;
+  --body:#EDEEF0; --card:#FFFFFF; --ink:#25303F; --muted:#7A828E;
+  --green:#2E9E6B; --amber:#E7A21F; --red:#D5483B; --blue:#2E7CB6;
+  --line:#E4E6E9;
+  --bg-ok:#DDF1E6; --tx-ok:#1E7A4E; --bg-off:#F1F1F3; --tx-off:#7A828E; --bg-prov:#FCEBD3; --tx-prov:#9A6408;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{min-height:100%}
+body{background:var(--body);color:var(--ink);
+  font-family:-apple-system,"SF Pro Rounded","SF Pro Display",system-ui,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased}
+h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
+.muted{color:var(--muted)}
+
+/* ---------- TOPBAR ---------- */
+.topbar{position:sticky;top:0;z-index:20;background:var(--teal);color:#fff;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:700;letter-spacing:.02em}
+.avatar-sm{width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0}
+.avatar-sm img{width:100%;height:100%;display:block}
+.tag{background:var(--orange);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.04em}
+.user{display:flex;align-items:center;gap:16px}
+.tb-empresa{color:#A9BEC2;font-size:14px;font-weight:600}
+.linkbtn{background:none;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;text-decoration:underline;opacity:.9}
+.linkbtn:hover{opacity:1}
+
+/* ---------- SCREENS ---------- */
+.screen{display:none} .screen.active{display:block}
+.center{min-height:100dvh;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:32px 20px}
+.center.active{display:flex}
+.avatar-lg{width:88px;height:88px;border-radius:26px;overflow:hidden;box-shadow:0 8px 20px -8px rgba(11,42,51,.5)}
+.avatar-lg img{width:100%;height:100%;display:block}
+.sub{color:var(--muted);font-size:15px;max-width:340px}
+.card-form{background:var(--card);border-radius:20px;padding:22px;width:100%;max-width:380px;box-shadow:0 10px 30px -18px rgba(31,42,58,.4);display:flex;flex-direction:column;gap:14px}
+.field{text-align:left} .field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 0 6px 4px}
+.txt{width:100%;height:50px;border:1.5px solid #D9DCE1;border-radius:13px;background:#fff;padding:0 15px;font-size:16px;font-weight:600;color:var(--ink)}
+.txt:focus{outline:none;border-color:var(--orange)}
+.pw-wrap{position:relative;width:100%}
+.pw-wrap .txt{padding-right:46px}
+.pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;padding:8px;cursor:pointer;color:var(--muted);display:flex}
+.pw-eye:hover{color:var(--ink)}
+.pw-eye svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.err{font-size:14px;color:var(--red);font-weight:600;min-height:18px;text-align:left}
+.btn{appearance:none;border:none;border-radius:13px;padding:15px;font-size:16px;font-weight:700;width:100%;cursor:pointer;background:var(--orange);color:#fff}
+.btn:hover{background:var(--orange-d)} .btn:active{transform:scale(.99)} .btn:disabled{filter:grayscale(.5) brightness(.9);cursor:not-allowed}
+.btn.small{width:auto;padding:11px 18px;font-size:14px}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn.red{background:var(--red)} .btn.amber{background:var(--amber)} .btn.green{background:var(--green)}
+
+/* ---------- PAINEL (home + funcionarios) ---------- */
+.painel{background:var(--body);min-height:calc(100dvh - 60px)}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 24px 60px}
+.hello{font-size:26px;font-weight:700;margin:4px 0 22px}
+
+/* home cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.navcard{position:relative;text-align:left;background:var(--card);border:none;border-radius:18px;padding:20px;cursor:pointer;
+  box-shadow:0 8px 24px -18px rgba(31,42,58,.45);transition:transform .08s,box-shadow .2s;display:flex;flex-direction:column;gap:6px}
+.navcard:hover{transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(31,42,58,.5)}
+.navcard .ic{width:44px;height:44px;border-radius:12px;background:var(--teal);margin-bottom:6px;display:flex;align-items:center;justify-content:center}
+.navcard .ic svg{width:23px;height:23px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.navcard .ic-func{background:var(--orange)}
+.nc-t{font-size:17px;font-weight:700} .nc-d{font-size:13px;color:var(--muted);line-height:1.4}
+.navcard.soon{cursor:not-allowed;opacity:.62;filter:grayscale(.4)}
+.navcard.soon:hover{transform:none;box-shadow:0 8px 24px -18px rgba(31,42,58,.45)}
+.selo{position:absolute;top:14px;right:14px;background:var(--navy);color:#fff;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:12px;letter-spacing:.04em}
+
+/* toolbar */
+.toolbar{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.toolbar h2{flex:1} .back{color:var(--muted);text-decoration:none}
+
+/* ---------- TABELA de funcionários ---------- */
+.tbl{width:100%;background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 8px 24px -20px rgba(31,42,58,.5);border-collapse:collapse}
+.tbl th,.tbl td{text-align:left;padding:14px 16px;font-size:14px;border-bottom:1px solid var(--line)}
+.tbl th{background:#F7F8F9;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.inativo td{opacity:.55}
+.tbl .nome{font-weight:700;color:var(--ink)} .tbl .cpf{font-variant-numeric:tabular-nums;color:#59616C}
+.acoes{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.act{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;white-space:nowrap}
+.act:hover{border-color:var(--orange);color:var(--orange-d)}
+.act.red:hover{border-color:var(--red);color:var(--red)} .act.green:hover{border-color:var(--green);color:var(--green)}
+.act:disabled{opacity:.45;cursor:not-allowed;border-color:var(--line);color:var(--muted)}
+.badge{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:12px;display:inline-block}
+.b-ok{background:var(--bg-ok);color:var(--tx-ok)} .b-off{background:var(--bg-off);color:var(--tx-off)} .b-prov{background:var(--bg-prov);color:var(--tx-prov);margin-left:6px}
+
+/* cards (mobile) */
+.fcards{display:none;flex-direction:column;gap:12px}
+.fcard{background:var(--card);border-radius:16px;padding:16px;box-shadow:0 8px 24px -20px rgba(31,42,58,.5)}
+.fcard.inativo{opacity:.7}
+.fcard .r1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.fcard .nome{font-size:16px;font-weight:700} .fcard .meta{font-size:13px;color:#59616C;margin-top:3px;font-variant-numeric:tabular-nums}
+.fcard .acoes{margin-top:14px;justify-content:flex-start}
+
+/* ---------- MODAL ---------- */
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,32,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:20px;padding:24px;width:100%;max-width:420px;box-shadow:0 24px 60px -20px rgba(0,0,0,.5)}
+.modal h3{font-size:19px;font-weight:700;margin-bottom:8px}
+.modal p{font-size:14.5px;color:var(--muted);line-height:1.5;margin-bottom:18px}
+.modal .field{margin-bottom:12px}
+.modal-acts{display:flex;gap:10px;margin-top:6px}
+.modal-acts .btn{flex:1}
+.hint{font-size:12.5px;color:var(--muted);margin-top:4px}
+
+/* ---------- TOAST ---------- */
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:13px;font-size:15px;max-width:90%;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s;z-index:60}
+.toast.show{opacity:1}
+
+/* ---------- RESPONSIVO ---------- */
+@media (max-width:640px){
+  .topbar{padding:0 16px} .tb-empresa{display:none}
+  .wrap{padding:20px 14px 50px} .hello{font-size:22px}
+  .tbl{display:none} .fcards{display:flex}
+}

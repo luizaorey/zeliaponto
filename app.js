@@ -16,6 +16,14 @@ const CONF   = { entrada:"Entrada registrada", saida:"Saída registrada", pausa:
 const SEQ    = { "":"entrada", entrada:"pausa", pausa:"retorno", retorno:"saida", saida:"entrada" };
 
 const LS_TOKEN="zelia_token", LS_NOME="zelia_nome", LS_EMPRESA="zelia_empresa", LS_CPF="zelia_cpf", LS_DEVICE="zelia_device";
+function togglePw(btn){
+  const inp=btn.parentNode.querySelector("input");
+  const show=inp.type==="password";
+  inp.type=show?"text":"password";
+  btn.querySelector(".eye-on").style.display=show?"none":"";
+  btn.querySelector(".eye-off").style.display=show?"":"none";
+  btn.setAttribute("aria-label",show?"Ocultar senha":"Mostrar senha");
+}
 let stream=null, tipoPendente=null, enviando=false, mesAtual=null;
 
 /* ---------- helpers ---------- */

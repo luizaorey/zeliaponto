@@ -21,7 +21,7 @@
     <h1>Zélia Ponto</h1>
     <p class="big">Entre com seu <b>CPF</b> e <b>senha</b>.</p>
     <div class="field"><label>CPF</label><input id="in-cpf" class="txt" inputmode="numeric" autocomplete="off" placeholder="Só números"></div>
-    <div class="field"><label>Senha</label><input id="in-senha" class="txt" type="password" autocomplete="off" placeholder="Sua senha"></div>
+    <div class="field"><label>Senha</label><div class="pw-wrap"><input id="in-senha" class="txt" type="password" autocomplete="off" placeholder="Sua senha"><button type="button" class="pw-eye" aria-label="Mostrar senha" onclick="togglePw(this)"><svg class="eye-on" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div></div>
     <div class="err" id="login-err"></div>
     <button class="btn" onclick="fazerLogin()">Entrar</button>
     <p class="hint">Primeiro acesso? A senha inicial é <b>123</b> (o app pede a troca).</p>
@@ -41,7 +41,7 @@
     <div class="avatar-lg"><img src="zelia.svg" alt="Zélia"></div>
     <h1>Crie sua senha</h1>
     <p class="big">No primeiro acesso, defina uma senha nova.</p>
-    <div class="field"><label>Nova senha</label><input id="in-nova" class="txt" type="password" autocomplete="off" placeholder="Mínimo 6 caracteres"></div>
+    <div class="field"><label>Nova senha</label><div class="pw-wrap"><input id="in-nova" class="txt" type="password" autocomplete="off" placeholder="Mínimo 6 caracteres"><button type="button" class="pw-eye" aria-label="Mostrar senha" onclick="togglePw(this)"><svg class="eye-on" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div></div>
     <div class="err" id="trocar-err"></div>
     <button class="btn" onclick="fazerTrocaSenha()">Salvar e entrar</button>
     <p class="hint">Não pode ser "123" nem seu CPF.</p>
