@@ -17,6 +17,11 @@ h1{font-size:25px;font-weight:700;color:var(--ink)} h2{font-size:22px;font-weigh
 .center p{font-size:16px;color:var(--muted);line-height:1.5;max-width:340px} .center .big{font-size:17px;color:var(--ink)}
 .logo{width:76px;height:76px;border-radius:22px;background:var(--teal);display:flex;align-items:center;justify-content:center}
 .logo svg{width:40px;height:40px;stroke:var(--orange);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.avatar-lg{width:92px;height:92px;border-radius:26px;overflow:hidden;box-shadow:0 8px 20px -8px rgba(11,42,51,.5)}
+.avatar-lg img{width:100%;height:100%;display:block}
+.name-wrap{display:flex;align-items:center;gap:9px}
+.avatar-sm{width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0}
+.avatar-sm img{width:100%;height:100%;display:block}
 .result-ic{width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:44px}
 .ric-ok{background:var(--bg-bg)} .ric-off{background:#FDEBD8} .ric-err{background:var(--br-bg)}
 .field{width:100%;max-width:360px;text-align:left}
