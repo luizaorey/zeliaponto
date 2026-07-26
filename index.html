@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0B2A33">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+<title>Zélia Ponto</title>
+</head>
+<body>
+<div id="app">
+
+  <section id="s-loading" class="screen center active"><div class="spinner"></div><p>Carregando…</p></section>
+
+  <!-- LOGIN -->
+  <section id="s-login" class="screen center">
+    <div class="logo"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+    <h1>Zélia Ponto</h1>
+    <p class="big">Entre com seu <b>CPF</b> e <b>senha</b>.</p>
+    <div class="field"><label>CPF</label><input id="in-cpf" class="txt" inputmode="numeric" autocomplete="off" placeholder="Só números"></div>
+    <div class="field"><label>Senha</label><input id="in-senha" class="txt" type="password" autocomplete="off" placeholder="Sua senha"></div>
+    <div class="err" id="login-err"></div>
+    <button class="btn" onclick="fazerLogin()">Entrar</button>
+    <p class="hint">Primeiro acesso? A senha inicial é <b>123</b> (o app pede a troca).</p>
+  </section>
+
+  <!-- ESCOLHER EMPRESA -->
+  <section id="s-empresa" class="screen center">
+    <div class="logo"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01"/></svg></div>
+    <h1>Qual empresa?</h1>
+    <p>Seu CPF está em mais de uma empresa. Escolha:</p>
+    <div class="list" id="lista-empresas"></div>
+    <button class="linkbtn" onclick="sair()">Voltar</button>
+  </section>
+
+  <!-- TROCAR SENHA OBRIGATÓRIA -->
+  <section id="s-trocar" class="screen center">
+    <div class="logo"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+    <h1>Crie sua senha</h1>
+    <p class="big">No primeiro acesso, defina uma senha nova.</p>
+    <div class="field"><label>Nova senha</label><input id="in-nova" class="txt" type="password" autocomplete="off" placeholder="Mínimo 6 caracteres"></div>
+    <div class="err" id="trocar-err"></div>
+    <button class="btn" onclick="fazerTrocaSenha()">Salvar e entrar</button>
+    <p class="hint">Não pode ser "123" nem seu CPF.</p>
+  </section>
+
+  <!-- HOME / BATER PONTO -->
+  <section id="s-home" class="screen">
+    <div class="hdr">
+      <div class="topbar">
+        <span style="width:24px"></span>
+        <div class="name">Zélia</div>
+        <button class="iconbtn" onclick="sair()" aria-label="Sair"><svg class="ico" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg></button>
+      </div>
+      <div class="hello" id="ola">Olá!</div>
+      <div class="subtle" id="sub-empresa">—</div>
+    </div>
+    <div class="body">
+      <div class="card clock">
+        <div class="st"><span id="net-dot" class="dot"></span><span id="net-txt">—</span></div>
+        <div class="big" id="clock-now">--:--</div>
+        <div class="since" id="clock-sub">Toque num botão para bater o ponto</div>
+      </div>
+      <div class="sec">Bater ponto</div>
+      <div class="grid">
+        <button class="btn-ponto b-entrada" data-tipo="entrada" onclick="iniciarRegistro('entrada')"><svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg><span>Entrada</span></button>
+        <button class="btn-ponto b-pausa" data-tipo="pausa" onclick="iniciarRegistro('pausa')"><svg viewBox="0 0 24 24"><path d="M4 8h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8z"/><path d="M17 9h2a2 2 0 0 1 0 4h-2"/></svg><span>Almoço</span></button>
+        <button class="btn-ponto b-retorno" data-tipo="retorno" onclick="iniciarRegistro('retorno')"><svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M14 17l5-5-5-5M19 12H7"/></svg><span>Retorno</span></button>
+        <button class="btn-ponto b-saida" data-tipo="saida" onclick="iniciarRegistro('saida')"><svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg><span>Saída</span></button>
+      </div>
+      <div id="ultimo-box" class="info-box" style="display:none"></div>
+      <p class="pend-hint" id="pend-hint" style="display:none"></p>
+      <div class="tabs">
+        <button class="tab on"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Início</button>
+        <button class="tab" onclick="irRegistros()"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 15l5-4 4 3 6-6"/></svg>Registros</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CÂMERA -->
+  <section id="s-camera" class="screen">
+    <div class="hdr" style="padding-bottom:16px"><div class="topbar"><span style="width:24px"></span><div class="name" id="cam-titulo">Registrar</div><button class="btn ghost" style="width:auto;padding:8px 12px;font-size:15px" onclick="cancelarCamera()">Cancelar</button></div></div>
+    <video id="cam-video" playsinline autoplay muted></video>
+    <div class="cam-body"><p class="hint" style="text-align:center" id="cam-hint">Enquadre o rosto e toque em registrar.</p><div style="flex:1"></div><button class="btn" id="cam-capturar" onclick="capturar()">Registrar ponto</button></div>
+    <input id="cam-fallback" type="file" accept="image/*" capture="user" style="display:none" onchange="capturarInput(event)">
+  </section>
+
+  <section id="s-enviando" class="screen center"><div class="spinner"></div><p id="enviando-msg">Registrando…</p></section>
+
+  <section id="s-resultado" class="screen center">
+    <div class="result-ic ric-ok" id="res-ic">✅</div>
+    <h2 id="res-titulo"></h2>
+    <p id="res-msg" style="white-space:pre-line"></p>
+    <button class="btn" onclick="voltarHome()">OK</button>
+  </section>
+
+  <!-- MEUS REGISTROS -->
+  <section id="s-registros" class="screen">
+    <div class="hdr">
+      <div class="topbar"><button class="iconbtn" onclick="voltarHome()" aria-label="Voltar"><svg class="ico" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><div class="name">Meus Registros</div><span style="width:24px"></span></div>
+      <div class="stats">
+        <div class="stat"><div class="k">Trabalhado</div><div class="v" id="st-trab">--:--</div></div>
+        <div class="stat"><div class="k">Faltantes</div><div class="v" id="st-falt">--:--</div></div>
+        <div class="stat"><div class="k">Extras</div><div class="v" id="st-extra">--:--</div></div>
+      </div>
+      <div class="mnav"><button onclick="mudarMes(-1)"><svg viewBox="0 0 24 24"><path d="M18 6l-6 6 6 6M12 6l-6 6 6 6"/></svg></button><div class="pill" id="mes-label">—</div><button onclick="mudarMes(1)"><svg viewBox="0 0 24 24"><path d="M6 6l6 6-6 6M12 6l6 6-6 6"/></svg></button></div>
+    </div>
+    <div class="body"><div id="dias-lista"></div></div>
+  </section>
+
+</div>
+<div id="toast" class="toast"></div>
+<canvas id="work-canvas"></canvas>
+<script src="app.js"></script>
+</body>
+</html>
