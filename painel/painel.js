@@ -457,7 +457,7 @@ function renderAprovacoes(){
   $("aprov-lista").innerHTML = APROVS.map((p, i) => {
     const m = apMotivo(p);
     const foto = p.foto_url
-      ? `<img class="ap-foto" src="${esc(p.foto_url)}" alt="selfie de ${esc(p.funcionario||"")}" onclick="verFoto(${i})" onerror="this.classList.add('semfoto');this.onclick=null;this.removeAttribute('src')">`
+      ? `<img class="ap-foto" src="${esc(p.foto_url)}" alt="selfie de ${esc(p.funcionario||"")}" onclick="verFoto(${i})" onerror="fotoFalhou(this)">`
       : `<div class="ap-foto semfoto"></div>`;
     return `<div class="ap-card">
       ${foto}
@@ -473,6 +473,7 @@ function renderAprovacoes(){
     </div>`;
   }).join("");
 }
+function fotoFalhou(img){ img.outerHTML = '<div class="ap-foto semfoto"></div>'; } // 0 byte/quebrada → placeholder limpo
 function verFoto(i){
   const p = APROVS[i]; if (!p || !p.foto_url) return;
   openModal(`<div class="foto-modal"><img src="${esc(p.foto_url)}" alt="selfie"><div class="fm-cap"><b>${esc(p.funcionario||"")}</b> · ${esc(AP_TIPO[p.tipo]||p.tipo)} · ${esc(p.hora||"")}</div><div class="modal-acts"><button class="btn ghost" onclick="closeModal()">Fechar</button></div></div>`);
