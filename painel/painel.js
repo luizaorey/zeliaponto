@@ -9,6 +9,7 @@ const EP = {
   lista: WB + "/zelia-func-lista", criar: WB + "/zelia-func-criar",
   desativar: WB + "/zelia-func-desativar", reativar: WB + "/zelia-func-reativar",
   reset: WB + "/zelia-func-reset-senha",
+  dia: WB + "/zelia-painel-dia", config: WB + "/zelia-config-salvar",
 };
 const LS_TOKEN = "zelia_painel_token", LS_NOME = "zelia_painel_nome", LS_EMPRESA = "zelia_painel_empresa";
 
@@ -32,7 +33,7 @@ function togglePw(btn){
 function go(id){
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   $(id).classList.add("active");
-  const logged = (id === "s-home" || id === "s-funcionarios");
+  const logged = (id === "s-home" || id === "s-funcionarios" || id === "s-dia");
   $("topbar").style.display = logged ? "flex" : "none";
 }
 
@@ -216,6 +217,71 @@ async function resetarSenha(id){
   if (d.ok){ toast(`Senha de ${nome} resetada para 123.`); carregarFuncionarios(); } else toast("Não foi possível resetar.");
 }
 
+/* ---------- VISÃO DO DIA ---------- */
+let DIA = null;
+const STATUS = { trabalhando: "trabalhando agora", em_pausa: "em pausa", ja_saiu: "já saiu" };
+const STCLS = { trabalhando: "det-ok", em_pausa: "det-pausa", ja_saiu: "det-saiu" };
+function minToH(m){ m = Math.max(0, Math.round(m)); const h = Math.floor(m/60), mm = m%60; if (h && mm) return h+"h"+String(mm).padStart(2,"0"); if (h) return h+"h"; return mm+"min"; }
+function fmtData(s){ try { return new Date(s+"T12:00:00").toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"}); } catch(e){ return s; } }
+
+function irDia(){ go("s-dia"); carregarDia(); }
+async function carregarDia(){
+  $("dia-loading").style.display = "block";
+  let d; try { d = await apiGet(EP.dia); } catch(e){ return; }
+  $("dia-loading").style.display = "none";
+  if (!d.ok){ toast("Não foi possível carregar o dia."); return; }
+  DIA = d; renderDia();
+}
+function tile(cls,k,n,sub){ return `<div class="dtile dt-${cls}"><div class="k">${k}</div><div class="n">${n}</div><div class="sub">${sub||""}</div></div>`; }
+function tileNeutro(k,sub){ return `<div class="dtile dt-neutro"><div class="k">${k}</div><div class="n">—</div><div class="sub">${sub||""}</div></div>`; }
+function tileConfig(){ return `<div class="dtile dt-neutro"><div class="k">Atrasados</div><div class="n">—</div><button class="cfg" onclick="abrirConfigDia()">Configurar horário</button></div>`; }
+function secao(titulo,cor,linhas){ return `<div class="dia-sec"><h3><span class="dot" style="background:${cor}"></span>${titulo} <span class="muted" style="font-weight:600">(${linhas.length})</span></h3>${linhas.join("")}</div>`; }
+function row(nome,det,cls){ return `<div class="dia-row"><span class="nm">${esc(nome)}</span><span class="det ${cls||""}">${det}</span></div>`; }
+function renderDia(){
+  const d = DIA, t = d.tiles, L = d.listas;
+  $("dia-data").textContent = fmtData(d.data);
+  const desc = $("dia-descanso");
+  if (!d.dia_util){ desc.style.display = "flex"; desc.innerHTML = "🌴 Hoje é dia de <b>descanso</b> — sem expediente. Ninguém falta hoje."; }
+  else desc.style.display = "none";
+  const totalAtivos = (t.presentes||0) + (t.ausentes||0);
+  const sumExtra = (L.em_extra||[]).reduce((s,x)=>s+(x.extra_min||0),0);
+  const ts = [];
+  ts.push(tile("presentes","Presentes", t.presentes, totalAtivos ? `de ${totalAtivos} ativos` : ""));
+  if (t.ausentes === null) ts.push(tileNeutro("Ausentes","Descanso"));
+  else ts.push(tile("ausentes","Ausentes", t.ausentes, t.ausentes ? "precisam de atenção" : "todos vieram"));
+  if (t.atrasados === null) ts.push(d.dia_util ? tileConfig() : tileNeutro("Atrasados","Descanso"));
+  else ts.push(tile("atrasados","Atrasados", t.atrasados, t.atrasados ? "" : "ninguém atrasado"));
+  ts.push(tile("extra","Em extra", t.em_extra, sumExtra ? `+${minToH(sumExtra)} hoje` : ""));
+  $("dia-tiles").innerHTML = ts.join("");
+  // seções: problema primeiro (ausentes → atrasados → em extra → presentes)
+  const sec = [];
+  if (d.dia_util && (L.ausentes||[]).length) sec.push(secao("Ausentes","var(--red)", L.ausentes.map(x=>row(x.nome,"não compareceu","det-ausente"))));
+  if ((L.atrasados||[]).length) sec.push(secao("Atrasados","var(--amber)", L.atrasados.map(x=>row(x.nome,`${x.entrada} · +${minToH(x.atraso_min)} atrasado`,"det-atraso"))));
+  if ((L.em_extra||[]).length) sec.push(secao("Em extra","var(--orange)", L.em_extra.map(x=>row(x.nome,`+${minToH(x.extra_min)}`,"det-extra"))));
+  if ((L.presentes||[]).length) sec.push(secao("Presentes","var(--green)", L.presentes.map(x=>row(x.nome, `${STATUS[x.status]||x.status} · desde ${x.desde}`, STCLS[x.status]||""))));
+  $("dia-secoes").innerHTML = sec.join("") || `<div class="dia-vazio">Nenhum registro hoje.</div>`;
+}
+function abrirConfigDia(){
+  openModal(`
+    <h3>Horário de entrada</h3>
+    <p>Defina o horário esperado e a tolerância. A partir disso, quem entrar depois aparece em <b>Atrasados</b>.</p>
+    <div class="field"><label>Entrada prevista</label><input id="cf-ep" class="txt" type="time" value="08:00"></div>
+    <div class="field"><label>Tolerância (minutos)</label><input id="cf-tol" class="txt" type="number" min="0" max="60" value="10"></div>
+    <div class="err" id="cf-err"></div>
+    <div class="modal-acts"><button class="btn ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn" id="cf-salvar" onclick="salvarConfigDia()">Salvar</button></div>`);
+}
+async function salvarConfigDia(){
+  const ep = $("cf-ep").value; const tol = parseInt($("cf-tol").value,10);
+  const err = $("cf-err"); err.textContent = "";
+  if (!/^\d{2}:\d{2}$/.test(ep)){ err.textContent = "Informe o horário de entrada."; return; }
+  $("cf-salvar").disabled = true;
+  const d = await apiPost(EP.config, { entrada_prevista: ep, tolerancia_minutos: (tol>=0 && tol<=180) ? tol : 10 });
+  $("cf-salvar").disabled = false;
+  if (d.ok){ closeModal(); toast("Horário salvo."); carregarDia(); }
+  else err.textContent = "Não foi possível salvar.";
+}
+
 /* ---------- Enter nos campos ---------- */
 ["in-email","in-senha"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") fazerLoginDono(); }));
 $("in-nova").addEventListener("keydown", e => { if (e.key === "Enter") fazerTrocaDono(); });
@@ -235,6 +301,18 @@ if (getToken()) entrar(); else go("s-login");
   ];
   $("dono-nome").textContent = "Luiz Antônio"; $("tb-empresa").textContent = "Makro Boutique";
   if (scr === "home"){ go("s-home"); return; }
+  if (scr.indexOf("dia") === 0){
+    DIA = { ok:true, data:"2026-07-27", dia_util:true, atraso_configurado:true,
+      tiles:{ presentes:3, ausentes:1, atrasados:1, em_extra:2 },
+      listas:{
+        presentes:[{nome:"Maria Silva",desde:"08:05",status:"trabalhando"},{nome:"João Pereira",desde:"08:20",status:"em_pausa"},{nome:"Ana Souza",desde:"06:00",status:"ja_saiu"}],
+        ausentes:[{nome:"Carlos Lima"}],
+        atrasados:[{nome:"João Pereira",entrada:"08:20",atraso_min:10}],
+        em_extra:[{nome:"Maria Silva",extra_min:332},{nome:"Ana Souza",extra_min:60}] } };
+    if (scr === "dia_sem"){ DIA.atraso_configurado=false; DIA.tiles.atrasados=null; DIA.listas.atrasados=[]; }
+    if (scr === "dia_descanso"){ DIA.dia_util=false; DIA.tiles.ausentes=null; DIA.tiles.atrasados=null; DIA.listas.ausentes=[]; DIA.listas.atrasados=[]; }
+    go("s-dia"); $("dia-loading").style.display="none"; renderDia(); return;
+  }
   FUNCS = mock; go("s-funcionarios"); $("func-loading").style.display = "none"; renderFuncionarios();
   if (scr === "confirm") confirmar({ titulo:"Desativar funcionário", texto:"Desativar <b>Maria Silva</b>? Ela não conseguirá mais bater ponto.", ok:"Desativar", cor:"red" });
 })();

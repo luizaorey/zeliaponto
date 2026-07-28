@@ -94,6 +94,32 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
 .fcard .nome{font-size:16px;font-weight:700} .fcard .meta{font-size:13px;color:#59616C;margin-top:3px;font-variant-numeric:tabular-nums}
 .fcard .acoes{margin-top:14px;justify-content:flex-start}
 
+/* ---------- VISÃO DO DIA ---------- */
+.dia-data{font-size:14px;color:var(--muted);margin:-6px 0 16px 2px;text-transform:capitalize}
+.descanso{background:#EDEFF2;color:#5b636e;border-radius:14px;padding:14px 16px;font-size:14.5px;font-weight:600;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.dia-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.dtile{border-radius:18px;padding:16px;color:#fff;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;text-align:left}
+.dtile .k{font-size:13px;font-weight:700;opacity:.95}
+.dtile .n{font-size:38px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;margin:6px 0}
+.dtile .sub{font-size:12.5px;opacity:1;font-weight:700;min-height:15px}
+.dt-presentes{background:var(--green)}            /* verde: tudo certo */
+.dt-ausentes {background:var(--red)}              /* vermelho: ausência é O problema do dia */
+.dt-atrasados{background:var(--amber)}            /* âmbar: atenção */
+.dt-extra    {background:var(--orange)}           /* laranja forte: custo acumulando ao vivo */
+.dt-neutro   {background:#AEB4BC}                 /* cinza: só "—" / Descanso */
+.dt-neutro .n{font-size:30px}
+.dtile .cfg{font-size:11.5px;font-weight:700;text-decoration:underline;cursor:pointer;background:none;border:none;color:#fff;padding:0;text-align:left}
+
+.dia-sec{background:var(--card);border-radius:16px;margin-bottom:14px;overflow:hidden;box-shadow:0 8px 24px -20px rgba(31,42,58,.5)}
+.dia-sec h3{font-size:14px;font-weight:700;padding:14px 16px 12px;display:flex;align-items:center;gap:9px}
+.dia-sec h3 .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dia-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--line);font-size:14.5px}
+.dia-row .nm{font-weight:600;color:var(--ink)}
+.dia-row .det{font-size:13px;font-weight:600;white-space:nowrap}
+.det-ok{color:var(--green)} .det-pausa{color:var(--amber)} .det-saiu{color:var(--muted)}
+.det-atraso{color:var(--amber)} .det-extra{color:var(--orange)} .det-ausente{color:var(--red)}
+.dia-vazio{color:var(--muted);font-size:14px;padding:8px 2px}
+
 /* ---------- MODAL ---------- */
 .modal-bg{position:fixed;inset:0;background:rgba(15,23,32,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
 .modal-bg.show{display:flex}
