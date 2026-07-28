@@ -245,12 +245,13 @@ function renderDia(){
   else desc.style.display = "none";
   const totalAtivos = (t.presentes||0) + (t.ausentes||0);
   const sumExtra = (L.em_extra||[]).reduce((s,x)=>s+(x.extra_min||0),0);
+  const sumAtraso = (L.atrasados||[]).reduce((s,x)=>s+(x.atraso_min||0),0);
   const ts = [];
   ts.push(tile("presentes","Presentes", t.presentes, totalAtivos ? `de ${totalAtivos} ativos` : ""));
   if (t.ausentes === null) ts.push(tileNeutro("Ausentes","Descanso"));
   else ts.push(tile("ausentes","Ausentes", t.ausentes, t.ausentes ? "precisam de atenção" : "todos vieram"));
   if (t.atrasados === null) ts.push(d.dia_util ? tileConfig() : tileNeutro("Atrasados","Descanso"));
-  else ts.push(tile("atrasados","Atrasados", t.atrasados, t.atrasados ? "" : "ninguém atrasado"));
+  else ts.push(tile("atrasados","Atrasados", t.atrasados, t.atrasados ? `+${minToH(sumAtraso)} de atraso` : "ninguém atrasado"));
   ts.push(tile("extra","Em extra", t.em_extra, sumExtra ? `+${minToH(sumExtra)} hoje` : ""));
   $("dia-tiles").innerHTML = ts.join("");
   // seções: problema primeiro (ausentes → atrasados → em extra → presentes)
