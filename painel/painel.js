@@ -286,7 +286,7 @@ async function salvarConfigDia(){
 }
 
 /* ---------- LOCAIS ---------- */
-let LOCAIS = [], LF = null, MAP = null, MARKER = null, CIRCLE = null;
+let LOCAIS = [], LF = null, MAP = null, CIRCLE = null;
 function formatRaio(m){ m = Math.round(m); return m < 1000 ? `${m} m` : `${(m/1000).toLocaleString("pt-BR",{maximumFractionDigits:1})} km`; }
 const fraseRecusa = nome => `Você está fora da área de trabalho. Registre na ${nome || "{nome}"}. Aproxime-se do local para registrar o ponto.`;
 
@@ -332,21 +332,26 @@ function abrirLocalForm(id){
 function initMap(){
   if (typeof L === "undefined"){ toast("Mapa não carregou (sem internet?)."); return; }
   if (!MAP){
-    MAP = L.map("map");
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19, attribution:"© OpenStreetMap" }).addTo(MAP);
-    MARKER = L.marker([0,0], { draggable:true }).addTo(MAP);
-    CIRCLE = L.circle([0,0], { radius:200, color:"#E1592A", fillColor:"#E1592A", fillOpacity:.12, weight:2 }).addTo(MAP);
-    MARKER.on("dragend", () => { const p = MARKER.getLatLng(); setPino(p.lat, p.lng, false); });
-    MAP.on("click", e => setPino(e.latlng.lat, e.latlng.lng, false));
+    MAP = L.map("map", { zoomControl:true });
+    const ruas = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      { maxZoom:19, attribution:"© OpenStreetMap" });
+    const sat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      { maxZoom:19, attribution:"Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics" });
+    sat.addTo(MAP); // default: satélite (o dono reconhece o telhado da loja)
+    L.control.layers({ "Satélite": sat, "Mapa": ruas }, null, { position:"topright", collapsed:false }).addTo(MAP);
+    CIRCLE = L.circle([0,0], { radius:200, color:"#FF7A3C", fillColor:"#FF7A3C", fillOpacity:.14, weight:3 }).addTo(MAP);
+    // modelo pino-central: o local é SEMPRE o centro do mapa; arrastar o mapa reposiciona.
+    MAP.on("move", () => { if (CIRCLE) CIRCLE.setLatLng(MAP.getCenter()); });
+    MAP.on("moveend", () => { if (!LF) return; const c = MAP.getCenter(); LF.lat = c.lat; LF.lon = c.lng; });
   }
   MAP.setView([LF.lat, LF.lon], 16);
-  setPino(LF.lat, LF.lon, true);
-  CIRCLE.setRadius(LF.raio);
+  if (CIRCLE){ CIRCLE.setLatLng([LF.lat, LF.lon]); CIRCLE.setRadius(LF.raio); }
   setTimeout(() => MAP.invalidateSize(), 80);
+  setTimeout(() => MAP.invalidateSize(), 260);
 }
-function setPino(lat, lon, moveMarker){
+function setPino(lat, lon, zoom){
   LF.lat = lat; LF.lon = lon;
-  if (moveMarker && MARKER) MARKER.setLatLng([lat, lon]);
+  if (MAP) MAP.setView([lat, lon], zoom || MAP.getZoom()); // dispara move/moveend → centra círculo e grava LF
   if (CIRCLE) CIRCLE.setLatLng([lat, lon]);
 }
 function atualizarRaio(){
@@ -372,8 +377,7 @@ function usarMinhaLocalizacao(){
   if (!navigator.geolocation){ toast("Sem GPS no navegador."); return; }
   toast("Buscando sua localização…");
   navigator.geolocation.getCurrentPosition(p => {
-    if (MAP) MAP.setView([p.coords.latitude, p.coords.longitude], 17);
-    setPino(p.coords.latitude, p.coords.longitude, true);
+    setPino(p.coords.latitude, p.coords.longitude, 17);
   }, () => toast("Não consegui pegar o GPS."), { enableHighAccuracy:true, timeout:12000 });
 }
 function abrirColarCoord(){
@@ -390,8 +394,7 @@ function aplicarCoord(){
   const lat = parseFloat(($("cc-lat").value||"").replace(",", ".")), lon = parseFloat(($("cc-lon").value||"").replace(",", "."));
   if (!(lat >= -90 && lat <= 90) || !(lon >= -180 && lon <= 180)){ $("cc-err").textContent = "Digite latitude e longitude válidas."; return; }
   closeModal();
-  if (MAP) MAP.setView([lat, lon], 17);
-  setPino(lat, lon, true);
+  setPino(lat, lon, 17);
 }
 async function salvarLocal(){
   const nome = $("lf-nome").value.trim();
