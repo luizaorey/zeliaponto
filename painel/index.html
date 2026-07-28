@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0B2A33">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="painel.css?v=7">
+<link rel="stylesheet" href="painel.css?v=8">
 <title>Zélia · Painel</title>
 </head>
 <body>
@@ -59,9 +59,10 @@
         <button class="navcard" onclick="irLocais()">
           <div class="ic ic-loc"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
           <div class="nc-t">Locais</div><div class="nc-d">Mapa, raio, avisar/travar</div></button>
-        <div class="navcard soon"><span class="selo">Em breve</span>
-          <div class="ic"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></div>
-          <div class="nc-t">Aprovações</div><div class="nc-d">Pendências fora do raio</div></div>
+        <button class="navcard" onclick="irAprovacoes()">
+          <span id="aprov-badge" class="cbadge" style="display:none"></span>
+          <div class="ic ic-aprov"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></div>
+          <div class="nc-t">Aprovações</div><div class="nc-d">Pendências fora do raio</div></button>
         <div class="navcard soon"><span class="selo">Em breve</span>
           <div class="ic"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
           <div class="nc-t">Relatórios</div><div class="nc-d">Fechamento mensal, CSV</div></div>
@@ -147,12 +148,26 @@
     </div>
   </section>
 
+  <!-- APROVAÇÕES -->
+  <section id="s-aprovacoes" class="screen painel">
+    <div class="wrap">
+      <div class="toolbar">
+        <button class="linkbtn back" onclick="irHome()">‹ Início</button>
+        <h2>Aprovações</h2>
+        <button class="btn small ghost" onclick="carregarAprovacoes()">Atualizar</button>
+      </div>
+      <p class="ap-intro">Batidas que precisam do seu olhar — fora do raio, sem GPS ou com horário suspeito. Veja a selfie e decida.</p>
+      <div id="aprov-loading" class="muted" style="padding:20px 4px">Carregando…</div>
+      <div id="aprov-lista"></div>
+    </div>
+  </section>
+
 </main>
 
 <!-- MODAL genérico (confirmação / formulário) -->
 <div id="modal-bg" class="modal-bg"><div id="modal" class="modal"></div></div>
 <div id="toast" class="toast"></div>
 
-<script src="painel.js?v=7"></script>
+<script src="painel.js?v=8"></script>
 </body>
 </html>

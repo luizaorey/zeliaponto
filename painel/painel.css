@@ -162,6 +162,32 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
 .modal-acts .btn{flex:1}
 .hint{font-size:12.5px;color:var(--muted);margin-top:4px}
 
+/* ---------- APROVAÇÕES ---------- */
+.navcard{position:relative}
+.cbadge{position:absolute;top:12px;right:12px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--red);color:#fff;font-size:13px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.22)}
+.navcard .ic-aprov{background:var(--amber)}
+.ap-intro{color:var(--muted);font-size:14px;margin:2px 4px 16px;max-width:560px}
+.ap-card{display:flex;align-items:center;gap:14px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:12px}
+.ap-foto{width:64px;height:64px;border-radius:12px;object-fit:cover;background:#E7E8EB;flex-shrink:0;cursor:pointer;border:1px solid var(--line)}
+.ap-foto:hover{border-color:var(--orange)}
+.ap-foto.semfoto{cursor:default;position:relative;border-style:dashed}
+.ap-foto.semfoto::after{content:"sem foto";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted)}
+.ap-info{flex:1;min-width:0}
+.ap-nome{font-weight:800;font-size:16px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ap-meta{font-size:13px;color:var(--muted);margin:2px 0 7px}
+.ap-tipo{font-weight:700;color:var(--ink)}
+.ap-motivo{display:inline-block;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:8px}
+.mot-fora_raio{background:#FCEEE7;color:#B4460F}
+.mot-sem_gps{background:#FBEBEB;color:#B0392E}
+.mot-relogio{background:#FCEBD3;color:#9A6408}
+.ap-acoes{display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+.ap-acoes .btn.small{width:100%;padding:9px 16px}
+.vazio-ap{text-align:center;padding:52px 16px;color:var(--ink)}
+.vazio-ap .emoji{font-size:46px;margin-bottom:8px}
+.foto-modal{text-align:center}
+.foto-modal img{max-width:100%;max-height:56vh;border-radius:12px;background:#E7E8EB}
+.fm-cap{margin:12px 0 4px;color:var(--ink);font-size:14px}
+
 /* ---------- TOAST ---------- */
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:13px;font-size:15px;max-width:90%;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s;z-index:60}
 .toast.show{opacity:1}

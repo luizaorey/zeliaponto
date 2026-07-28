@@ -12,6 +12,7 @@ const EP = {
   dia: WB + "/zelia-painel-dia", config: WB + "/zelia-config-salvar",
   locais: WB + "/zelia-locais", localSalvar: WB + "/zelia-local-salvar",
   localOff: WB + "/zelia-local-desativar", localOn: WB + "/zelia-local-reativar",
+  aprovacoes: WB + "/zelia-aprovacoes-lista", decidir: WB + "/zelia-aprovacao-decidir",
 };
 const LS_TOKEN = "zelia_painel_token", LS_NOME = "zelia_painel_nome", LS_EMPRESA = "zelia_painel_empresa";
 
@@ -35,7 +36,7 @@ function togglePw(btn){
 function go(id){
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   $(id).classList.add("active");
-  const logged = (id === "s-home" || id === "s-funcionarios" || id === "s-dia" || id === "s-locais" || id === "s-local-form");
+  const logged = (id === "s-home" || id === "s-funcionarios" || id === "s-dia" || id === "s-locais" || id === "s-local-form" || id === "s-aprovacoes");
   $("topbar").style.display = logged ? "flex" : "none";
 }
 
@@ -94,6 +95,7 @@ function entrar(){
   $("dono-nome").textContent = localStorage.getItem(LS_NOME) || "";
   $("tb-empresa").textContent = localStorage.getItem(LS_EMPRESA) || "";
   go("s-home");
+  atualizarBadgeAprovacoes();
 }
 function sair(expirou){
   localStorage.removeItem(LS_TOKEN); localStorage.removeItem(LS_NOME); localStorage.removeItem(LS_EMPRESA);
@@ -102,7 +104,7 @@ function sair(expirou){
 }
 
 /* ---------- NAV ---------- */
-function irHome(){ go("s-home"); }
+function irHome(){ go("s-home"); atualizarBadgeAprovacoes(); }
 function irFuncionarios(){ go("s-funcionarios"); carregarFuncionarios(); }
 
 /* ---------- FUNCIONÁRIOS ---------- */
@@ -426,6 +428,68 @@ $("in-nova").addEventListener("keydown", e => { if (e.key === "Enter") fazerTroc
 /* ---------- INIT ---------- */
 if (getToken()) entrar(); else go("s-login");
 
+/* ---------- APROVAÇÕES ---------- */
+let APROVS = [];
+const AP_TIPO = { entrada:"Entrada", pausa:"Pausa", retorno:"Retorno", saida:"Saída" };
+function irAprovacoes(){ go("s-aprovacoes"); carregarAprovacoes(); }
+function setBadge(n){
+  const b = $("aprov-badge"); if (!b) return;
+  if (n > 0){ b.textContent = n > 99 ? "99+" : n; b.style.display = ""; } else b.style.display = "none";
+}
+async function atualizarBadgeAprovacoes(){
+  try { const d = await apiGet(EP.aprovacoes); setBadge((d.pendencias || []).length); } catch(e){}
+}
+async function carregarAprovacoes(){
+  $("aprov-loading").style.display = "block"; $("aprov-lista").innerHTML = "";
+  let d; try { d = await apiGet(EP.aprovacoes); } catch(e){ return; }
+  $("aprov-loading").style.display = "none";
+  if (!d.ok){ toast("Não foi possível carregar."); return; }
+  APROVS = d.pendencias || []; renderAprovacoes(); setBadge(APROVS.length);
+}
+function apMotivo(p){
+  if (p.motivo === "relogio") return { txt:"Relógio do aparelho suspeito", cls:"mot-relogio" };
+  if (p.motivo === "sem_gps") return { txt:"Sem localização (GPS desligado)", cls:"mot-sem_gps" };
+  if (p.motivo === "fora_raio") return { txt:`Fora do raio · ${p.distancia_metros != null ? formatRaio(p.distancia_metros) : "?"}`, cls:"mot-fora_raio" };
+  return { txt:"Precisa de conferência", cls:"mot-fora_raio" };
+}
+function renderAprovacoes(){
+  if (!APROVS.length){ $("aprov-lista").innerHTML = `<div class="vazio-ap"><div class="emoji">🎉</div><p><b>Nenhuma pendência.</b><br><span class="muted">Tudo em dia — as batidas estão dentro das regras.</span></p></div>`; return; }
+  $("aprov-lista").innerHTML = APROVS.map((p, i) => {
+    const m = apMotivo(p);
+    const foto = p.foto_url
+      ? `<img class="ap-foto" src="${esc(p.foto_url)}" alt="selfie de ${esc(p.funcionario||"")}" onclick="verFoto(${i})" onerror="this.classList.add('semfoto');this.onclick=null;this.removeAttribute('src')">`
+      : `<div class="ap-foto semfoto"></div>`;
+    return `<div class="ap-card">
+      ${foto}
+      <div class="ap-info">
+        <div class="ap-nome">${esc(p.funcionario || "—")}</div>
+        <div class="ap-meta"><span class="ap-tipo">${AP_TIPO[p.tipo] || esc(p.tipo)}</span> · ${esc(p.hora || "")}</div>
+        <span class="ap-motivo ${m.cls}">${esc(m.txt)}</span>
+      </div>
+      <div class="ap-acoes">
+        <button class="btn small green" onclick="decidir('${p.id}','aprovar',${i})">Aprovar</button>
+        <button class="btn small red" onclick="decidir('${p.id}','recusar',${i})">Recusar</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+function verFoto(i){
+  const p = APROVS[i]; if (!p || !p.foto_url) return;
+  openModal(`<div class="foto-modal"><img src="${esc(p.foto_url)}" alt="selfie"><div class="fm-cap"><b>${esc(p.funcionario||"")}</b> · ${esc(AP_TIPO[p.tipo]||p.tipo)} · ${esc(p.hora||"")}</div><div class="modal-acts"><button class="btn ghost" onclick="closeModal()">Fechar</button></div></div>`);
+}
+async function decidir(id, decisao, i){
+  const p = APROVS[i] || {};
+  const aprovar = decisao === "aprovar";
+  const ok = await confirmar({
+    titulo: aprovar ? "Aprovar batida" : "Recusar batida",
+    texto: `${aprovar ? "Aprovar" : "Recusar"} a ${(AP_TIPO[p.tipo] || p.tipo || "batida").toLowerCase()} de <b>${esc(p.funcionario || "funcionário")}</b>?`,
+    ok: aprovar ? "Aprovar" : "Recusar", cor: aprovar ? "green" : "red" });
+  if (!ok) return;
+  const d = await apiPost(EP.decidir, { registro_id: id, decisao });
+  if (d.ok){ toast(aprovar ? "Batida aprovada." : "Batida recusada."); APROVS.splice(i, 1); renderAprovacoes(); setBadge(APROVS.length); }
+  else toast("Não foi possível.");
+}
+
 /* ---------- modo demo local (SÓ localhost — nunca em produção) — p/ screenshots/revisão ---------- */
 (function(){
   if (location.hostname !== "localhost" && location.hostname !== "127.0.0.1") return;
@@ -461,6 +525,15 @@ if (getToken()) entrar(); else go("s-login");
   if (scr === "local"){
     LOCAIS = [{ id:"2", nome:"Makro Boutique", latitude:-12.669259, longitude:-38.543518, raio_metros:200, modo_geofence:"travar", ativo:true }];
     abrirLocalForm("2"); return;
+  }
+  if (scr.indexOf("aprov") === 0){
+    const F = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23cfd8dc'/%3E%3Ccircle cx='32' cy='25' r='12' fill='%2390a4ae'/%3E%3Crect x='13' y='41' width='38' height='26' rx='13' fill='%2390a4ae'/%3E%3C/svg%3E";
+    APROVS = (scr === "aprov_vazio") ? [] : [
+      { id:"1", funcionario:"Maria Silva", tipo:"entrada", hora:"28/07 08:12", motivo:"fora_raio", distancia_metros:340, foto_url:F },
+      { id:"2", funcionario:"João Pereira", tipo:"saida", hora:"27/07 18:03", motivo:"sem_gps", distancia_metros:null, foto_url:F },
+      { id:"3", funcionario:"Ana Souza", tipo:"pausa", hora:"27/07 12:30", motivo:"relogio", distancia_metros:null, foto_url:null },
+    ];
+    go("s-aprovacoes"); $("aprov-loading").style.display = "none"; renderAprovacoes(); setBadge(APROVS.length); return;
   }
   FUNCS = mock; go("s-funcionarios"); $("func-loading").style.display = "none"; renderFuncionarios();
   if (scr === "confirm") confirmar({ titulo:"Desativar funcionário", texto:"Desativar <b>Maria Silva</b>? Ela não conseguirá mais bater ponto.", ok:"Desativar", cor:"red" });
