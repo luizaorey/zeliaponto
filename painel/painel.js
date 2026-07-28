@@ -343,6 +343,8 @@ function initMap(){
     // modelo pino-central: o local é SEMPRE o centro do mapa; arrastar o mapa reposiciona.
     MAP.on("move", () => { if (CIRCLE) CIRCLE.setLatLng(MAP.getCenter()); });
     MAP.on("moveend", () => { if (!LF) return; const c = MAP.getCenter(); LF.lat = c.lat; LF.lon = c.lng; });
+    // garante que os tiles carreguem assim que o container ganha tamanho real (evita mapa cinza)
+    if (window.ResizeObserver) new ResizeObserver(() => MAP && MAP.invalidateSize()).observe(document.getElementById("map"));
   }
   MAP.setView([LF.lat, LF.lon], 16);
   if (CIRCLE){ CIRCLE.setLatLng([LF.lat, LF.lon]); CIRCLE.setRadius(LF.raio); }
