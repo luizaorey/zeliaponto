@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0B2A33">
-<link rel="stylesheet" href="painel.css?v=3">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="painel.css?v=4">
 <title>Zélia · Painel</title>
 </head>
 <body>
@@ -54,9 +56,9 @@
         <button class="navcard" onclick="irDia()">
           <div class="ic ic-dia"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg></div>
           <div class="nc-t">Visão do dia</div><div class="nc-d">Presentes, ausentes, atrasados, em extra</div></button>
-        <div class="navcard soon"><span class="selo">Em breve</span>
-          <div class="ic"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-          <div class="nc-t">Locais</div><div class="nc-d">Raio, avisar/travar, mapa</div></div>
+        <button class="navcard" onclick="irLocais()">
+          <div class="ic ic-loc"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div class="nc-t">Locais</div><div class="nc-d">Mapa, raio, avisar/travar</div></button>
         <div class="navcard soon"><span class="selo">Em breve</span>
           <div class="ic"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></div>
           <div class="nc-t">Aprovações</div><div class="nc-d">Pendências fora do raio</div></div>
@@ -96,12 +98,57 @@
     </div>
   </section>
 
+  <!-- LOCAIS (lista) -->
+  <section id="s-locais" class="screen painel">
+    <div class="wrap">
+      <div class="toolbar">
+        <button class="linkbtn back" onclick="irHome()">‹ Início</button>
+        <h2>Locais</h2>
+        <button class="btn small" onclick="abrirLocalForm()">+ Novo local</button>
+      </div>
+      <div id="loc-loading" class="muted" style="padding:20px 4px">Carregando…</div>
+      <div id="loc-lista"></div>
+    </div>
+  </section>
+
+  <!-- LOCAL (form com mapa) -->
+  <section id="s-local-form" class="screen painel">
+    <div class="wrap">
+      <div class="toolbar">
+        <button class="linkbtn back" onclick="voltarLocais()">‹ Locais</button>
+        <h2 id="lf-titulo">Novo local</h2>
+      </div>
+      <div class="field"><label>Nome do local</label>
+        <input id="lf-nome" class="txt" maxlength="60" placeholder="Só o nome do lugar (ex.: Makro Boutique)" oninput="atualizarPreview()"></div>
+
+      <label class="lf-lbl">Onde fica <span class="muted" style="font-weight:600">— arraste o pino</span></label>
+      <div id="map"></div>
+      <div class="lf-maprow">
+        <button class="btn small ghost" type="button" onclick="usarMinhaLocalizacao()">📍 Usar minha localização</button>
+        <button class="btn small ghost" type="button" onclick="abrirColarCoord()">Colar coordenadas</button>
+      </div>
+
+      <div class="field" style="margin-top:16px"><label>Raio da cerca: <b id="lf-raio-txt">200 m</b></label>
+        <input id="lf-raio" type="range" min="20" max="5000" step="10" value="200" class="slider" oninput="atualizarRaio()"></div>
+
+      <label class="lf-lbl" style="margin-top:8px">Modo</label>
+      <div class="segbtn">
+        <button type="button" id="lf-avisar" class="seg on" onclick="setModo('avisar')">Avisar</button>
+        <button type="button" id="lf-travar" class="seg" onclick="setModo('travar')">Travar</button>
+      </div>
+      <div id="lf-modo-info" class="lf-info"></div>
+
+      <div class="err" id="lf-err"></div>
+      <button class="btn" id="lf-salvar" onclick="salvarLocal()" style="margin-top:8px">Salvar local</button>
+    </div>
+  </section>
+
 </main>
 
 <!-- MODAL genérico (confirmação / formulário) -->
 <div id="modal-bg" class="modal-bg"><div id="modal" class="modal"></div></div>
 <div id="toast" class="toast"></div>
 
-<script src="painel.js?v=3"></script>
+<script src="painel.js?v=4"></script>
 </body>
 </html>

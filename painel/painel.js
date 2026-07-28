@@ -10,6 +10,8 @@ const EP = {
   desativar: WB + "/zelia-func-desativar", reativar: WB + "/zelia-func-reativar",
   reset: WB + "/zelia-func-reset-senha",
   dia: WB + "/zelia-painel-dia", config: WB + "/zelia-config-salvar",
+  locais: WB + "/zelia-locais", localSalvar: WB + "/zelia-local-salvar",
+  localOff: WB + "/zelia-local-desativar", localOn: WB + "/zelia-local-reativar",
 };
 const LS_TOKEN = "zelia_painel_token", LS_NOME = "zelia_painel_nome", LS_EMPRESA = "zelia_painel_empresa";
 
@@ -33,7 +35,7 @@ function togglePw(btn){
 function go(id){
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   $(id).classList.add("active");
-  const logged = (id === "s-home" || id === "s-funcionarios" || id === "s-dia");
+  const logged = (id === "s-home" || id === "s-funcionarios" || id === "s-dia" || id === "s-locais" || id === "s-local-form");
   $("topbar").style.display = logged ? "flex" : "none";
 }
 
@@ -283,6 +285,133 @@ async function salvarConfigDia(){
   else err.textContent = "Não foi possível salvar.";
 }
 
+/* ---------- LOCAIS ---------- */
+let LOCAIS = [], LF = null, MAP = null, MARKER = null, CIRCLE = null;
+function formatRaio(m){ m = Math.round(m); return m < 1000 ? `${m} m` : `${(m/1000).toLocaleString("pt-BR",{maximumFractionDigits:1})} km`; }
+const fraseRecusa = nome => `Você está fora da área de trabalho. Registre na ${nome || "{nome}"}. Aproxime-se do local para registrar o ponto.`;
+
+function irLocais(){ go("s-locais"); carregarLocais(); }
+function voltarLocais(){ go("s-locais"); carregarLocais(); }
+async function carregarLocais(){
+  $("loc-loading").style.display = "block"; $("loc-lista").innerHTML = "";
+  let d; try { d = await apiGet(EP.locais); } catch(e){ return; }
+  $("loc-loading").style.display = "none";
+  if (!d.ok){ toast("Não foi possível carregar."); return; }
+  LOCAIS = d.locais || []; renderLocais();
+}
+function renderLocais(){
+  if (!LOCAIS.length){ $("loc-lista").innerHTML = `<p class="muted" style="padding:14px 4px">Nenhum local ainda. Clique em <b>+ Novo local</b> pra cadastrar onde o funcionário bate ponto.</p>`; return; }
+  $("loc-lista").innerHTML = LOCAIS.map(l => {
+    const modo = l.modo_geofence === "travar"
+      ? `<span class="loc-badge lb-travar">Travar</span>`
+      : `<span class="loc-badge lb-avisar">Avisar</span>`;
+    const st = l.ativo ? "" : `<span class="loc-badge lb-avisar" style="background:var(--bg-off);color:var(--tx-off)">Inativo</span>`;
+    const acoes = `<button class="act" onclick="abrirLocalForm('${l.id}')">Editar</button>` +
+      (l.ativo ? `<button class="act red" onclick="desativarLocal('${l.id}')">Desativar</button>`
+               : `<button class="act green" onclick="reativarLocal('${l.id}')">Reativar</button>`);
+    return `<div class="loc-card ${l.ativo?"":"inativo"}">
+      <div class="r1"><div><div class="nm">${esc(l.nome)}</div>
+        <div class="meta">Raio ${formatRaio(l.raio_metros)} · ${Number(l.latitude).toFixed(5)}, ${Number(l.longitude).toFixed(5)}</div></div>
+        <div style="display:flex;gap:6px">${modo}${st}</div></div>
+      <div class="acoes">${acoes}</div></div>`;
+  }).join("");
+}
+
+function abrirLocalForm(id){
+  const l = id ? LOCAIS.find(x => x.id === id) : null;
+  const base = LOCAIS.find(x => x.latitude != null); // centro padrão: um local existente
+  LF = l ? { id:l.id, lat:+l.latitude, lon:+l.longitude, raio:+l.raio_metros, modo:l.modo_geofence }
+         : { id:null, lat: base ? +base.latitude : -23.55, lon: base ? +base.longitude : -46.633, raio:200, modo:"avisar" };
+  $("lf-titulo").textContent = l ? "Editar local" : "Novo local";
+  $("lf-nome").value = l ? l.nome : "";
+  $("lf-raio").value = LF.raio; $("lf-raio-txt").textContent = formatRaio(LF.raio);
+  setModo(LF.modo); $("lf-err").textContent = "";
+  go("s-local-form");
+  setTimeout(initMap, 60);
+}
+function initMap(){
+  if (typeof L === "undefined"){ toast("Mapa não carregou (sem internet?)."); return; }
+  if (!MAP){
+    MAP = L.map("map");
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19, attribution:"© OpenStreetMap" }).addTo(MAP);
+    MARKER = L.marker([0,0], { draggable:true }).addTo(MAP);
+    CIRCLE = L.circle([0,0], { radius:200, color:"#E1592A", fillColor:"#E1592A", fillOpacity:.12, weight:2 }).addTo(MAP);
+    MARKER.on("dragend", () => { const p = MARKER.getLatLng(); setPino(p.lat, p.lng, false); });
+    MAP.on("click", e => setPino(e.latlng.lat, e.latlng.lng, false));
+  }
+  MAP.setView([LF.lat, LF.lon], 16);
+  setPino(LF.lat, LF.lon, true);
+  CIRCLE.setRadius(LF.raio);
+  setTimeout(() => MAP.invalidateSize(), 80);
+}
+function setPino(lat, lon, moveMarker){
+  LF.lat = lat; LF.lon = lon;
+  if (moveMarker && MARKER) MARKER.setLatLng([lat, lon]);
+  if (CIRCLE) CIRCLE.setLatLng([lat, lon]);
+}
+function atualizarRaio(){
+  LF.raio = parseInt($("lf-raio").value, 10);
+  $("lf-raio-txt").textContent = formatRaio(LF.raio);
+  if (CIRCLE) CIRCLE.setRadius(LF.raio);
+}
+function setModo(m){
+  LF.modo = (m === "travar") ? "travar" : "avisar";
+  $("lf-avisar").classList.toggle("on", LF.modo === "avisar");
+  $("lf-travar").classList.toggle("on", LF.modo === "travar");
+  atualizarPreview();
+}
+function atualizarPreview(){
+  const nome = $("lf-nome").value.trim();
+  const box = $("lf-modo-info");
+  if (LF && LF.modo === "travar")
+    box.innerHTML = `<b>Travar:</b> fora do raio, o funcionário <b>não bate ponto</b>. Ele verá:<div class="frase">"${esc(fraseRecusa(nome))}"</div>`;
+  else
+    box.innerHTML = `<b>Avisar:</b> registra mesmo fora do raio e <b>marca pra sua revisão</b> (não bloqueia no campo).`;
+}
+function usarMinhaLocalizacao(){
+  if (!navigator.geolocation){ toast("Sem GPS no navegador."); return; }
+  toast("Buscando sua localização…");
+  navigator.geolocation.getCurrentPosition(p => {
+    if (MAP) MAP.setView([p.coords.latitude, p.coords.longitude], 17);
+    setPino(p.coords.latitude, p.coords.longitude, true);
+  }, () => toast("Não consegui pegar o GPS."), { enableHighAccuracy:true, timeout:12000 });
+}
+function abrirColarCoord(){
+  openModal(`<h3>Colar coordenadas</h3><p>Cole a latitude e longitude (do Google Maps, por ex.).</p>
+    <div class="field"><label>Latitude</label><input id="cc-lat" class="txt" inputmode="decimal" placeholder="-12.669259"></div>
+    <div class="field"><label>Longitude</label><input id="cc-lon" class="txt" inputmode="decimal" placeholder="-38.543518"></div>
+    <div class="err" id="cc-err"></div>
+    <div class="modal-acts"><button class="btn ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn" onclick="aplicarCoord()">Aplicar</button></div>`);
+}
+function aplicarCoord(){
+  const lat = parseFloat($("cc-lat").value.replace(",", ".")), lon = parseFloat($("cc-lon").value.replace(",", "."));
+  if (!(lat >= -90 && lat <= 90) || !(lon >= -180 && lon <= 180)){ $("cc-err").textContent = "Coordenadas inválidas."; return; }
+  closeModal();
+  if (MAP) MAP.setView([lat, lon], 17);
+  setPino(lat, lon, true);
+}
+async function salvarLocal(){
+  const nome = $("lf-nome").value.trim();
+  const err = $("lf-err"); err.textContent = "";
+  if (!nome){ err.textContent = "Dê um nome ao local."; return; }
+  if (LF.lat == null || LF.lon == null){ err.textContent = "Posicione o pino no mapa."; return; }
+  $("lf-salvar").disabled = true;
+  const d = await apiPost(EP.localSalvar, { id: LF.id || undefined, nome, latitude: LF.lat, longitude: LF.lon, raio_metros: LF.raio, modo_geofence: LF.modo });
+  $("lf-salvar").disabled = false;
+  if (d.ok){ toast(LF.id ? "Local atualizado." : "Local cadastrado."); voltarLocais(); }
+  else err.textContent = d.motivo === "coord" ? "Posicione o pino no mapa." : "Não foi possível salvar.";
+}
+const nomeLocal = id => { const l = LOCAIS.find(x => x.id === id); return l ? l.nome : "este local"; };
+async function desativarLocal(id){
+  if (!await confirmar({ titulo:"Desativar local", texto:`Desativar <b>${esc(nomeLocal(id))}</b>? Ele deixa de valer no controle de ponto (a cerca some).`, ok:"Desativar", cor:"red" })) return;
+  const d = await apiPost(EP.localOff, { id }); if (d.ok){ toast("Local desativado."); carregarLocais(); } else toast("Não foi possível.");
+}
+async function reativarLocal(id){
+  if (!await confirmar({ titulo:"Reativar local", texto:`Reativar <b>${esc(nomeLocal(id))}</b>? Ele volta a valer no controle de ponto.`, ok:"Reativar", cor:"green" })) return;
+  const d = await apiPost(EP.localOn, { id }); if (d.ok){ toast("Local reativado."); carregarLocais(); } else toast("Não foi possível.");
+}
+
 /* ---------- Enter nos campos ---------- */
 ["in-email","in-senha"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") fazerLoginDono(); }));
 $("in-nova").addEventListener("keydown", e => { if (e.key === "Enter") fazerTrocaDono(); });
@@ -313,6 +442,18 @@ if (getToken()) entrar(); else go("s-login");
     if (scr === "dia_sem"){ DIA.atraso_configurado=false; DIA.tiles.atrasados=null; DIA.listas.atrasados=[]; }
     if (scr === "dia_descanso"){ DIA.dia_util=false; DIA.tiles.ausentes=null; DIA.tiles.atrasados=null; DIA.listas.ausentes=[]; DIA.listas.atrasados=[]; }
     go("s-dia"); $("dia-loading").style.display="none"; renderDia(); return;
+  }
+  if (scr === "locais"){
+    LOCAIS = [
+      { id:"1", nome:"Makro Boutique", latitude:-12.669259, longitude:-38.543518, raio_metros:80, modo_geofence:"avisar", ativo:true },
+      { id:"2", nome:"Obra Norte", latitude:-12.6912, longitude:-38.3184, raio_metros:250, modo_geofence:"travar", ativo:true },
+      { id:"3", nome:"Depósito Velho", latitude:-12.70, longitude:-38.50, raio_metros:150, modo_geofence:"avisar", ativo:false },
+    ];
+    go("s-locais"); $("loc-loading").style.display="none"; renderLocais(); return;
+  }
+  if (scr === "local"){
+    LOCAIS = [{ id:"2", nome:"Makro Boutique", latitude:-12.669259, longitude:-38.543518, raio_metros:200, modo_geofence:"travar", ativo:true }];
+    abrirLocalForm("2"); return;
   }
   FUNCS = mock; go("s-funcionarios"); $("func-loading").style.display = "none"; renderFuncionarios();
   if (scr === "confirm") confirmar({ titulo:"Desativar funcionário", texto:"Desativar <b>Maria Silva</b>? Ela não conseguirá mais bater ponto.", ok:"Desativar", cor:"red" });

@@ -122,6 +122,29 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
 .det-atraso{color:var(--amber)} .det-extra{color:var(--orange)} .det-ausente{color:var(--red)}
 .dia-vazio{color:var(--muted);font-size:14px;padding:8px 2px}
 
+/* ---------- LOCAIS ---------- */
+.loc-card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 8px 24px -20px rgba(31,42,58,.5)}
+.loc-card.inativo{opacity:.65}
+.loc-card .r1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.loc-card .nm{font-size:16px;font-weight:700}
+.loc-card .meta{font-size:13px;color:#59616C;margin-top:3px}
+.loc-badge{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:12px;white-space:nowrap}
+.lb-avisar{background:var(--bb-bg);color:var(--bb-tx)} .lb-travar{background:var(--bg-prov);color:var(--tx-prov)}
+.loc-card .acoes{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+
+/* form */
+.lf-lbl{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:14px 0 8px 4px}
+#map{height:300px;border-radius:16px;overflow:hidden;border:1.5px solid var(--line);z-index:1}
+.leaflet-container{font:inherit}
+.lf-maprow{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.slider{width:100%;height:34px;accent-color:var(--orange);cursor:pointer}
+.segbtn{display:flex;gap:0;border:1.5px solid var(--line);border-radius:13px;overflow:hidden;max-width:320px}
+.seg{flex:1;background:#fff;border:none;padding:12px;font-size:15px;font-weight:700;color:var(--muted);cursor:pointer}
+.seg.on{color:#fff}
+#lf-avisar.on{background:var(--blue)} #lf-travar.on{background:var(--amber)}
+.lf-info{font-size:13.5px;color:var(--muted);line-height:1.5;margin-top:10px;padding:12px 14px;background:#F7F8F9;border-radius:12px}
+.lf-info .frase{color:var(--ink);font-weight:600;margin-top:6px}
+
 /* ---------- MODAL ---------- */
 .modal-bg{position:fixed;inset:0;background:rgba(15,23,32,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
 .modal-bg.show{display:flex}
