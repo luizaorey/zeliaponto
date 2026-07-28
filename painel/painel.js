@@ -377,16 +377,18 @@ function usarMinhaLocalizacao(){
   }, () => toast("Não consegui pegar o GPS."), { enableHighAccuracy:true, timeout:12000 });
 }
 function abrirColarCoord(){
-  openModal(`<h3>Colar coordenadas</h3><p>Cole a latitude e longitude (do Google Maps, por ex.).</p>
-    <div class="field"><label>Latitude</label><input id="cc-lat" class="txt" inputmode="decimal" placeholder="-12.669259"></div>
-    <div class="field"><label>Longitude</label><input id="cc-lon" class="txt" inputmode="decimal" placeholder="-38.543518"></div>
+  const lat0 = (LF && LF.lat != null) ? (+LF.lat).toFixed(6) : "";
+  const lon0 = (LF && LF.lon != null) ? (+LF.lon).toFixed(6) : "";
+  openModal(`<h3>Colar coordenadas</h3><p>São as coordenadas do pino agora. Cole outras (do Google Maps, por ex.) pra mover.</p>
+    <div class="field"><label>Latitude</label><input id="cc-lat" class="txt" inputmode="decimal" value="${lat0}" placeholder="-12.669259"></div>
+    <div class="field"><label>Longitude</label><input id="cc-lon" class="txt" inputmode="decimal" value="${lon0}" placeholder="-38.543518"></div>
     <div class="err" id="cc-err"></div>
     <div class="modal-acts"><button class="btn ghost" onclick="closeModal()">Cancelar</button>
       <button class="btn" onclick="aplicarCoord()">Aplicar</button></div>`);
 }
 function aplicarCoord(){
-  const lat = parseFloat($("cc-lat").value.replace(",", ".")), lon = parseFloat($("cc-lon").value.replace(",", "."));
-  if (!(lat >= -90 && lat <= 90) || !(lon >= -180 && lon <= 180)){ $("cc-err").textContent = "Coordenadas inválidas."; return; }
+  const lat = parseFloat(($("cc-lat").value||"").replace(",", ".")), lon = parseFloat(($("cc-lon").value||"").replace(",", "."));
+  if (!(lat >= -90 && lat <= 90) || !(lon >= -180 && lon <= 180)){ $("cc-err").textContent = "Digite latitude e longitude válidas."; return; }
   closeModal();
   if (MAP) MAP.setView([lat, lon], 17);
   setPino(lat, lon, true);
