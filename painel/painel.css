@@ -102,6 +102,8 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
 .dtile .k{font-size:13px;font-weight:700;opacity:.95}
 .dtile .n{font-size:38px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;margin:6px 0}
 .dtile .sub{font-size:12.5px;opacity:1;font-weight:700;min-height:15px}
+/* sub-texto BRANCO só nos tiles coloridos (o global .sub é cinza/--muted, usado no login) */
+.dt-presentes .sub,.dt-ausentes .sub,.dt-atrasados .sub,.dt-extra .sub{color:#fff}
 .dt-presentes{background:var(--green)}            /* verde: tudo certo */
 .dt-ausentes {background:var(--red)}              /* vermelho: ausência é O problema do dia */
 .dt-atrasados{background:var(--amber)}            /* âmbar: atenção */
