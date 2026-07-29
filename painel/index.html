@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0B2A33">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="painel.css?v=9">
+<link rel="stylesheet" href="painel.css?v=10">
 <title>Zélia · Painel</title>
 </head>
 <body>
@@ -63,9 +63,9 @@
           <span id="aprov-badge" class="cbadge" style="display:none"></span>
           <div class="ic ic-aprov"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></div>
           <div class="nc-t">Aprovações</div><div class="nc-d">Pendências fora do raio</div></button>
-        <div class="navcard soon"><span class="selo">Em breve</span>
-          <div class="ic"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
-          <div class="nc-t">Relatórios</div><div class="nc-d">Fechamento mensal, CSV</div></div>
+        <button class="navcard" onclick="irRelatorios()">
+          <div class="ic ic-rel"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
+          <div class="nc-t">Relatórios</div><div class="nc-d">Fechamento mensal, CSV</div></button>
       </div>
     </div>
   </section>
@@ -162,12 +162,30 @@
     </div>
   </section>
 
+  <!-- RELATÓRIOS -->
+  <section id="s-relatorios" class="screen painel">
+    <div class="wrap">
+      <div class="toolbar">
+        <button class="linkbtn back" onclick="irHome()">‹ Início</button>
+        <h2>Relatórios</h2>
+        <button class="btn small ghost" id="rel-csv" onclick="baixarCSV()">Baixar CSV</button>
+      </div>
+      <div class="rel-mes">
+        <button class="mesnav" onclick="mudarMes(-1)" aria-label="Mês anterior">‹</button>
+        <span id="rel-mes-lbl">—</span>
+        <button class="mesnav" id="rel-next" onclick="mudarMes(1)" aria-label="Próximo mês">›</button>
+      </div>
+      <div id="rel-loading" class="muted" style="padding:20px 4px">Carregando…</div>
+      <div id="rel-conteudo"></div>
+    </div>
+  </section>
+
 </main>
 
 <!-- MODAL genérico (confirmação / formulário) -->
 <div id="modal-bg" class="modal-bg"><div id="modal" class="modal"></div></div>
 <div id="toast" class="toast"></div>
 
-<script src="painel.js?v=9"></script>
+<script src="painel.js?v=10"></script>
 </body>
 </html>

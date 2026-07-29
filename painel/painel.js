@@ -13,6 +13,7 @@ const EP = {
   locais: WB + "/zelia-locais", localSalvar: WB + "/zelia-local-salvar",
   localOff: WB + "/zelia-local-desativar", localOn: WB + "/zelia-local-reativar",
   aprovacoes: WB + "/zelia-aprovacoes-lista", decidir: WB + "/zelia-aprovacao-decidir",
+  relatorio: WB + "/zelia-relatorio-mes",
 };
 const LS_TOKEN = "zelia_painel_token", LS_NOME = "zelia_painel_nome", LS_EMPRESA = "zelia_painel_empresa";
 
@@ -36,7 +37,7 @@ function togglePw(btn){
 function go(id){
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   $(id).classList.add("active");
-  const logged = (id === "s-home" || id === "s-funcionarios" || id === "s-dia" || id === "s-locais" || id === "s-local-form" || id === "s-aprovacoes");
+  const logged = (id === "s-home" || id === "s-funcionarios" || id === "s-dia" || id === "s-locais" || id === "s-local-form" || id === "s-aprovacoes" || id === "s-relatorios");
   $("topbar").style.display = logged ? "flex" : "none";
 }
 
@@ -491,6 +492,92 @@ async function decidir(id, decisao, i){
   else toast("Não foi possível.");
 }
 
+/* ---------- RELATÓRIOS ---------- */
+let REL = null, RELMES = null;
+const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const DOW = ["dom","seg","ter","qua","qui","sex","sáb"];
+function mesAtual(){ const p = new Intl.DateTimeFormat("en-CA",{ timeZone:"America/Bahia", year:"numeric", month:"2-digit" }).formatToParts(new Date()).reduce((o,x)=>(o[x.type]=x.value,o),{}); return `${p.year}-${p.month}`; }
+function mesLabel(m){ const [y,mm] = m.split("-").map(Number); const n = MESES[mm-1]; return `${n[0].toUpperCase()+n.slice(1)} ${y}`; }
+function hMin(m){ if (m == null) return "—"; const neg = m < 0; m = Math.abs(Math.round(m)); return (neg?"−":"") + Math.floor(m/60) + "h" + String(m%60).padStart(2,"0"); }
+function hSaldo(m){ if (m == null) return "—"; m = Math.round(m); if (m === 0) return "0h00"; const s = m>0?"+":"−"; m = Math.abs(m); return s + Math.floor(m/60) + "h" + String(m%60).padStart(2,"0"); }
+function irRelatorios(){ RELMES = mesAtual(); go("s-relatorios"); carregarRelatorio(); }
+function mudarMes(delta){
+  let [y,m] = RELMES.split("-").map(Number); m += delta; if (m < 1){ m = 12; y--; } if (m > 12){ m = 1; y++; }
+  const novo = `${y}-${String(m).padStart(2,"0")}`;
+  if (novo > mesAtual()) return; // não navega pro futuro
+  RELMES = novo; carregarRelatorio();
+}
+async function carregarRelatorio(){
+  $("rel-mes-lbl").textContent = mesLabel(RELMES);
+  $("rel-next").disabled = (RELMES >= mesAtual());
+  $("rel-loading").style.display = "block"; $("rel-conteudo").innerHTML = "";
+  const url = EP.relatorio + "?token=" + encodeURIComponent(getToken()) + "&mes=" + RELMES;
+  let r, d; try { r = await fetch(url); d = await r.json().catch(() => ({})); } catch(e){ toast("Sem conexão. Tente de novo."); return; }
+  if (r.status === 401 || (d && d.motivo === "sessao_invalida")){ sair(true); return; }
+  $("rel-loading").style.display = "none";
+  if (!d.ok){ toast("Não foi possível carregar."); return; }
+  renderRelatorio(d);
+}
+function renderRelatorio(d){
+  REL = d; const fs = d.funcionarios || [];
+  $("rel-csv").disabled = !fs.length;
+  if (!fs.length){ $("rel-conteudo").innerHTML = `<p class="muted" style="padding:16px 4px">Nenhum funcionário com dados neste mês.</p>`; return; }
+  const t = d.totais || {}, ac = d.atraso_configurado;
+  const cls = m => m>0?"pos":m<0?"neg":"";
+  const rows = fs.map((f,i) => {
+    const pend = f.pendencias>0 ? `<span class="rel-pend" title="${f.pendencias} batida(s) aguardando aprovação">⚠ ${f.pendencias}</span>` : `<span class="muted">—</span>`;
+    const atr = ac ? (f.dias_atraso>0 ? `${f.dias_atraso}d · ${hMin(f.atraso_min)}` : `<span class="muted">—</span>`) : `<span class="muted">—</span>`;
+    return `<tr onclick="verDetalheRel(${i})">
+      <td class="rel-nome">${esc(f.nome)}${f.ativo?"":' <span class="rel-inativo">inativo</span>'}</td>
+      <td class="num">${f.dias_trabalhados}</td>
+      <td class="num">${hMin(f.trabalhado_min)}</td>
+      <td class="num ${cls(f.saldo_min)}">${hSaldo(f.saldo_min)}</td>
+      <td class="num ${f.faltas>0?'neg':''}">${f.faltas}</td>
+      <td class="num">${atr}</td>
+      <td class="num">${pend}</td></tr>`;
+  }).join("");
+  $("rel-conteudo").innerHTML = `
+    <div class="rel-scroll"><table class="rel-tbl">
+      <thead><tr><th>Funcionário</th><th class="num">Dias</th><th class="num">Trabalhado</th><th class="num">Saldo</th><th class="num">Faltas</th><th class="num">Atrasos</th><th class="num">Pend.</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr><td>Total da empresa</td><td class="num">—</td><td class="num">${hMin(t.trabalhado_min)}</td><td class="num ${cls(t.saldo_min)}">${hSaldo(t.saldo_min)}</td><td class="num ${t.faltas>0?'neg':''}">${t.faltas}</td><td class="num">—</td><td class="num">${t.pendencias||0}</td></tr></tfoot>
+    </table></div>
+    <p class="rel-nota">Clique num funcionário pra ver o detalhe por dia. <b>Saldo</b> = trabalhado − carga. <b>Faltas</b> = dias úteis (seg–sex) sem batida. Batidas recusadas não entram no cálculo; pendentes contam e aparecem em ⚠.</p>`;
+}
+function verDetalheRel(i){
+  const f = REL.funcionarios[i]; if (!f) return;
+  const cls = m => m>0?"pos":m<0?"neg":"";
+  const stLbl = { completo:"", falta:"falta", incompleto:"incompleto", em_andamento:"em andamento", fim_de_semana:"trabalhou no fim de semana" };
+  const linhas = (f.dias||[]).slice().reverse().map(dd => {
+    const rc = dd.status==="falta" ? "d-falta" : (dd.status==="completo" ? "" : "d-inc");
+    const [ , M, D] = dd.data.split("-");
+    const st = stLbl[dd.status] != null ? stLbl[dd.status] : dd.status;
+    const ultima = dd.atraso_min ? `<span class="neg">atraso ${hMin(dd.atraso_min)}</span>` : (st ? `<span class="muted">${st}</span>` : "—");
+    return `<tr class="${rc}">
+      <td>${D}/${M} <span class="muted">${DOW[dd.dow]}</span></td>
+      <td>${dd.entrada||"—"}</td><td>${dd.saida||"—"}</td>
+      <td class="num">${hMin(dd.trabalhado_min)}</td>
+      <td class="num ${cls(dd.saldo_min)}">${hSaldo(dd.saldo_min)}</td>
+      <td class="num">${ultima}</td></tr>`;
+  }).join("");
+  openModal(`<div class="rel-det"><h3>${esc(f.nome)}</h3>
+    <div class="rel-det-sub">${mesLabel(REL.mes)} · ${f.dias_trabalhados} dias · ${hMin(f.trabalhado_min)} · saldo <b class="${cls(f.saldo_min)}">${hSaldo(f.saldo_min)}</b></div>
+    <div class="rel-scroll"><table class="rel-tbl det"><thead><tr><th>Dia</th><th>Entrada</th><th>Saída</th><th class="num">Trab.</th><th class="num">Saldo</th><th>Atraso / situação</th></tr></thead><tbody>${linhas}</tbody></table></div>
+    <div class="modal-acts"><button class="btn ghost" onclick="closeModal()">Fechar</button></div></div>`);
+}
+function baixarCSV(){
+  if (!REL || !REL.funcionarios || !REL.funcionarios.length) return;
+  const head = ["Funcionário","Dias trabalhados","Trabalhado","Saldo","Faltas","Dias com atraso","Atraso total","Pendências"];
+  const asc = s => String(s).replace(/−/g,"-");
+  const rows = REL.funcionarios.map(f => [f.nome, f.dias_trabalhados, asc(hMin(f.trabalhado_min)), asc(hSaldo(f.saldo_min)), f.faltas, f.dias_atraso, asc(hMin(f.atraso_min)), f.pendencias]);
+  const q = v => { v = String(v); return /[";\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; };
+  const csv = [head, ...rows].map(r => r.map(q).join(";")).join("\r\n");
+  const blob = new Blob(["﻿"+csv], { type:"text/csv;charset=utf-8" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `zelia-relatorio-${REL.mes}.csv`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+  toast("CSV baixado.");
+}
+
 /* ---------- modo demo local (SÓ localhost — nunca em produção) — p/ screenshots/revisão ---------- */
 (function(){
   if (location.hostname !== "localhost" && location.hostname !== "127.0.0.1") return;
@@ -526,6 +613,20 @@ async function decidir(id, decisao, i){
   if (scr === "local"){
     LOCAIS = [{ id:"2", nome:"Makro Boutique", latitude:-12.669259, longitude:-38.543518, raio_metros:200, modo_geofence:"travar", ativo:true }];
     abrirLocalForm("2"); return;
+  }
+  if (scr === "relatorio"){
+    RELMES = "2026-07"; $("rel-mes-lbl").textContent = mesLabel(RELMES); $("rel-loading").style.display = "none"; $("rel-next").disabled = true;
+    renderRelatorio({ ok:true, mes:"2026-07", atraso_configurado:true,
+      funcionarios:[
+        { id:"1", nome:"amalia mutti leite de almeida", ativo:true, dias_trabalhados:7, trabalhado_min:3364, saldo_min:-33, faltas:12, dias_atraso:1, atraso_min:35, pendencias:0,
+          dias:[{data:"2026-07-01",dow:2,status:"completo",entrada:"08:00",saida:"17:00",trabalhado_min:480,saldo_min:0,atraso_min:null},
+                {data:"2026-07-06",dow:0+1,status:"completo",entrada:"08:35",saida:"17:00",trabalhado_min:445,saldo_min:-35,atraso_min:35},
+                {data:"2026-07-07",dow:2,status:"falta",entrada:null,saida:null,trabalhado_min:null,saldo_min:-480,atraso_min:null}] },
+        { id:"2", nome:"luiz antonio santos pereira", ativo:true, dias_trabalhados:15, trabalhado_min:7350, saldo_min:150, faltas:1, dias_atraso:2, atraso_min:41, pendencias:2, dias:[] },
+        { id:"3", nome:"Teste Multi A", ativo:false, dias_trabalhados:3, trabalhado_min:1080, saldo_min:0, faltas:0, dias_atraso:0, atraso_min:0, pendencias:0, dias:[] },
+      ],
+      totais:{ trabalhado_min:11794, saldo_min:117, faltas:13, pendencias:2 } });
+    go("s-relatorios"); return;
   }
   if (scr.indexOf("aprov") === 0){
     const F = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23cfd8dc'/%3E%3Ccircle cx='32' cy='25' r='12' fill='%2390a4ae'/%3E%3Crect x='13' y='41' width='38' height='26' rx='13' fill='%2390a4ae'/%3E%3C/svg%3E";

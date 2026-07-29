@@ -188,6 +188,35 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
 .foto-modal img{max-width:100%;max-height:56vh;border-radius:12px;background:#E7E8EB}
 .fm-cap{margin:12px 0 4px;color:var(--ink);font-size:14px}
 
+/* ---------- RELATÓRIOS ---------- */
+.navcard .ic-rel{background:var(--blue)}
+.rel-mes{display:flex;align-items:center;justify-content:center;gap:16px;margin:2px 0 16px}
+#rel-mes-lbl{font-size:17px;font-weight:800;color:var(--ink);min-width:160px;text-align:center}
+.mesnav{width:36px;height:36px;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-size:18px;font-weight:800;color:var(--ink);cursor:pointer;line-height:1}
+.mesnav:hover{border-color:var(--orange);color:var(--orange-d)}
+.mesnav:disabled{opacity:.35;cursor:not-allowed;border-color:var(--line);color:var(--muted)}
+.rel-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.rel-tbl{width:100%;border-collapse:collapse;font-size:14px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;overflow:hidden}
+.rel-tbl th,.rel-tbl td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+.rel-tbl thead th{background:#F7F8F9;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.rel-tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+.rel-tbl tbody tr{cursor:pointer}
+.rel-tbl tbody tr:hover{background:#F6F8FB}
+.rel-tbl .rel-nome{font-weight:700;color:var(--ink)}
+.rel-inativo{font-size:11px;font-weight:700;color:var(--tx-off);background:var(--bg-off);padding:1px 6px;border-radius:6px;margin-left:4px}
+.rel-tbl tfoot td{font-weight:800;background:#FaFbFc;border-top:2px solid var(--line);border-bottom:none}
+.rel-tbl .pos{color:var(--green)} .rel-tbl .neg{color:var(--red)}
+.rel-pend{color:var(--tx-prov);background:var(--bg-prov);font-weight:700;padding:2px 8px;border-radius:8px;font-size:12.5px}
+.rel-nota{font-size:12.5px;color:var(--muted);margin:12px 4px 0;line-height:1.5}
+.modal:has(.rel-det){max-width:680px}
+.rel-det h3{margin-bottom:2px}
+.rel-det-sub{font-size:13.5px;color:var(--muted);margin-bottom:12px}
+.rel-det-sub .pos{color:var(--green)} .rel-det-sub .neg{color:var(--red)}
+.rel-tbl.det{font-size:13.5px}
+.rel-tbl.det td,.rel-tbl.det th{padding:8px 12px}
+.rel-tbl.det .d-falta td{background:#FDECEC}
+.rel-tbl.det .d-inc td{color:var(--muted)}
+
 /* ---------- TOAST ---------- */
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:13px;font-size:15px;max-width:90%;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s;z-index:60}
 .toast.show{opacity:1}
