@@ -212,7 +212,9 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
 .rel-det h3{margin-bottom:2px}
 .rel-det-sub{font-size:13.5px;color:var(--muted);margin-bottom:12px}
 .rel-det-sub .pos{color:var(--green)} .rel-det-sub .neg{color:var(--red)}
+.rel-det .rel-scroll{max-height:56vh;overflow-y:auto}
 .rel-tbl.det{font-size:13.5px}
+.rel-tbl.det thead th{position:sticky;top:0}
 .rel-tbl.det td,.rel-tbl.det th{padding:8px 12px}
 .rel-tbl.det .d-falta td{background:#FDECEC}
 .rel-tbl.det .d-inc td{color:var(--muted)}
