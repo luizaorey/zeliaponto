@@ -219,6 +219,27 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
 .rel-tbl.det .d-falta td{background:#FDECEC}
 .rel-tbl.det .d-inc td{color:var(--muted)}
 
+/* ---------- CONFIGURAÇÕES ---------- */
+.navcard .ic-cfg{background:var(--navy)}
+.wrap.narrow{max-width:620px}
+.cfg-sec{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:18px 18px 20px;margin-bottom:16px}
+.cfg-sec h3{font-size:16px;margin-bottom:4px}
+.cfg-hint{font-size:13px;color:var(--muted);margin:0 0 14px;line-height:1.45}
+.cfg-row{display:flex;gap:14px;flex-wrap:wrap}
+.cfg-row .field{flex:1;min-width:130px}
+.txt.tw{max-width:190px}
+.cfg-switch{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.cfg-switch:last-of-type{border-bottom:none}
+.cfg-switch > span{display:flex;flex-direction:column;gap:2px}
+.cfg-switch b{font-size:15px;font-weight:700;color:var(--ink)}
+.cfg-switch small{font-size:12.5px;color:var(--muted)}
+.cfg-switch input{position:absolute;opacity:0;pointer-events:none}
+.cfg-switch i{flex-shrink:0;width:46px;height:27px;border-radius:14px;background:#CDD2D8;position:relative;transition:background .2s}
+.cfg-switch i::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.cfg-switch input:checked + i{background:var(--green)}
+.cfg-switch input:checked + i::after{transform:translateX(19px)}
+.cfg-switch input:focus-visible + i{outline:2px solid var(--blue);outline-offset:2px}
+
 /* ---------- TOAST ---------- */
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:13px;font-size:15px;max-width:90%;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s;z-index:60}
 .toast.show{opacity:1}

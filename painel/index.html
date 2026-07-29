@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0B2A33">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="painel.css?v=11">
+<link rel="stylesheet" href="painel.css?v=12">
 <title>Zélia · Painel</title>
 </head>
 <body>
@@ -66,6 +66,9 @@
         <button class="navcard" onclick="irRelatorios()">
           <div class="ic ic-rel"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
           <div class="nc-t">Relatórios</div><div class="nc-d">Fechamento mensal, CSV</div></button>
+        <button class="navcard" onclick="irConfig()">
+          <div class="ic ic-cfg"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+          <div class="nc-t">Configurações</div><div class="nc-d">WhatsApp, jornada, avisos</div></button>
       </div>
     </div>
   </section>
@@ -180,12 +183,62 @@
     </div>
   </section>
 
+  <!-- CONFIGURAÇÕES -->
+  <section id="s-config" class="screen painel">
+    <div class="wrap narrow">
+      <div class="toolbar">
+        <button class="linkbtn back" onclick="irHome()">‹ Início</button>
+        <h2>Configurações</h2>
+      </div>
+      <div id="cfg-loading" class="muted" style="padding:20px 4px">Carregando…</div>
+      <div id="cfg-form" style="display:none">
+
+        <div class="cfg-sec">
+          <h3>WhatsApp da Zélia</h3>
+          <p class="cfg-hint">Onde a Zélia te manda os avisos, o resumo do dia e o fechamento do mês.</p>
+          <div class="field"><label>Número (com DDD)</label>
+            <input id="cfg-whats" class="txt" inputmode="tel" placeholder="71 98888-7777"></div>
+        </div>
+
+        <div class="cfg-sec">
+          <h3>O que a Zélia te avisa</h3>
+          <label class="cfg-switch"><span><b>Batida fora do raio</b><small>quando alguém bate longe do local</small></span>
+            <input type="checkbox" id="cfg-fora"><i></i></label>
+          <label class="cfg-switch"><span><b>Atrasos</b><small>entrada depois do horário previsto</small></span>
+            <input type="checkbox" id="cfg-atraso"><i></i></label>
+          <label class="cfg-switch"><span><b>Fechamento mensal</b><small>o resumo de horas no fim do mês</small></span>
+            <input type="checkbox" id="cfg-fecham"><i></i></label>
+          <div class="field" style="margin-top:16px"><label>Horário do resumo diário</label>
+            <input id="cfg-resumo" class="txt tw" type="time"></div>
+        </div>
+
+        <div class="cfg-sec">
+          <h3>Jornada</h3>
+          <p class="cfg-hint">Base pra marcar atrasos. Deixe a entrada em branco pra não controlar atraso.</p>
+          <div class="cfg-row">
+            <div class="field"><label>Horário de entrada</label><input id="cfg-entrada" class="txt tw" type="time"></div>
+            <div class="field"><label>Tolerância (min)</label><input id="cfg-tol" class="txt tw" type="number" min="0" max="180" step="5"></div>
+          </div>
+        </div>
+
+        <div class="cfg-sec">
+          <h3>Hora extra</h3>
+          <p class="cfg-hint">A Zélia te avisa quando alguém passa desse teto de extra na semana.</p>
+          <div class="field"><label>Teto semanal (horas)</label><input id="cfg-extra" class="txt tw" type="number" min="0" max="100" step="0.5"></div>
+        </div>
+
+        <div class="err" id="cfg-err"></div>
+        <button class="btn" id="cfg-salvar" onclick="salvarConfig()">Salvar configurações</button>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <!-- MODAL genérico (confirmação / formulário) -->
 <div id="modal-bg" class="modal-bg"><div id="modal" class="modal"></div></div>
 <div id="toast" class="toast"></div>
 
-<script src="painel.js?v=11"></script>
+<script src="painel.js?v=12"></script>
 </body>
 </html>

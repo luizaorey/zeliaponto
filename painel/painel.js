@@ -9,7 +9,7 @@ const EP = {
   lista: WB + "/zelia-func-lista", criar: WB + "/zelia-func-criar",
   desativar: WB + "/zelia-func-desativar", reativar: WB + "/zelia-func-reativar",
   reset: WB + "/zelia-func-reset-senha",
-  dia: WB + "/zelia-painel-dia", config: WB + "/zelia-config-salvar",
+  dia: WB + "/zelia-painel-dia", config: WB + "/zelia-config-salvar", configLer: WB + "/zelia-config-ler",
   locais: WB + "/zelia-locais", localSalvar: WB + "/zelia-local-salvar",
   localOff: WB + "/zelia-local-desativar", localOn: WB + "/zelia-local-reativar",
   aprovacoes: WB + "/zelia-aprovacoes-lista", decidir: WB + "/zelia-aprovacao-decidir",
@@ -37,7 +37,7 @@ function togglePw(btn){
 function go(id){
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   $(id).classList.add("active");
-  const logged = (id === "s-home" || id === "s-funcionarios" || id === "s-dia" || id === "s-locais" || id === "s-local-form" || id === "s-aprovacoes" || id === "s-relatorios");
+  const logged = (id === "s-home" || id === "s-funcionarios" || id === "s-dia" || id === "s-locais" || id === "s-local-form" || id === "s-aprovacoes" || id === "s-relatorios" || id === "s-config");
   $("topbar").style.display = logged ? "flex" : "none";
 }
 
@@ -578,6 +578,54 @@ function baixarCSV(){
   toast("CSV baixado.");
 }
 
+/* ---------- CONFIGURAÇÕES ---------- */
+let CFG = null;
+function irConfig(){ go("s-config"); carregarConfig(); }
+function fmtWhats(w){
+  w = String(w||"").replace(/\D/g,""); if (w.startsWith("55")) w = w.slice(2);
+  if (w.length < 3) return w;
+  const ddd = w.slice(0,2), rest = w.slice(2);
+  if (!rest) return ddd;
+  return rest.length > 4 ? `${ddd} ${rest.slice(0,rest.length-4)}-${rest.slice(-4)}` : `${ddd} ${rest}`;
+}
+function whatsDigits(v){ let w = String(v||"").replace(/\D/g,""); if (!w) return ""; if (!w.startsWith("55")) w = "55"+w; return w; }
+async function carregarConfig(){
+  $("cfg-loading").style.display = "block"; $("cfg-form").style.display = "none"; $("cfg-err").textContent = "";
+  let d; try { d = await apiGet(EP.configLer); } catch(e){ return; }
+  if (!d.ok){ toast("Não foi possível carregar."); return; }
+  CFG = d.config || {};
+  $("cfg-whats").value = fmtWhats(CFG.whatsapp_dono);
+  $("cfg-fora").checked = CFG.alerta_fora_raio !== false;
+  $("cfg-atraso").checked = CFG.alerta_atraso !== false;
+  $("cfg-fecham").checked = CFG.fechamento_mensal !== false;
+  $("cfg-resumo").value = CFG.horario_resumo_diario || "18:30";
+  $("cfg-entrada").value = CFG.entrada_prevista || "";
+  $("cfg-tol").value = CFG.tolerancia_minutos != null ? CFG.tolerancia_minutos : 10;
+  $("cfg-extra").value = (CFG.limite_extra_semanal_minutos != null ? CFG.limite_extra_semanal_minutos : 600) / 60;
+  $("cfg-loading").style.display = "none"; $("cfg-form").style.display = "block";
+}
+async function salvarConfig(){
+  const err = $("cfg-err"); err.textContent = "";
+  const w = whatsDigits($("cfg-whats").value);
+  if (w && (w.length < 12 || w.length > 13)){ err.textContent = "WhatsApp inválido — coloque DDD + número."; return; }
+  const tol = parseInt($("cfg-tol").value, 10);
+  const extraH = parseFloat($("cfg-extra").value);
+  const payload = {
+    whatsapp_dono: w,
+    horario_resumo_diario: $("cfg-resumo").value || "18:30",
+    limite_extra_semanal_minutos: Math.round((isNaN(extraH) ? 10 : extraH) * 60),
+    entrada_prevista: $("cfg-entrada").value.trim(),          // "" limpa (não controla atraso)
+    tolerancia_minutos: (tol >= 0 && tol <= 180) ? tol : 10,
+    alerta_fora_raio: $("cfg-fora").checked,
+    alerta_atraso: $("cfg-atraso").checked,
+    fechamento_mensal: $("cfg-fecham").checked,
+  };
+  $("cfg-salvar").disabled = true;
+  let d; try { d = await apiPost(EP.config, payload); } finally { $("cfg-salvar").disabled = false; }
+  if (d && d.ok){ toast("Configurações salvas."); irHome(); }
+  else err.textContent = "Não foi possível salvar.";
+}
+
 /* ---------- modo demo local (SÓ localhost — nunca em produção) — p/ screenshots/revisão ---------- */
 (function(){
   if (location.hostname !== "localhost" && location.hostname !== "127.0.0.1") return;
@@ -613,6 +661,13 @@ function baixarCSV(){
   if (scr === "local"){
     LOCAIS = [{ id:"2", nome:"Makro Boutique", latitude:-12.669259, longitude:-38.543518, raio_metros:200, modo_geofence:"travar", ativo:true }];
     abrirLocalForm("2"); return;
+  }
+  if (scr === "config"){
+    CFG = { whatsapp_dono:"5571988887777", alerta_fora_raio:true, alerta_atraso:true, fechamento_mensal:true, horario_resumo_diario:"18:30", entrada_prevista:"08:00", tolerancia_minutos:10, limite_extra_semanal_minutos:600 };
+    go("s-config");
+    $("cfg-whats").value = fmtWhats(CFG.whatsapp_dono); $("cfg-fora").checked = true; $("cfg-atraso").checked = true; $("cfg-fecham").checked = true;
+    $("cfg-resumo").value = "18:30"; $("cfg-entrada").value = "08:00"; $("cfg-tol").value = 10; $("cfg-extra").value = 10;
+    $("cfg-loading").style.display = "none"; $("cfg-form").style.display = "block"; return;
   }
   if (scr === "relatorio"){
     RELMES = "2026-07"; $("rel-mes-lbl").textContent = mesLabel(RELMES); $("rel-loading").style.display = "none"; $("rel-next").disabled = true;
