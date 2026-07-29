@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0B2A33">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="painel.css?v=13">
+<link rel="stylesheet" href="painel.css?v=14">
 <title>Zélia · Painel</title>
 </head>
 <body>
@@ -210,6 +210,8 @@
             <input type="checkbox" id="cfg-extra-sw"><i></i></label>
           <label class="cfg-switch"><span><b>Fechamento mensal</b><small>o resumo de horas no fim do mês</small></span>
             <input type="checkbox" id="cfg-fecham"><i></i></label>
+          <label class="cfg-switch"><span><b>Resumo diário</b><small>o apanhado do dia no horário abaixo</small></span>
+            <input type="checkbox" id="cfg-resumo-sw"><i></i></label>
           <div class="field" style="margin-top:16px"><label>Horário do resumo diário</label>
             <input id="cfg-resumo" class="txt tw" type="time"></div>
         </div>
@@ -241,6 +243,6 @@
 <div id="modal-bg" class="modal-bg"><div id="modal" class="modal"></div></div>
 <div id="toast" class="toast"></div>
 
-<script src="painel.js?v=13"></script>
+<script src="painel.js?v=14"></script>
 </body>
 </html>

@@ -598,6 +598,7 @@ async function carregarConfig(){
   $("cfg-fora").checked = CFG.alerta_fora_raio !== false;
   $("cfg-atraso").checked = CFG.alerta_atraso !== false;
   $("cfg-extra-sw").checked = CFG.alerta_extra !== false;
+  $("cfg-resumo-sw").checked = CFG.resumo_diario !== false;
   $("cfg-fecham").checked = CFG.fechamento_mensal !== false;
   $("cfg-resumo").value = CFG.horario_resumo_diario || "18:30";
   $("cfg-entrada").value = CFG.entrada_prevista || "";
@@ -620,6 +621,7 @@ async function salvarConfig(){
     alerta_fora_raio: $("cfg-fora").checked,
     alerta_atraso: $("cfg-atraso").checked,
     alerta_extra: $("cfg-extra-sw").checked,
+    resumo_diario: $("cfg-resumo-sw").checked,
     fechamento_mensal: $("cfg-fecham").checked,
   };
   $("cfg-salvar").disabled = true;
@@ -667,7 +669,7 @@ async function salvarConfig(){
   if (scr === "config"){
     CFG = { whatsapp_dono:"5571988887777", alerta_fora_raio:true, alerta_atraso:true, fechamento_mensal:true, horario_resumo_diario:"18:30", entrada_prevista:"08:00", tolerancia_minutos:10, limite_extra_semanal_minutos:600 };
     go("s-config");
-    $("cfg-whats").value = fmtWhats(CFG.whatsapp_dono); $("cfg-fora").checked = true; $("cfg-atraso").checked = true; $("cfg-extra-sw").checked = true; $("cfg-fecham").checked = true;
+    $("cfg-whats").value = fmtWhats(CFG.whatsapp_dono); $("cfg-fora").checked = true; $("cfg-atraso").checked = true; $("cfg-extra-sw").checked = true; $("cfg-resumo-sw").checked = true; $("cfg-fecham").checked = true;
     $("cfg-resumo").value = "18:30"; $("cfg-entrada").value = "08:00"; $("cfg-tol").value = 10; $("cfg-extra").value = 10;
     $("cfg-loading").style.display = "none"; $("cfg-form").style.display = "block"; return;
   }
