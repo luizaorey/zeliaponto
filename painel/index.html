@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0B2A33">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="painel.css?v=15">
+<link rel="stylesheet" href="painel.css?v=16">
 <title>Zélia · Painel</title>
 </head>
 <body>
@@ -195,10 +195,10 @@
       <div id="cfg-form" style="display:none">
 
         <div class="cfg-sec">
-          <h3>WhatsApp da Zélia</h3>
-          <p class="cfg-hint">Onde a Zélia te manda os avisos, o resumo do dia e o fechamento do mês.</p>
-          <div class="field"><label>Número (com DDD)</label>
-            <input id="cfg-whats" class="txt" inputmode="tel" placeholder="71 98888-7777"></div>
+          <h3>Contatos da Zélia</h3>
+          <p class="cfg-hint">Até 3 pessoas. 📬 <b>Recebe</b> = leva os avisos, resumo e fechamento. 💬 <b>Fala</b> = pode perguntar pra Zélia no WhatsApp. Gerenciar contatos é só seu (do dono).</p>
+          <div id="cfg-contatos"></div>
+          <button class="btn small ghost" id="cfg-add-contato" type="button" onclick="addContato()" style="margin-top:4px">+ Adicionar contato</button>
         </div>
 
         <div class="cfg-sec">
@@ -218,12 +218,10 @@
         </div>
 
         <div class="cfg-sec">
-          <h3>Jornada</h3>
-          <p class="cfg-hint">Base pra marcar atrasos. Deixe a entrada em branco pra não controlar atraso.</p>
-          <div class="cfg-row">
-            <div class="field"><label>Horário de entrada</label><input id="cfg-entrada" class="txt tw" type="time"></div>
-            <div class="field"><label>Tolerância (min)</label><input id="cfg-tol" class="txt tw" type="number" min="0" max="180" step="5"></div>
-          </div>
+          <h3>Jornada por dia</h3>
+          <p class="cfg-hint">Por grupo de dias: se trabalha, o horário de entrada e a carga do dia (loja que abre sábado com carga menor, folga na segunda…). Entrada em branco = não controla atraso naquele dia.</p>
+          <div id="cfg-jornada"></div>
+          <div class="field tw" style="margin-top:14px"><label>Tolerância de atraso (min)</label><input id="cfg-tol" class="txt tw" type="number" min="0" max="180" step="5"></div>
         </div>
 
         <div class="cfg-sec">
@@ -244,6 +242,6 @@
 <div id="modal-bg" class="modal-bg"><div id="modal" class="modal"></div></div>
 <div id="toast" class="toast"></div>
 
-<script src="painel.js?v=15"></script>
+<script src="painel.js?v=16"></script>
 </body>
 </html>

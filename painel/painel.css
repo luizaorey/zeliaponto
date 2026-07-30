@@ -246,6 +246,25 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
 .cfg-switch input:checked + i{background:var(--green)}
 .cfg-switch input:checked + i::after{transform:translateX(19px)}
 .cfg-switch input:focus-visible + i{outline:2px solid var(--blue);outline-offset:2px}
+.cfg-switch.mini{border-bottom:none;padding:6px 0;gap:8px}
+.cfg-switch.mini > span{flex-direction:row;font-size:14px;font-weight:600;color:var(--ink)}
+.cfg-switch.mini i{width:40px;height:24px} .cfg-switch.mini i::after{width:18px;height:18px} .cfg-switch.mini input:checked + i::after{transform:translateX(16px)}
+/* Contatos */
+.ct-card{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px;background:#FbFcFd}
+.ct-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ct-nome{flex:1;height:42px;font-weight:700}
+.ct-dono{font-size:11px;font-weight:800;color:var(--tx-ok);background:var(--bg-ok);padding:3px 9px;border-radius:7px;text-transform:uppercase}
+.ct-rm{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:8px}
+.ct-rm:hover{color:var(--red);background:#FBEBEB}
+.ct-wa{height:42px;margin-bottom:6px}
+.ct-sw{display:flex;gap:20px}
+/* Jornada grade */
+.jor-row{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid var(--line)}
+.jor-row:last-child{border-bottom:none}
+.jor-tr{min-width:190px;padding:0}
+.jor-inputs{display:flex;gap:12px}
+.txt.tw2{max-width:120px;height:44px}
+.jor-fechado{color:var(--muted);font-size:13px;font-style:italic;padding-bottom:12px}
 
 /* ---------- TOAST ---------- */
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:13px;font-size:15px;max-width:90%;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s;z-index:60}

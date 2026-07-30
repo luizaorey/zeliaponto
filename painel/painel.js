@@ -604,34 +604,79 @@ function fmtWhats(w){
   return rest.length > 4 ? `${ddd} ${rest.slice(0,rest.length-4)}-${rest.slice(-4)}` : `${ddd} ${rest}`;
 }
 function whatsDigits(v){ let w = String(v||"").replace(/\D/g,""); if (!w) return ""; if (!w.startsWith("55")) w = "55"+w; return w; }
+let CFGc = [], JOR3 = null;
 async function carregarConfig(){
   $("cfg-loading").style.display = "block"; $("cfg-form").style.display = "none"; $("cfg-err").textContent = "";
   let d; try { d = await apiGet(EP.configLer); } catch(e){ return; }
   if (!d.ok){ toast("Não foi possível carregar."); return; }
   CFG = d.config || {};
-  $("cfg-whats").value = fmtWhats(CFG.whatsapp_dono);
+  CFGc = (CFG.contatos && CFG.contatos.length) ? CFG.contatos.map(c => ({ ...c })) : [{ nome:"Dono", whatsapp:CFG.whatsapp_dono||"", recebe:true, fala:true, dono:true }];
+  if (!CFGc.some(c => c.dono)) CFGc[0].dono = true;
+  renderContatos();
+  JOR3 = jornadaToUI(CFG.jornada_semanal); renderJornada();
   $("cfg-fora").checked = CFG.alerta_fora_raio !== false;
   $("cfg-atraso").checked = CFG.alerta_atraso !== false;
   $("cfg-extra-sw").checked = CFG.alerta_extra !== false;
   $("cfg-resumo-sw").checked = CFG.resumo_diario !== false;
   $("cfg-fecham").checked = CFG.fechamento_mensal !== false;
   $("cfg-resumo").value = CFG.horario_resumo_diario || "18:30";
-  $("cfg-entrada").value = CFG.entrada_prevista || "";
   $("cfg-tol").value = CFG.tolerancia_minutos != null ? CFG.tolerancia_minutos : 10;
   $("cfg-extra").value = (CFG.limite_extra_semanal_minutos != null ? CFG.limite_extra_semanal_minutos : 600) / 60;
   $("cfg-loading").style.display = "none"; $("cfg-form").style.display = "block";
 }
+/* ---- Contatos ---- */
+function renderContatos(){
+  const box = $("cfg-contatos");
+  box.innerHTML = CFGc.map((c,i) => `
+    <div class="ct-card">
+      <div class="ct-top">
+        <input class="txt ct-nome" value="${esc(c.nome||"")}" placeholder="Nome" maxlength="40" oninput="CFGc[${i}].nome=this.value">
+        ${c.dono ? '<span class="ct-dono">dono</span>' : `<button class="ct-rm" type="button" onclick="removeContato(${i})" aria-label="Remover">✕</button>`}
+      </div>
+      <input class="txt ct-wa" value="${esc(fmtWhats(c.whatsapp))}" inputmode="tel" placeholder="71 98888-7777" oninput="CFGc[${i}].whatsapp=this.value">
+      <div class="ct-sw">
+        <label class="cfg-switch mini"><span>📬 Recebe</span><input type="checkbox" ${c.recebe?"checked":""} onchange="CFGc[${i}].recebe=this.checked"><i></i></label>
+        <label class="cfg-switch mini"><span>💬 Fala</span><input type="checkbox" ${c.fala?"checked":""} onchange="CFGc[${i}].fala=this.checked"><i></i></label>
+      </div>
+    </div>`).join("");
+  $("cfg-add-contato").style.display = CFGc.length >= 3 ? "none" : "";
+}
+function addContato(){ if (CFGc.length >= 3) return; CFGc.push({ nome:"", whatsapp:"", recebe:true, fala:false }); renderContatos(); }
+function removeContato(i){ if (CFGc[i] && CFGc[i].dono) return; CFGc.splice(i,1); renderContatos(); }
+/* ---- Jornada (3 grupos: úteis, sáb, dom) ---- */
+function jornadaToUI(j){
+  const g = d => { const x = (j && (j[d] || j[String(d)])) || {}; return { trabalha: !!x.trabalha, entrada: x.entrada || "", carga_h: x.carga_min != null ? (x.carga_min/60) : 8 }; };
+  return { uteis: g(1), sab: g(6), dom: g(0) };
+}
+function jornadaFromUI(){
+  const mk = g => ({ trabalha: !!g.trabalha, entrada: g.trabalha ? (g.entrada || null) : null, carga_min: g.trabalha ? Math.round((isNaN(parseFloat(g.carga_h)) ? 8 : parseFloat(g.carga_h)) * 60) : 0 });
+  const j = {}; for (let d=1; d<=5; d++) j[d] = mk(JOR3.uteis); j[6] = mk(JOR3.sab); j[0] = mk(JOR3.dom); return j;
+}
+function renderJornada(){
+  const row = (key,label) => { const g = JOR3[key]; return `
+    <div class="jor-row">
+      <label class="cfg-switch mini jor-tr"><span>${label}</span><input type="checkbox" ${g.trabalha?"checked":""} onchange="JOR3.${key}.trabalha=this.checked;renderJornada()"><i></i></label>
+      ${g.trabalha ? `<div class="jor-inputs">
+        <div class="field"><label>Entrada</label><input class="txt tw2" type="time" value="${g.entrada||""}" onchange="JOR3.${key}.entrada=this.value"></div>
+        <div class="field"><label>Carga (h)</label><input class="txt tw2" type="number" min="0" max="16" step="0.5" value="${g.carga_h}" onchange="JOR3.${key}.carga_h=this.value"></div>
+      </div>` : `<span class="jor-fechado">fechado</span>`}
+    </div>`; };
+  $("cfg-jornada").innerHTML = row("uteis","Dias úteis (seg–sex)") + row("sab","Sábado") + row("dom","Domingo");
+}
 async function salvarConfig(){
   const err = $("cfg-err"); err.textContent = "";
-  const w = whatsDigits($("cfg-whats").value);
-  if (w && (w.length < 12 || w.length > 13)){ err.textContent = "WhatsApp inválido — coloque DDD + número."; return; }
+  const contatos = CFGc.map(c => ({ nome:(c.nome||"").trim(), whatsapp: whatsDigits(c.whatsapp), recebe: !!c.recebe, fala: !!c.fala, dono: !!c.dono })).filter(c => c.nome || c.whatsapp);
+  for (const c of contatos){ if (c.whatsapp && (c.whatsapp.length < 12 || c.whatsapp.length > 13)){ err.textContent = `WhatsApp de "${c.nome||"contato"}" inválido — DDD + número.`; return; } }
+  const dono = contatos.find(c => c.dono);
+  if (!dono || !dono.whatsapp){ err.textContent = "O contato do dono precisa de um WhatsApp."; return; }
   const tol = parseInt($("cfg-tol").value, 10);
   const extraH = parseFloat($("cfg-extra").value);
   const payload = {
-    whatsapp_dono: w,
+    contatos, whatsapp_dono: dono.whatsapp,
+    jornada_semanal: jornadaFromUI(),
+    entrada_prevista: JOR3.uteis.trabalha ? (JOR3.uteis.entrada || "") : "",
     horario_resumo_diario: $("cfg-resumo").value || "18:30",
     limite_extra_semanal_minutos: Math.round((isNaN(extraH) ? 10 : extraH) * 60),
-    entrada_prevista: $("cfg-entrada").value.trim(),          // "" limpa (não controla atraso)
     tolerancia_minutos: (tol >= 0 && tol <= 180) ? tol : 10,
     alerta_fora_raio: $("cfg-fora").checked,
     alerta_atraso: $("cfg-atraso").checked,
@@ -682,10 +727,12 @@ async function salvarConfig(){
     abrirLocalForm("2"); return;
   }
   if (scr === "config"){
-    CFG = { whatsapp_dono:"5571988887777", alerta_fora_raio:true, alerta_atraso:true, fechamento_mensal:true, horario_resumo_diario:"18:30", entrada_prevista:"08:00", tolerancia_minutos:10, limite_extra_semanal_minutos:600 };
     go("s-config");
-    $("cfg-whats").value = fmtWhats(CFG.whatsapp_dono); $("cfg-fora").checked = true; $("cfg-atraso").checked = true; $("cfg-extra-sw").checked = true; $("cfg-resumo-sw").checked = true; $("cfg-fecham").checked = true;
-    $("cfg-resumo").value = "18:30"; $("cfg-entrada").value = "08:00"; $("cfg-tol").value = 10; $("cfg-extra").value = 10;
+    CFGc = [{nome:"Dono Teste A",whatsapp:"5571992123439",recebe:true,fala:true,dono:true},{nome:"Gerente Ana",whatsapp:"5571988887777",recebe:true,fala:false}];
+    renderContatos();
+    JOR3 = { uteis:{trabalha:true,entrada:"08:00",carga_h:8}, sab:{trabalha:true,entrada:"08:30",carga_h:4.5}, dom:{trabalha:false,entrada:"",carga_h:8} }; renderJornada();
+    $("cfg-fora").checked = true; $("cfg-atraso").checked = true; $("cfg-extra-sw").checked = true; $("cfg-resumo-sw").checked = true; $("cfg-fecham").checked = true;
+    $("cfg-resumo").value = "18:30"; $("cfg-tol").value = 10; $("cfg-extra").value = 10;
     $("cfg-loading").style.display = "none"; $("cfg-form").style.display = "block"; return;
   }
   if (scr === "relatorio"){
