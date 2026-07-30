@@ -218,6 +218,13 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
 .rel-tbl.det td,.rel-tbl.det th{padding:8px 12px}
 .rel-tbl.det .d-falta td{background:#FDECEC}
 .rel-tbl.det .d-inc td{color:var(--muted)}
+.rel-arquivo{margin-top:28px}
+.fech-titulo{font-size:16px;margin-bottom:2px}
+.fech-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.fech-mes{font-weight:800;color:var(--ink)}
+.fech-sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+.fech-acts{display:flex;gap:8px;flex-shrink:0}
+.fech-acts .btn.small{text-decoration:none;display:inline-flex;align-items:center}
 
 /* ---------- CONFIGURAÇÕES ---------- */
 .navcard .ic-cfg{background:var(--navy)}

@@ -13,7 +13,7 @@ const EP = {
   locais: WB + "/zelia-locais", localSalvar: WB + "/zelia-local-salvar",
   localOff: WB + "/zelia-local-desativar", localOn: WB + "/zelia-local-reativar",
   aprovacoes: WB + "/zelia-aprovacoes-lista", decidir: WB + "/zelia-aprovacao-decidir",
-  relatorio: WB + "/zelia-relatorio-mes",
+  relatorio: WB + "/zelia-relatorio-mes", fechamentos: WB + "/zelia-fechamentos-lista",
 };
 const LS_TOKEN = "zelia_painel_token", LS_NOME = "zelia_painel_nome", LS_EMPRESA = "zelia_painel_empresa";
 
@@ -500,7 +500,22 @@ function mesAtual(){ const p = new Intl.DateTimeFormat("en-CA",{ timeZone:"Ameri
 function mesLabel(m){ const [y,mm] = m.split("-").map(Number); const n = MESES[mm-1]; return `${n[0].toUpperCase()+n.slice(1)} ${y}`; }
 function hMin(m){ if (m == null) return "—"; const neg = m < 0; m = Math.abs(Math.round(m)); return (neg?"−":"") + Math.floor(m/60) + "h" + String(m%60).padStart(2,"0"); }
 function hSaldo(m){ if (m == null) return "—"; m = Math.round(m); if (m === 0) return "0h00"; const s = m>0?"+":"−"; m = Math.abs(m); return s + Math.floor(m/60) + "h" + String(m%60).padStart(2,"0"); }
-function irRelatorios(){ RELMES = mesAtual(); go("s-relatorios"); carregarRelatorio(); }
+function irRelatorios(){ RELMES = mesAtual(); go("s-relatorios"); carregarRelatorio(); carregarFechamentos(); }
+async function carregarFechamentos(){
+  const box = $("rel-fechamentos"); if (!box) return; box.innerHTML = "";
+  let d; try { d = await apiGet(EP.fechamentos); } catch(e){ return; }
+  const fs = (d && d.ok && d.fechamentos) ? d.fechamentos : [];
+  if (!fs.length){ box.innerHTML = ""; return; }
+  const rows = fs.map(f => {
+    const t = f.totais || {}, [Y,M] = f.mes.split("-").map(Number);
+    const lbl = `${MESES[M-1][0].toUpperCase()+MESES[M-1].slice(1)} ${Y}`;
+    const pdf = f.pdf_url ? `<a class="btn small ghost" href="${esc(f.pdf_url)}" target="_blank" rel="noopener">📄 PDF</a>` : "";
+    const csv = f.csv_url ? `<a class="btn small ghost" href="${esc(f.csv_url)}" target="_blank" rel="noopener">📊 CSV</a>` : "";
+    const sub = `${t.funcionarios||0} func. · ${hMin(t.trabalhado_min)} · saldo ${hSaldo(t.saldo_min)}`;
+    return `<div class="fech-row"><div><div class="fech-mes">${lbl}</div><div class="fech-sub">${sub}</div></div><div class="fech-acts">${pdf}${csv}</div></div>`;
+  }).join("");
+  box.innerHTML = `<h3 class="fech-titulo">📁 Fechamentos gerados</h3><p class="rel-nota" style="margin:2px 4px 12px">Baixe o PDF ou a planilha de qualquer mês pra reenviar pro contador. Links renovados a cada acesso.</p>${rows}`;
+}
 function mudarMes(delta){
   let [y,m] = RELMES.split("-").map(Number); m += delta; if (m < 1){ m = 12; y--; } if (m > 12){ m = 1; y++; }
   const novo = `${y}-${String(m).padStart(2,"0")}`;
@@ -685,7 +700,11 @@ async function salvarConfig(){
         { id:"3", nome:"Teste Multi A", ativo:false, dias_trabalhados:3, trabalhado_min:1080, saldo_min:0, faltas:0, dias_atraso:0, atraso_min:0, pendencias:0, dias:[] },
       ],
       totais:{ trabalhado_min:11794, saldo_min:117, faltas:13, pendencias:2 } });
-    go("s-relatorios"); return;
+    go("s-relatorios");
+    $("rel-fechamentos").innerHTML = `<h3 class="fech-titulo">📁 Fechamentos gerados</h3><p class="rel-nota" style="margin:2px 4px 12px">Baixe o PDF ou a planilha de qualquer mês pra reenviar pro contador.</p>
+      <div class="fech-row"><div><div class="fech-mes">Junho 2026</div><div class="fech-sub">8 func. · 512h30 · saldo +14h20</div></div><div class="fech-acts"><a class="btn small ghost" href="#">📄 PDF</a><a class="btn small ghost" href="#">📊 CSV</a></div></div>
+      <div class="fech-row"><div><div class="fech-mes">Maio 2026</div><div class="fech-sub">8 func. · 498h00 · saldo −2h10</div></div><div class="fech-acts"><a class="btn small ghost" href="#">📄 PDF</a><a class="btn small ghost" href="#">📊 CSV</a></div></div>`;
+    return;
   }
   if (scr.indexOf("aprov") === 0){
     const F = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23cfd8dc'/%3E%3Ccircle cx='32' cy='25' r='12' fill='%2390a4ae'/%3E%3Crect x='13' y='41' width='38' height='26' rx='13' fill='%2390a4ae'/%3E%3C/svg%3E";
