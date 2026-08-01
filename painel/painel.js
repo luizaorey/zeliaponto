@@ -10,6 +10,7 @@ const EP = {
   desativar: WB + "/zelia-func-desativar", reativar: WB + "/zelia-func-reativar",
   reset: WB + "/zelia-func-reset-senha",
   dia: WB + "/zelia-painel-dia", config: WB + "/zelia-config-salvar", configLer: WB + "/zelia-config-ler",
+  conversas: WB + "/zelia-conversas",
   locais: WB + "/zelia-locais", localSalvar: WB + "/zelia-local-salvar",
   localOff: WB + "/zelia-local-desativar", localOn: WB + "/zelia-local-reativar",
   aprovacoes: WB + "/zelia-aprovacoes-lista", decidir: WB + "/zelia-aprovacao-decidir",
@@ -37,7 +38,7 @@ function togglePw(btn){
 function go(id){
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   $(id).classList.add("active");
-  const logged = (id === "s-home" || id === "s-funcionarios" || id === "s-dia" || id === "s-locais" || id === "s-local-form" || id === "s-aprovacoes" || id === "s-relatorios" || id === "s-config");
+  const logged = (id === "s-home" || id === "s-funcionarios" || id === "s-dia" || id === "s-locais" || id === "s-local-form" || id === "s-aprovacoes" || id === "s-relatorios" || id === "s-config" || id === "s-conversas");
   $("topbar").style.display = logged ? "flex" : "none";
 }
 
@@ -97,6 +98,7 @@ function entrar(){
   $("tb-empresa").textContent = localStorage.getItem(LS_EMPRESA) || "";
   go("s-home");
   atualizarBadgeAprovacoes();
+  carregarResumoConversas();
 }
 function sair(expirou){
   localStorage.removeItem(LS_TOKEN); localStorage.removeItem(LS_NOME); localStorage.removeItem(LS_EMPRESA);
@@ -105,7 +107,68 @@ function sair(expirou){
 }
 
 /* ---------- NAV ---------- */
-function irHome(){ go("s-home"); atualizarBadgeAprovacoes(); }
+function irHome(){ go("s-home"); atualizarBadgeAprovacoes(); carregarResumoConversas(); }
+function irConversas(){ go("s-conversas"); carregarConversas(); }
+
+/* ---------- CONVERSAS DA ZÉLIA (só leitura) ---------- */
+let CONV = { threads: [] }, CONV_SEL = null;
+function relTime(em){
+  if (!em) return "";
+  const t = new Date(em.replace(" ", "T")).getTime(); if (isNaN(t)) return "";
+  const min = Math.max(0, Math.round((Date.now() - t) / 60000));
+  if (min < 1) return "agora"; if (min < 60) return "há " + min + "min";
+  const h = Math.round(min / 60); if (h < 24) return "há " + h + "h";
+  const dias = Math.round(h / 24); return dias === 1 ? "ontem" : "há " + dias + " dias";
+}
+async function carregarResumoConversas(){
+  const el = $("home-conv-sub"); if (!el) return;
+  let d; try { d = await apiGet(EP.conversas); } catch(e){ return; }
+  if (!d || !d.ok) return;
+  const r = d.resumo || {};
+  if (r.vazio || !r.ultima_txt){ el.textContent = "Ainda sem conversas 💬"; return; }
+  const quem = r.ultima_contato || "alguém";
+  el.textContent = (r.direcao === "enviada" ? "Zélia respondeu a " + quem : "Msg de " + quem) + " · " + relTime(r.ultima_em);
+}
+async function carregarConversas(){
+  $("conv-loading").style.display = "block"; $("conv-wrap").style.display = "none"; $("conv-empty").style.display = "none";
+  let d; try { d = await apiGet(EP.conversas); } catch(e){ return; }
+  if (!d || !d.ok){ if (d && d.motivo === "sessao") return sair(true); toast("Não foi possível carregar."); return; }
+  CONV = d; $("conv-loading").style.display = "none";
+  if (!CONV.threads || !CONV.threads.length){ $("conv-empty").style.display = "flex"; return; }
+  $("conv-wrap").style.display = "flex";
+  const cs = $("conv-search"); if (cs) cs.value = "";
+  renderThreadList();
+  const first = CONV.threads[0];
+  if (first && window.matchMedia("(min-width:721px)").matches) abrirThread(first.numero);
+  else { CONV_SEL = null; $("conv-wrap").classList.remove("show-thread"); }
+}
+function renderThreadList(){
+  const q = ($("conv-search") && $("conv-search").value || "").trim().toLowerCase();
+  const box = $("conv-list");
+  const lista = (CONV.threads || []).filter(t => !q || (t.nome || "").toLowerCase().includes(q) || (t.numero || "").includes(q));
+  if (!lista.length){ box.innerHTML = `<p class="muted" style="padding:12px">Nada encontrado.</p>`; return; }
+  box.innerHTML = lista.map(t => `
+    <button class="conv-item ${t.numero === CONV_SEL ? "sel" : ""}" onclick="abrirThread('${t.numero}')">
+      <div class="conv-av">${esc((t.nome || "?").trim().charAt(0).toUpperCase() || "?")}</div>
+      <div class="conv-item-body">
+        <div class="conv-item-top"><span class="conv-item-nome">${esc(t.nome || t.numero)}</span><span class="conv-item-time">${esc(relTime(t.ultima_em))}</span></div>
+        <div class="conv-item-last">${esc(t.ultima || "")}</div>
+      </div></button>`).join("");
+}
+function abrirThread(numero){
+  CONV_SEL = numero;
+  const t = (CONV.threads || []).find(x => x.numero === numero); if (!t) return;
+  $("conv-thread-nome").textContent = t.nome || t.numero;
+  $("conv-thread").innerHTML = (t.mensagens || []).map(m => `
+    <div class="bubble ${m.direcao === "enviada" ? "b-out" : "b-in"}">
+      <div class="bubble-txt">${m.texto ? esc(m.texto) : (m.tipo === "audio" ? "🎤 <i>áudio</i>" : m.tipo === "imagem" ? "🖼️ <i>imagem</i>" : "")}</div>
+      <div class="bubble-time">${esc((m.em || "").slice(11))}</div>
+    </div>`).join("") || `<p class="muted" style="padding:16px">Sem mensagens.</p>`;
+  const th = $("conv-thread"); th.scrollTop = th.scrollHeight;
+  $("conv-wrap").classList.add("show-thread");
+  renderThreadList();
+}
+function fecharThread(){ $("conv-wrap").classList.remove("show-thread"); CONV_SEL = null; renderThreadList(); }
 function irFuncionarios(){ go("s-funcionarios"); carregarFuncionarios(); }
 
 /* ---------- FUNCIONÁRIOS ---------- */
