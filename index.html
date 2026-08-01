@@ -7,6 +7,7 @@
 <meta name="description" content="A Zélia é a secretária de RH que cuida do ponto da sua equipe e te avisa dos riscos trabalhistas — tudo pelo WhatsApp.">
 <link rel="icon" href="zelia.svg">
 <link rel="stylesheet" href="landing.css">
+<noscript><style>.reveal{opacity:1!important;transform:none!important}.wb{opacity:1!important;transform:none!important}</style></noscript>
 <title>Zélia · a secretária que cuida do ponto da sua equipe</title>
 </head>
 <body>
@@ -19,7 +20,7 @@
 
 <!-- HERO -->
 <section class="hero"><div class="wrap hero-grid">
-  <div>
+  <div class="hero-txt reveal">
     <h1>Você cuida da loja.<br><span class="hl">A Zélia cuida do ponto.</span></h1>
     <p class="lead">Ela controla o ponto da sua equipe e te avisa dos riscos trabalhistas antes de virarem processo — tudo pelo WhatsApp.</p>
     <p class="mini">Se você usa WhatsApp, você já sabe usar a Zélia. Sem instalar nada, sem treinar ninguém.</p>
@@ -28,92 +29,158 @@
       <p class="btn-sub">Resposta rápida, no seu WhatsApp mesmo.</p>
     </div>
   </div>
-  <div class="zelia-hero">
-    <img src="zelia.svg" alt="Zélia, sua secretária de RH">
-    <span class="zelia-tag">Oi! Eu sou a <b>Zélia</b> 👋</span>
+  <!-- VISUAL DO HERO: mockup animado (app batendo ponto). Espaço reservado pro vídeo-manifesto futuro. -->
+  <div class="hero-visual reveal reveal-r">
+    <div class="mk mk-phone">
+      <div class="mk-scr app-scr">
+        <div class="app-top"><img src="zelia.svg" alt="">Zélia Ponto</div>
+        <div class="selfie"><div class="selfie-ring"></div><span>📸</span><i class="scan"></i></div>
+        <div class="loc"><b>📍 Você está na Padaria do Zé</b><span class="ok-badge">no local ✓</span></div>
+        <div class="pt-btn">Bater ponto</div>
+        <div class="pt-ok">✅ Ponto registrado · <b>08:02</b></div>
+      </div>
+    </div>
+    <p class="video-hint">🎬 Em breve: um vídeo da Zélia se apresentando.</p>
   </div>
 </div></section>
+
+<!-- PRODUTO VIVO (prova honesta) -->
+<div class="vivo"><div class="wrap"><span class="live-dot"></span> A Zélia já registra pontos de verdade, todos os dias.</div></div>
 
 <!-- PROBLEMA -->
 <section><div class="wrap">
-  <div class="sec-title"><div class="eyebrow">Soa familiar?</div>
+  <div class="sec-title reveal"><div class="eyebrow">Soa familiar?</div>
     <h2>O ponto no papel dá dor de cabeça</h2></div>
   <div class="dores">
-    <div class="dor"><div class="em">🧾</div><p>O papelzinho do ponto some, rasura e ninguém acha na hora que precisa.</p></div>
-    <div class="dor"><div class="em">⚖️</div><p>O funcionário sai, procura um advogado, e você descobre o problema tarde demais.</p></div>
-    <div class="dor"><div class="em">🤷</div><p>Você não sabe quem chegou, quem faltou e quem está atrasado — só indo até lá ver.</p></div>
+    <div class="dor reveal"><div class="em">🧾</div><p>O papelzinho do ponto some, rasura e ninguém acha na hora que precisa.</p></div>
+    <div class="dor reveal" style="transition-delay:.08s"><div class="em">⚖️</div><p>O funcionário sai, procura um advogado, e você descobre o problema tarde demais.</p></div>
+    <div class="dor reveal" style="transition-delay:.16s"><div class="em">🤷</div><p>Você não sabe quem chegou, quem faltou e quem está atrasado — só indo até lá ver.</p></div>
   </div>
 </div></section>
 
-<!-- SOLUÇÃO 3 PASSOS -->
-<section class="alt"><div class="wrap">
-  <div class="sec-title"><div class="eyebrow">Como funciona</div>
-    <h2>Simples assim, em 3 passos</h2></div>
-  <div class="passos">
-    <div class="passo"><div class="n"></div><h3>A equipe bate o ponto</h3><p>Cada um registra pelo próprio celular, com foto e localização — assim você confere se a pessoa está mesmo na loja.</p></div>
-    <div class="passo"><div class="n"></div><h3>Você recebe no WhatsApp</h3><p>Quem chegou, quem faltou, quem atrasou. Um resumo por dia, sem precisar abrir computador.</p></div>
-    <div class="passo"><div class="n"></div><h3>A Zélia fica de olho</h3><p>Ela acompanha os riscos trabalhistas e te avisa a tempo, antes de virar dor de cabeça.</p></div>
+<!-- FEATURES ZIGUE-ZAGUE -->
+<section class="feats alt"><div class="wrap">
+
+  <!-- F1: painel visão do dia (mídia à esquerda) -->
+  <div class="feat">
+    <div class="feat-media reveal reveal-l">
+      <div class="mk mk-panel">
+        <div class="mk-bar"><span></span><span></span><span></span><em>Visão do dia</em></div>
+        <div class="mk-tiles">
+          <div class="tile t-ok"><b data-c="4">0</b><span>presentes</span></div>
+          <div class="tile t-warn"><b data-c="1">0</b><span>atrasado</span></div>
+          <div class="tile t-red"><b data-c="1">0</b><span>faltou</span></div>
+        </div>
+        <div class="mk-rows">
+          <div class="mk-row"><span class="av g">A</span>Ana<em>entrou 07:58 ✓</em></div>
+          <div class="mk-row"><span class="av a">J</span>João<em>atrasou · 08:22</em></div>
+          <div class="mk-row"><span class="av g">C</span>Carla<em>entrou 08:00 ✓</em></div>
+        </div>
+      </div>
+    </div>
+    <div class="feat-txt reveal reveal-r">
+      <div class="eyebrow">No painel</div>
+      <h3>Você vê a loja inteira sem sair do lugar</h3>
+      <p>Quem chegou, quem atrasou, quem faltou — de um olhar só, do celular ou do computador. Sem planilha, sem papelzinho.</p>
+    </div>
   </div>
+
+  <!-- F2: conversa da Zélia (mídia à direita) -->
+  <div class="feat rev">
+    <div class="feat-media reveal reveal-r">
+      <div class="mk mk-phone"><div class="mk-scr wa-scr">
+        <div class="wa-head"><img src="zelia.svg" alt=""><div><div class="nome">Zélia</div><div class="st">online</div></div></div>
+        <div class="wa-body" data-chat="1">
+          <div class="wb wb-out" data-s="1">quem faltou hoje?<div class="t">08:40</div></div>
+          <div class="typing" data-tp="1"><i></i><i></i><i></i></div>
+          <div class="wb wb-in" data-s="2">Hoje só a Maria faltou, chefe. O resto tá tudo na loja 👍<div class="t">08:40</div></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="feat-txt reveal reveal-l">
+      <div class="eyebrow">É só perguntar</div>
+      <h3>Pergunta pra Zélia, ela responde na hora</h3>
+      <p>Do jeito que você fala com uma pessoa. "Quem faltou hoje?", "a Maria bateu?", "manda um toque no João" — e ela resolve, no seu WhatsApp.</p>
+    </div>
+  </div>
+
+  <!-- F3: sentinela alerta -> contador (mídia à esquerda) -->
+  <div class="feat">
+    <div class="feat-media reveal reveal-l">
+      <div class="mk mk-phone"><div class="mk-scr wa-scr">
+        <div class="wa-head"><img src="zelia.svg" alt=""><div><div class="nome">Zélia</div><div class="st">online</div></div></div>
+        <div class="wa-body" data-chat="2">
+          <div class="typing" data-tp="2"><i></i><i></i><i></i></div>
+          <div class="wb wb-in" data-s="1">⚠️ Chefe, a Maria completa 1 ano dia 15/09. As férias dela já precisam entrar no radar. Vale confirmar com teu contador 👍<div class="t">09:04</div></div>
+          <div class="wb wb-out" data-s="2">manda pro meu contador<div class="t">09:05</div></div>
+          <div class="typing" data-tp="3"><i></i><i></i><i></i></div>
+          <div class="wb wb-in" data-s="3">Prontinho, enviei pro seu contador ✅<div class="t">09:05</div></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="feat-txt reveal reveal-r">
+      <div class="eyebrow">A Sentinela</div>
+      <h3>Ela te avisa antes do problema virar processo</h3>
+      <p>Férias vencendo, contrato de experiência no fim, hora extra passando do limite. A Zélia te cutuca no sinal amarelo — e manda direto pro seu contador, se você quiser.</p>
+    </div>
+  </div>
+
 </div></section>
 
-<!-- SENTINELA -->
+<!-- SENTINELA DESTAQUE -->
 <section class="sentinela"><div class="wrap">
-  <div class="sec-title"><div class="eyebrow" style="color:#7BE3B0">O diferencial</div>
-    <h2>A Zélia te avisa antes do problema virar processo</h2>
-    <p>Ela conhece as regras que dão dor de cabeça na Justiça do Trabalho — e te cutuca no sinal amarelo:</p></div>
+  <div class="sec-title reveal"><div class="eyebrow" style="color:#7BE3B0">O diferencial</div>
+    <h2>De olho no que dá processo</h2>
+    <p>A Zélia conhece as regras que dão dor de cabeça na Justiça do Trabalho — e te avisa a tempo:</p></div>
   <div class="sent-grid">
     <ul class="sent-list">
-      <li><span class="ic">✓</span> Férias de alguém vencendo</li>
-      <li><span class="ic">✓</span> Contrato de experiência chegando no fim</li>
-      <li><span class="ic">✓</span> Hora extra passando do limite do dia</li>
-      <li><span class="ic">✓</span> Funcionário sem folgar na semana</li>
-      <li><span class="ic">✓</span> Almoço que não foi registrado</li>
+      <li class="reveal"><span class="ic">✓</span> Férias de alguém vencendo</li>
+      <li class="reveal" style="transition-delay:.06s"><span class="ic">✓</span> Contrato de experiência chegando no fim</li>
+      <li class="reveal" style="transition-delay:.12s"><span class="ic">✓</span> Hora extra passando do limite do dia</li>
+      <li class="reveal" style="transition-delay:.18s"><span class="ic">✓</span> Funcionário sem folgar na semana</li>
+      <li class="reveal" style="transition-delay:.24s"><span class="ic">✓</span> Almoço que não foi registrado</li>
     </ul>
-    <div class="sent-side"><div class="card">
-      <h3>E vai além</h3>
-      <p>Se você quiser, a Zélia manda a situação direto pro seu contador — é só pedir no WhatsApp.</p>
-      <div class="frase">Quem tem registro, tem defesa.</div>
+    <div class="sent-side reveal reveal-r"><div class="card">
+      <h3>Quem tem registro, tem defesa</h3>
+      <p>A Zélia te ajuda a manter tudo anotado, do jeito certo. Se um dia precisar, você tem como mostrar o que aconteceu.</p>
     </div></div>
   </div>
 </div></section>
 
-<!-- DEMONSTRAÇÃO -->
-<section class="demo"><div class="wrap">
-  <div class="sec-title"><div class="eyebrow">Veja ela trabalhando</div>
-    <h2>Um toque da Zélia no seu dia</h2></div>
-  <div class="phone"><div class="phone-scr">
-    <div class="wa-head"><img src="zelia.svg" alt=""><div><div class="nome">Zélia</div><div class="st">online</div></div></div>
-    <div class="wa-body" id="wa-body">
-      <div class="typing" id="typing1"><i></i><i></i><i></i></div>
-      <div class="wb wb-in" data-step="1">⚠️ Chefe, a Maria completa 1 ano de casa dia 15/09. As férias dela já precisam entrar no radar. Vale confirmar com teu contador 👍<div class="t">09:04</div></div>
-      <div class="wb wb-out" data-step="2">manda pro meu contador<div class="t">09:05</div></div>
-      <div class="typing" id="typing2"><i></i><i></i><i></i></div>
-      <div class="wb wb-in" data-step="3">Prontinho, enviei pro seu contador ✅<div class="t">09:05</div></div>
-    </div>
-  </div></div>
-  <p class="demo-cap">Conversa ilustrativa, com dados de exemplo — é assim que a Zélia fala com você.</p>
-</div></section>
-
 <!-- PRA QUEM É -->
-<section class="alt"><div class="wrap">
-  <div class="sec-title"><div class="eyebrow">Feita pra você</div>
+<section><div class="wrap">
+  <div class="sec-title reveal"><div class="eyebrow">Feita pra você</div>
     <h2>Pra quem toca um comércio</h2>
     <p>De 1 a 50 funcionários. Se tem gente batendo ponto, a Zélia dá conta.</p></div>
-  <div class="quem">
+  <div class="quem reveal">
     <span><span class="e">🥖</span>Padaria</span><span><span class="e">🛍️</span>Loja</span>
     <span><span class="e">🛒</span>Mercado</span><span><span class="e">💇</span>Salão</span>
     <span><span class="e">🍽️</span>Restaurante</span><span><span class="e">🏢</span>Escritório</span>
   </div>
 </div></section>
 
+<!-- FAQ -->
+<section class="alt"><div class="wrap">
+  <div class="sec-title reveal"><div class="eyebrow">Perguntas frequentes</div>
+    <h2>Ficou com dúvida?</h2></div>
+  <div class="faq reveal">
+    <details><summary>Preciso instalar alguma coisa?<i></i></summary><p>Não. A Zélia funciona pelo WhatsApp que você já usa. Seu funcionário bate o ponto por um link no navegador do celular — sem baixar nada.</p></details>
+    <details><summary>Meu funcionário precisa de celular bom?<i></i></summary><p>Qualquer celular com câmera e internet dá conta. Nada de aparelho caro.</p></details>
+    <details><summary>Como a Zélia sabe se a pessoa tá mesmo na loja?<i></i></summary><p>Na hora de bater o ponto, o app tira uma selfie e confere a localização. Se a pessoa estiver longe da loja, você fica sabendo.</p></details>
+    <details><summary>E se o funcionário não bater o ponto?<i></i></summary><p>A Zélia te avisa. Você recebe no WhatsApp quem faltou e quem não registrou — sem ficar cobrando um por um.</p></details>
+    <details><summary>Quanto custa?<i></i></summary><p>Fala com a gente no WhatsApp que a gente te mostra tudo funcionando e combina certinho pro tamanho da sua equipe. <a class="faq-link js-wa">Falar no WhatsApp →</a></p></details>
+    <details><summary>Funciona pra quantos funcionários?<i></i></summary><p>De 1 a 50. Seja você sozinho com um ajudante ou uma equipe inteira, a Zélia acompanha todo mundo.</p></details>
+  </div>
+</div></section>
+
 <!-- CTA FINAL -->
-<section class="final"><div class="wrap">
+<section class="final"><div class="wrap reveal">
   <h2>Bora tirar o ponto do papel?</h2>
   <p>Fale com a gente e veja a Zélia funcionando em 10 minutos.</p>
   <a class="btn-wa js-wa"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.5.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.6-1.5-.9-2.1-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 .9-1 2.3s1 2.7 1.2 2.9c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg>Falar com a Zélia no WhatsApp</a>
 </div></section>
 
-<!-- FOOTER -->
+<!-- FOOTER  (futuro: WhatsApp duplo Comercial/Suporte quando a Vendedora existir) -->
 <footer><div class="wrap">
   <div class="fbrand"><img src="zelia.svg" alt="">Zélia</div>
   <div class="flinks">
@@ -124,7 +191,6 @@
   <p style="margin-top:12px;font-size:13px">zeliaponto.com.br · a secretária de RH que mora no seu WhatsApp</p>
 </div></footer>
 
-<!-- BOTÃO FLUTUANTE -->
 <a class="float-wa js-wa" aria-label="Falar com a Zélia no WhatsApp"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.5.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.6-1.5-.9-2.1-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 .9-1 2.3s1 2.7 1.2 2.9c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg></a>
 
 <script src="landing.js"></script>
