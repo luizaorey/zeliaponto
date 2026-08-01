@@ -679,6 +679,11 @@ async function carregarConfig(){
   CFGc = (CFG.contatos && CFG.contatos.length) ? CFG.contatos.map(c => ({ ...c })) : [{ nome:"Dono", whatsapp:CFG.whatsapp_dono||"", recebe:true, fala:true, dono:true }];
   if (!CFGc.some(c => c.dono)) CFGc[0].dono = true;
   renderContatos();
+  const ct = CFG.contador || {};
+  $("cfg-ct-nome").value = ct.nome || "";
+  $("cfg-ct-esc").value = ct.escritorio || "";
+  $("cfg-ct-email").value = ct.email || "";
+  $("cfg-ct-wa").innerHTML = phoneFieldHTML('ctwa', ct.whatsapp || "");
   JOR3 = jornadaToUI(CFG.jornada_semanal); renderJornada();
   $("cfg-fora").checked = CFG.alerta_fora_raio !== false;
   $("cfg-atraso").checked = CFG.alerta_atraso !== false;
@@ -742,10 +747,15 @@ async function salvarConfig(){
   }
   const dono = contatos.find(c => c.dono);
   if (!dono || !dono.whatsapp){ err.textContent = "O contato do dono precisa de um WhatsApp."; return; }
+  const ctWa = phoneValido('ctwa');
+  if (!ctWa.ok){ err.textContent = "WhatsApp do contador: " + ctWa.msg; return; }
+  const ctEmail = $("cfg-ct-email").value.trim();
+  if (ctEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(ctEmail)){ err.textContent = "E-mail do contador inválido."; return; }
+  const contador = { nome: $("cfg-ct-nome").value.trim(), escritorio: $("cfg-ct-esc").value.trim(), email: ctEmail, whatsapp: ctWa.canonical || "" };
   const tol = parseInt($("cfg-tol").value, 10);
   const extraH = parseFloat($("cfg-extra").value);
   const payload = {
-    contatos, whatsapp_dono: dono.whatsapp,
+    contatos, contador, whatsapp_dono: dono.whatsapp,
     jornada_semanal: jornadaFromUI(),
     entrada_prevista: JOR3.uteis.trabalha ? (JOR3.uteis.entrada || "") : "",
     horario_resumo_diario: $("cfg-resumo").value || "18:30",

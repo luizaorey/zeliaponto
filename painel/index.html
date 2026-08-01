@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0B2A33">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="painel.css?v=19">
+<link rel="stylesheet" href="painel.css?v=20">
 <title>Zélia · Painel</title>
 </head>
 <body>
@@ -202,6 +202,15 @@
         </div>
 
         <div class="cfg-sec">
+          <h3>Contador</h3>
+          <p class="cfg-hint">Opcional. Com o contato salvo, você pede em linguagem natural ("Zélia, avisa o contador que…") e ela despacha por você.</p>
+          <div class="field"><label>Nome do contador</label><input id="cfg-ct-nome" class="txt" maxlength="60" placeholder="Nome"></div>
+          <div class="field"><label>Escritório <span class="muted">(opcional)</span></label><input id="cfg-ct-esc" class="txt" maxlength="60" placeholder="Nome do escritório"></div>
+          <div class="field"><label>E-mail</label><input id="cfg-ct-email" class="txt" type="email" inputmode="email" placeholder="contador@escritorio.com"></div>
+          <div class="field"><label>WhatsApp</label><div id="cfg-ct-wa"></div></div>
+        </div>
+
+        <div class="cfg-sec">
           <h3>O que a Zélia te avisa</h3>
           <label class="cfg-switch"><span><b>Batida fora do raio</b><small>quando alguém bate longe do local</small></span>
             <input type="checkbox" id="cfg-fora"><i></i></label>
@@ -242,6 +251,6 @@
 <div id="modal-bg" class="modal-bg"><div id="modal" class="modal"></div></div>
 <div id="toast" class="toast"></div>
 
-<script src="painel.js?v=19"></script>
+<script src="painel.js?v=20"></script>
 </body>
 </html>
