@@ -276,3 +276,16 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
   .wrap{padding:20px 14px 50px} .hello{font-size:22px}
   .tbl{display:none} .fcards{display:flex}
 }
+
+/* Campo de telefone estruturado (país + número) */
+.phone-row{ display:flex; gap:8px; align-items:stretch; }
+.phone-row .ph-pais{ flex:0 0 auto; width:108px; padding:10px 6px; }
+.phone-row .ph-num{ flex:1 1 auto; min-width:0; }
+.ph-warn{ color:#b8860b; font-size:12.5px; margin-top:5px; }
+
+/* Bloco "opcional" recolhido no cadastro (Sentinela P1) */
+.opt-block{ margin:4px 0 6px; border-top:1px solid #24444d; padding-top:6px; }
+.opt-block>summary{ cursor:pointer; font-size:13px; color:#9fb3b8; list-style:none; padding:6px 0; user-select:none; }
+.opt-block>summary::-webkit-details-marker{ display:none; }
+.opt-block>summary::before{ content:"▸ "; }
+.opt-block[open]>summary::before{ content:"▾ "; }

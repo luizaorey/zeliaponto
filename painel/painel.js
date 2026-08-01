@@ -161,7 +161,16 @@ function abrirCadastro(){
     <h3>Cadastrar funcionário</h3>
     <div class="field"><label>Nome</label><input id="c-nome" class="txt" placeholder="Nome completo"></div>
     <div class="field"><label>CPF</label><input id="c-cpf" class="txt" inputmode="numeric" placeholder="000.000.000-00" maxlength="14"></div>
+    <div class="field"><label>WhatsApp <span class="muted">(pra Zélia falar com ele)</span></label>${phoneFieldHTML('c-wa','')}</div>
+    <div class="field"><label>Data de admissão</label><input id="c-adm" class="txt" type="date"></div>
     <div class="field"><label>Carga diária (horas)</label><input id="c-carga" class="txt" type="number" min="1" max="12" step="0.5" value="8"></div>
+    <details class="opt-block">
+      <summary>Mais dados <span class="muted">(opcional — a Zélia usa se você preencher)</span></summary>
+      <div class="field"><label>Cargo / função</label><input id="c-cargo" class="txt" maxlength="40" placeholder="Ex.: Vendedor(a)"></div>
+      <div class="field"><label>Tipo de contrato</label><select id="c-contrato" class="txt">
+        <option value="">—</option><option value="clt">CLT</option><option value="experiencia">Contrato de experiência</option><option value="jovem_aprendiz">Jovem aprendiz</option></select></div>
+      <div class="field"><label>Data de nascimento</label><input id="c-nasc" class="txt" type="date"></div>
+    </details>
     <div class="err" id="c-err"></div>
     <p class="hint">A senha inicial será <b>123</b>. O funcionário troca no primeiro acesso.</p>
     <div class="modal-acts"><button class="btn ghost" onclick="closeModal()">Cancelar</button>
@@ -177,9 +186,18 @@ async function salvarFuncionario(){
   const err = $("c-err"); err.textContent = "";
   if (!nome){ err.textContent = "Informe o nome."; return; }
   if (!cpfValido(cpf)){ err.textContent = "CPF inválido — confira os números."; return; }
+  const vwa = phoneValido('c-wa');
+  if (!vwa.ok){ err.textContent = vwa.msg; return; }
+  if (vwa.empty){ err.textContent = "Informe o WhatsApp do funcionário."; return; }
+  const whatsapp = vwa.canonical;
+  const data_admissao = $("c-adm").value;
+  if (!data_admissao){ err.textContent = "Informe a data de admissão."; return; }
+  const cargo = $("c-cargo") ? $("c-cargo").value.trim() : "";
+  const tipo_contrato = $("c-contrato") ? $("c-contrato").value : "";
+  const data_nascimento = $("c-nasc") ? $("c-nasc").value : "";
   const carga = (horas > 0 && horas <= 24) ? Math.round(horas * 60) : 480;
   $("c-salvar").disabled = true;
-  const d = await apiPost(EP.criar, { nome, cpf, carga_horaria_minutos: carga });
+  const d = await apiPost(EP.criar, { nome, cpf, carga_horaria_minutos: carga, whatsapp, data_admissao, cargo, tipo_contrato, data_nascimento });
   $("c-salvar").disabled = false;
   if (d.ok){ closeModal(); toast("Funcionário cadastrado."); carregarFuncionarios(); return; }
   if (d.motivo === "cpf_existe"){ err.textContent = "Já há um funcionário com esse CPF."; return; }
@@ -596,14 +614,62 @@ function baixarCSV(){
 /* ---------- CONFIGURAÇÕES ---------- */
 let CFG = null;
 function irConfig(){ go("s-config"); carregarConfig(); }
-function fmtWhats(w){
-  w = String(w||"").replace(/\D/g,""); if (w.startsWith("55")) w = w.slice(2);
-  if (w.length < 3) return w;
-  const ddd = w.slice(0,2), rest = w.slice(2);
-  if (!rest) return ddd;
-  return rest.length > 4 ? `${ddd} ${rest.slice(0,rest.length-4)}-${rest.slice(-4)}` : `${ddd} ${rest}`;
+/* ---- Campo de telefone ESTRUTURADO: país (default +55) + número mascarado -> canônico 55DDDNUMERO ---- */
+const PHONE_PAISES = [
+  { c:"55",  f:"🇧🇷", n:"Brasil" },
+  { c:"1",   f:"🇺🇸", n:"EUA/Canadá" },
+  { c:"351", f:"🇵🇹", n:"Portugal" },
+  { c:"54",  f:"🇦🇷", n:"Argentina" },
+  { c:"598", f:"🇺🇾", n:"Uruguai" },
+  { c:"595", f:"🇵🇾", n:"Paraguai" },
+];
+function phoneSplit(canon){ // separa canônico salvo em {pais, local}
+  canon = String(canon||"").replace(/\D/g,"");
+  const cods = PHONE_PAISES.map(p=>p.c).sort((a,b)=>b.length-a.length);
+  for (const c of cods){ if (canon.startsWith(c) && canon.length > c.length) return { pais:c, local:canon.slice(c.length) }; }
+  return { pais:"55", local:canon.replace(/^55/,"") };
 }
-function whatsDigits(v){ let w = String(v||"").replace(/\D/g,""); if (!w) return ""; if (!w.startsWith("55")) w = "55"+w; return w; }
+function fmtWhats(w){ // máscara BR (71) 99212-3439
+  w = String(w||"").replace(/\D/g,""); if (w.startsWith("55")) w = w.slice(2);
+  w = w.slice(0,11); if (!w) return "";
+  if (w.length <= 2) return "(" + w;
+  const ddd = w.slice(0,2), rest = w.slice(2);
+  if (rest.length <= 4) return `(${ddd}) ${rest}`;
+  return `(${ddd}) ${rest.slice(0, rest.length-4)}-${rest.slice(-4)}`;
+}
+function phoneMask(pais, digits){ // máscara por país (BR mascarado, demais em grupos simples)
+  digits = String(digits||"").replace(/\D/g,"");
+  if (pais === "55") return fmtWhats(digits);
+  return digits.slice(0,15);
+}
+function phoneFieldHTML(idp, canonical){
+  const { pais, local } = phoneSplit(canonical);
+  const opts = PHONE_PAISES.map(p => `<option value="${p.c}" ${p.c===pais?"selected":""}>${p.f} +${p.c}</option>`).join("");
+  return `<div class="phone-row">
+      <select class="txt ph-pais" id="${idp}-pais" onchange="phoneOnInput('${idp}')">${opts}</select>
+      <input class="txt ph-num" id="${idp}-num" inputmode="tel" placeholder="(71) 99212-3439" value="${esc(phoneMask(pais, local))}" oninput="phoneOnInput('${idp}')">
+    </div><div class="ph-warn" id="${idp}-warn"></div>`;
+}
+function phoneLocal(idp){ // dígitos locais (sem país), tratando colagem de +55
+  const pais = $(`${idp}-pais`).value;
+  let d = String($(`${idp}-num`).value||"").replace(/\D/g,"");
+  if (pais === "55") d = d.replace(/^55/,"").slice(0,11);
+  return { pais, local:d };
+}
+function phoneOnInput(idp){ // máscara ao vivo + aviso amigável + sync opcional em CFGc (contatos)
+  const { pais, local } = phoneLocal(idp);
+  $(`${idp}-num`).value = phoneMask(pais, local);
+  const w = $(`${idp}-warn`); if (w){ w.textContent = (pais==="55" && local.length===10) ? "Confere se não faltou o 9 na frente 🤔" : ""; }
+  const m = /^ct(\d+)$/.exec(idp); if (m && typeof CFGc !== "undefined" && CFGc[+m[1]]) CFGc[+m[1]].whatsapp = local ? pais+local : "";
+}
+function phoneCanonical(idp){ const { pais, local } = phoneLocal(idp); return local ? pais+local : ""; }
+function phoneValido(idp){ // avisos amigáveis, trava só o que é claramente inválido
+  const { pais, local } = phoneLocal(idp);
+  if (!local) return { ok:true, empty:true };
+  if (pais === "55" && (local.length < 10 || local.length > 11)) return { ok:false, msg:"WhatsApp inválido — DDD (2) + número (8 ou 9 dígitos)." };
+  if (pais !== "55" && local.length < 6) return { ok:false, msg:"Número muito curto." };
+  return { ok:true, canonical: pais+local };
+}
 let CFGc = [], JOR3 = null;
 async function carregarConfig(){
   $("cfg-loading").style.display = "block"; $("cfg-form").style.display = "none"; $("cfg-err").textContent = "";
@@ -633,7 +699,7 @@ function renderContatos(){
         <input class="txt ct-nome" value="${esc(c.nome||"")}" placeholder="Nome" maxlength="40" oninput="CFGc[${i}].nome=this.value">
         ${c.dono ? '<span class="ct-dono">dono</span>' : `<button class="ct-rm" type="button" onclick="removeContato(${i})" aria-label="Remover">✕</button>`}
       </div>
-      <input class="txt ct-wa" value="${esc(fmtWhats(c.whatsapp))}" inputmode="tel" placeholder="71 98888-7777" oninput="CFGc[${i}].whatsapp=this.value">
+      ${phoneFieldHTML('ct'+i, c.whatsapp)}
       <div class="ct-sw">
         <label class="cfg-switch mini"><span>📬 Recebe</span><input type="checkbox" ${c.recebe?"checked":""} onchange="CFGc[${i}].recebe=this.checked"><i></i></label>
         <label class="cfg-switch mini"><span>💬 Fala</span><input type="checkbox" ${c.fala?"checked":""} onchange="CFGc[${i}].fala=this.checked"><i></i></label>
@@ -665,8 +731,15 @@ function renderJornada(){
 }
 async function salvarConfig(){
   const err = $("cfg-err"); err.textContent = "";
-  const contatos = CFGc.map(c => ({ nome:(c.nome||"").trim(), whatsapp: whatsDigits(c.whatsapp), recebe: !!c.recebe, fala: !!c.fala, dono: !!c.dono })).filter(c => c.nome || c.whatsapp);
-  for (const c of contatos){ if (c.whatsapp && (c.whatsapp.length < 12 || c.whatsapp.length > 13)){ err.textContent = `WhatsApp de "${c.nome||"contato"}" inválido — DDD + número.`; return; } }
+  const contatos = [];
+  for (let i = 0; i < CFGc.length; i++){
+    const c = CFGc[i];
+    const v = phoneValido('ct'+i);
+    if (!v.ok){ err.textContent = `WhatsApp de "${(c.nome||'contato').trim()}": ${v.msg}`; return; }
+    const wa = v.canonical || "";
+    const nome = (c.nome||"").trim();
+    if (nome || wa) contatos.push({ nome, whatsapp: wa, recebe: !!c.recebe, fala: !!c.fala, dono: !!c.dono });
+  }
   const dono = contatos.find(c => c.dono);
   if (!dono || !dono.whatsapp){ err.textContent = "O contato do dono precisa de um WhatsApp."; return; }
   const tol = parseInt($("cfg-tol").value, 10);
