@@ -2,118 +2,131 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0B2A33">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="style.css">
-<title>Zélia Ponto</title>
+<meta name="description" content="A Zélia é a secretária de RH que cuida do ponto da sua equipe e te avisa dos riscos trabalhistas — tudo pelo WhatsApp.">
+<link rel="icon" href="zelia.svg">
+<link rel="stylesheet" href="landing.css">
+<title>Zélia · a secretária que cuida do ponto da sua equipe</title>
 </head>
 <body>
-<div id="app">
 
-  <section id="s-loading" class="screen center active"><div class="spinner"></div><p>Carregando…</p></section>
+<!-- TOPO -->
+<header class="top"><div class="wrap">
+  <div class="brand"><img src="zelia.svg" alt="Zélia">Zélia</div>
+  <a class="func" href="app/">Sou funcionário — bater ponto</a>
+</div></header>
 
-  <!-- LOGIN -->
-  <section id="s-login" class="screen center">
-    <div class="avatar-lg"><img src="zelia.svg" alt="Zélia"></div>
-    <h1>Zélia Ponto</h1>
-    <p class="big">Entre com seu <b>CPF</b> e <b>senha</b>.</p>
-    <div class="field"><label>CPF</label><input id="in-cpf" class="txt" inputmode="numeric" autocomplete="off" placeholder="Só números"></div>
-    <div class="field"><label>Senha</label><div class="pw-wrap"><input id="in-senha" class="txt" type="password" autocomplete="off" placeholder="Sua senha"><button type="button" class="pw-eye" aria-label="Mostrar senha" onclick="togglePw(this)"><svg class="eye-on" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div></div>
-    <div class="err" id="login-err"></div>
-    <button class="btn" onclick="fazerLogin()">Entrar</button>
-    <p class="hint">Primeiro acesso? A senha inicial é <b>123</b> (o app pede a troca).</p>
-  </section>
-
-  <!-- ESCOLHER EMPRESA -->
-  <section id="s-empresa" class="screen center">
-    <div class="avatar-lg"><img src="zelia.svg" alt="Zélia"></div>
-    <h1>Qual empresa?</h1>
-    <p>Seu CPF está em mais de uma empresa. Escolha:</p>
-    <div class="list" id="lista-empresas"></div>
-    <button class="linkbtn" onclick="sair()">Voltar</button>
-  </section>
-
-  <!-- TROCAR SENHA OBRIGATÓRIA -->
-  <section id="s-trocar" class="screen center">
-    <div class="avatar-lg"><img src="zelia.svg" alt="Zélia"></div>
-    <h1>Crie sua senha</h1>
-    <p class="big">No primeiro acesso, defina uma senha nova.</p>
-    <div class="field"><label>Nova senha</label><div class="pw-wrap"><input id="in-nova" class="txt" type="password" autocomplete="off" placeholder="Mínimo 6 caracteres"><button type="button" class="pw-eye" aria-label="Mostrar senha" onclick="togglePw(this)"><svg class="eye-on" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div></div>
-    <div class="err" id="trocar-err"></div>
-    <button class="btn" onclick="fazerTrocaSenha()">Salvar e entrar</button>
-    <p class="hint">Não pode ser "123" nem seu CPF.</p>
-  </section>
-
-  <!-- HOME / BATER PONTO -->
-  <section id="s-home" class="screen">
-    <div class="hdr">
-      <div class="topbar">
-        <span style="width:24px"></span>
-        <div class="name name-wrap"><span class="avatar-sm"><img src="zelia.svg" alt=""></span>Zélia</div>
-        <button class="iconbtn" onclick="sair()" aria-label="Sair"><svg class="ico" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg></button>
-      </div>
-      <div class="hello" id="ola">Olá!</div>
-      <div class="subtle" id="sub-empresa">—</div>
+<!-- HERO -->
+<section class="hero"><div class="wrap hero-grid">
+  <div>
+    <h1>Você cuida da loja.<br><span class="hl">A Zélia cuida do ponto.</span></h1>
+    <p class="lead">Ela controla o ponto da sua equipe e te avisa dos riscos trabalhistas antes de virarem processo — tudo pelo WhatsApp.</p>
+    <p class="mini">Se você usa WhatsApp, você já sabe usar a Zélia. Sem instalar nada, sem treinar ninguém.</p>
+    <div class="hero-cta">
+      <a class="btn-wa js-wa"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.5.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.6-1.5-.9-2.1-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 .9-1 2.3s1 2.7 1.2 2.9c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg>Falar com a Zélia no WhatsApp</a>
+      <p class="btn-sub">Resposta rápida, no seu WhatsApp mesmo.</p>
     </div>
-    <div class="body">
-      <div class="card clock">
-        <div class="st"><span id="net-dot" class="dot"></span><span id="net-txt">—</span></div>
-        <div class="big" id="clock-now">--:--</div>
-        <div class="since" id="clock-sub">Toque num botão para bater o ponto</div>
-      </div>
-      <div class="sec">Bater ponto</div>
-      <div class="grid">
-        <button class="btn-ponto b-entrada" data-tipo="entrada" onclick="iniciarRegistro('entrada')"><svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg><span>Entrada</span></button>
-        <button class="btn-ponto b-pausa" data-tipo="pausa" onclick="iniciarRegistro('pausa')"><svg viewBox="0 0 24 24"><path d="M4 8h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8z"/><path d="M17 9h2a2 2 0 0 1 0 4h-2"/></svg><span>Almoço</span></button>
-        <button class="btn-ponto b-retorno" data-tipo="retorno" onclick="iniciarRegistro('retorno')"><svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M14 17l5-5-5-5M19 12H7"/></svg><span>Retorno</span></button>
-        <button class="btn-ponto b-saida" data-tipo="saida" onclick="iniciarRegistro('saida')"><svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg><span>Saída</span></button>
-      </div>
-      <div id="ultimo-box" class="info-box" style="display:none"></div>
-      <p class="pend-hint" id="pend-hint" style="display:none"></p>
-      <div class="tabs">
-        <button class="tab on"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Início</button>
-        <button class="tab" onclick="irRegistros()"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 15l5-4 4 3 6-6"/></svg>Registros</button>
-      </div>
+  </div>
+  <div class="zelia-hero">
+    <img src="zelia.svg" alt="Zélia, sua secretária de RH">
+    <span class="zelia-tag">Oi! Eu sou a <b>Zélia</b> 👋</span>
+  </div>
+</div></section>
+
+<!-- PROBLEMA -->
+<section><div class="wrap">
+  <div class="sec-title"><div class="eyebrow">Soa familiar?</div>
+    <h2>O ponto no papel dá dor de cabeça</h2></div>
+  <div class="dores">
+    <div class="dor"><div class="em">🧾</div><p>O papelzinho do ponto some, rasura e ninguém acha na hora que precisa.</p></div>
+    <div class="dor"><div class="em">⚖️</div><p>O funcionário sai, procura um advogado, e você descobre o problema tarde demais.</p></div>
+    <div class="dor"><div class="em">🤷</div><p>Você não sabe quem chegou, quem faltou e quem está atrasado — só indo até lá ver.</p></div>
+  </div>
+</div></section>
+
+<!-- SOLUÇÃO 3 PASSOS -->
+<section class="alt"><div class="wrap">
+  <div class="sec-title"><div class="eyebrow">Como funciona</div>
+    <h2>Simples assim, em 3 passos</h2></div>
+  <div class="passos">
+    <div class="passo"><div class="n"></div><h3>A equipe bate o ponto</h3><p>Cada um registra pelo próprio celular, com foto e localização — assim você confere se a pessoa está mesmo na loja.</p></div>
+    <div class="passo"><div class="n"></div><h3>Você recebe no WhatsApp</h3><p>Quem chegou, quem faltou, quem atrasou. Um resumo por dia, sem precisar abrir computador.</p></div>
+    <div class="passo"><div class="n"></div><h3>A Zélia fica de olho</h3><p>Ela acompanha os riscos trabalhistas e te avisa a tempo, antes de virar dor de cabeça.</p></div>
+  </div>
+</div></section>
+
+<!-- SENTINELA -->
+<section class="sentinela"><div class="wrap">
+  <div class="sec-title"><div class="eyebrow" style="color:#7BE3B0">O diferencial</div>
+    <h2>A Zélia te avisa antes do problema virar processo</h2>
+    <p>Ela conhece as regras que dão dor de cabeça na Justiça do Trabalho — e te cutuca no sinal amarelo:</p></div>
+  <div class="sent-grid">
+    <ul class="sent-list">
+      <li><span class="ic">✓</span> Férias de alguém vencendo</li>
+      <li><span class="ic">✓</span> Contrato de experiência chegando no fim</li>
+      <li><span class="ic">✓</span> Hora extra passando do limite do dia</li>
+      <li><span class="ic">✓</span> Funcionário sem folgar na semana</li>
+      <li><span class="ic">✓</span> Almoço que não foi registrado</li>
+    </ul>
+    <div class="sent-side"><div class="card">
+      <h3>E vai além</h3>
+      <p>Se você quiser, a Zélia manda a situação direto pro seu contador — é só pedir no WhatsApp.</p>
+      <div class="frase">Quem tem registro, tem defesa.</div>
+    </div></div>
+  </div>
+</div></section>
+
+<!-- DEMONSTRAÇÃO -->
+<section class="demo"><div class="wrap">
+  <div class="sec-title"><div class="eyebrow">Veja ela trabalhando</div>
+    <h2>Um toque da Zélia no seu dia</h2></div>
+  <div class="phone"><div class="phone-scr">
+    <div class="wa-head"><img src="zelia.svg" alt=""><div><div class="nome">Zélia</div><div class="st">online</div></div></div>
+    <div class="wa-body" id="wa-body">
+      <div class="typing" id="typing1"><i></i><i></i><i></i></div>
+      <div class="wb wb-in" data-step="1">⚠️ Chefe, a Maria completa 1 ano de casa dia 15/09. As férias dela já precisam entrar no radar. Vale confirmar com teu contador 👍<div class="t">09:04</div></div>
+      <div class="wb wb-out" data-step="2">manda pro meu contador<div class="t">09:05</div></div>
+      <div class="typing" id="typing2"><i></i><i></i><i></i></div>
+      <div class="wb wb-in" data-step="3">Prontinho, enviei pro seu contador ✅<div class="t">09:05</div></div>
     </div>
-  </section>
+  </div></div>
+  <p class="demo-cap">Conversa ilustrativa, com dados de exemplo — é assim que a Zélia fala com você.</p>
+</div></section>
 
-  <!-- CÂMERA -->
-  <section id="s-camera" class="screen">
-    <div class="hdr" style="padding-bottom:16px"><div class="topbar"><span style="width:24px"></span><div class="name" id="cam-titulo">Registrar</div><button class="btn ghost" style="width:auto;padding:8px 12px;font-size:15px" onclick="cancelarCamera()">Cancelar</button></div></div>
-    <video id="cam-video" playsinline autoplay muted></video>
-    <div class="cam-body"><p class="hint" style="text-align:center" id="cam-hint">Enquadre o rosto e toque em registrar.</p><div style="flex:1"></div><button class="btn" id="cam-capturar" onclick="capturar()">Registrar ponto</button></div>
-    <input id="cam-fallback" type="file" accept="image/*" capture="user" style="display:none" onchange="capturarInput(event)">
-  </section>
+<!-- PRA QUEM É -->
+<section class="alt"><div class="wrap">
+  <div class="sec-title"><div class="eyebrow">Feita pra você</div>
+    <h2>Pra quem toca um comércio</h2>
+    <p>De 1 a 50 funcionários. Se tem gente batendo ponto, a Zélia dá conta.</p></div>
+  <div class="quem">
+    <span><span class="e">🥖</span>Padaria</span><span><span class="e">🛍️</span>Loja</span>
+    <span><span class="e">🛒</span>Mercado</span><span><span class="e">💇</span>Salão</span>
+    <span><span class="e">🍽️</span>Restaurante</span><span><span class="e">🏢</span>Escritório</span>
+  </div>
+</div></section>
 
-  <section id="s-enviando" class="screen center"><div class="spinner"></div><p id="enviando-msg">Registrando…</p></section>
+<!-- CTA FINAL -->
+<section class="final"><div class="wrap">
+  <h2>Bora tirar o ponto do papel?</h2>
+  <p>Fale com a gente e veja a Zélia funcionando em 10 minutos.</p>
+  <a class="btn-wa js-wa"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.5.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.6-1.5-.9-2.1-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 .9-1 2.3s1 2.7 1.2 2.9c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg>Falar com a Zélia no WhatsApp</a>
+</div></section>
 
-  <section id="s-resultado" class="screen center">
-    <div class="result-ic ric-ok" id="res-ic">✅</div>
-    <h2 id="res-titulo"></h2>
-    <p id="res-msg" style="white-space:pre-line"></p>
-    <button class="btn" onclick="voltarHome()">OK</button>
-  </section>
+<!-- FOOTER -->
+<footer><div class="wrap">
+  <div class="fbrand"><img src="zelia.svg" alt="">Zélia</div>
+  <div class="flinks">
+    <a href="https://instagram.com/zeliaponto" target="_blank" rel="noopener">Instagram @zeliaponto</a>
+    <a href="app/">Sou funcionário — bater ponto</a>
+    <a href="painel/">Painel do dono</a>
+  </div>
+  <p style="margin-top:12px;font-size:13px">zeliaponto.com.br · a secretária de RH que mora no seu WhatsApp</p>
+</div></footer>
 
-  <!-- MEUS REGISTROS -->
-  <section id="s-registros" class="screen">
-    <div class="hdr">
-      <div class="topbar"><button class="iconbtn" onclick="voltarHome()" aria-label="Voltar"><svg class="ico" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><div class="name">Meus Registros</div><span style="width:24px"></span></div>
-      <div class="stats">
-        <div class="stat"><div class="k">Trabalhado</div><div class="v" id="st-trab">--:--</div></div>
-        <div class="stat"><div class="k">Faltantes</div><div class="v" id="st-falt">--:--</div></div>
-        <div class="stat"><div class="k">Extras</div><div class="v" id="st-extra">--:--</div></div>
-      </div>
-      <div class="mnav"><button onclick="mudarMes(-1)"><svg viewBox="0 0 24 24"><path d="M18 6l-6 6 6 6M12 6l-6 6 6 6"/></svg></button><div class="pill" id="mes-label">—</div><button onclick="mudarMes(1)"><svg viewBox="0 0 24 24"><path d="M6 6l6 6-6 6M12 6l6 6-6 6"/></svg></button></div>
-    </div>
-    <div class="body"><div id="dias-lista"></div></div>
-  </section>
+<!-- BOTÃO FLUTUANTE -->
+<a class="float-wa js-wa" aria-label="Falar com a Zélia no WhatsApp"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.5.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.6-1.5-.9-2.1-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 .9-1 2.3s1 2.7 1.2 2.9c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg></a>
 
-</div>
-<div id="toast" class="toast"></div>
-<canvas id="work-canvas"></canvas>
-<script src="app.js"></script>
+<script src="landing.js"></script>
 </body>
 </html>
