@@ -55,3 +55,20 @@ if ("IntersectionObserver" in window) {
 document.querySelectorAll(".faq details").forEach(d => d.addEventListener("toggle", () => {
   if (d.open) document.querySelectorAll(".faq details").forEach(o => { if (o !== d) o.open = false; });
 }));
+
+/* Parallax leve no hero (só os orbs, respeitando reduce-motion) */
+(function () {
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const orbs = document.querySelectorAll(".hero-bg .orb");
+  if (!orbs.length) return;
+  let ticking = false;
+  function onScroll() {
+    if (ticking) return; ticking = true;
+    requestAnimationFrame(() => {
+      const y = window.scrollY;
+      if (y < 900) orbs.forEach((o, i) => { o.style.transform = "translateY(" + (y * (i ? 0.14 : 0.22)).toFixed(1) + "px)"; });
+      ticking = false;
+    });
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+})();
