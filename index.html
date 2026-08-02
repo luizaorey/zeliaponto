@@ -2,207 +2,462 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0B2A33">
-<meta name="description" content="A Zélia é a secretária de RH que cuida do ponto da sua equipe e te avisa dos riscos trabalhistas — tudo pelo WhatsApp.">
-<link rel="icon" href="zelia.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zélia · Controle de ponto no WhatsApp — quem tem registro, tem defesa</title>
+<meta name="description" content="Você cuida da loja. A Zélia cuida do ponto. Controle de ponto por selfie + GPS, alertas no seu WhatsApp e proteção contra processos trabalhistas.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="landing.css">
-<noscript><style>.reveal{opacity:1!important;transform:none!important}.wb{opacity:1!important;transform:none!important}</style></noscript>
-<title>Zélia · a secretária que cuida do ponto da sua equipe</title>
-</head>
-<body>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --verde:#14A673; --verde2:#12b57c; --verde-esc:#0C4B35; --verde-deep:#06301f;
+    --ambar:#F6A93B; --ambar-esc:#D98614; --areia:#FBF7F0; --areia2:#F4EEE3;
+    --grafite:#1F2A26; --cinza:#6B7B74; --linha:#eae3d7; --verde-claro:#E6F5EE;
+    --wpp:#25D366; --shadow:0 20px 50px -24px rgba(6,48,31,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',sans-serif;color:var(--grafite);background:var(--areia);line-height:1.62;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  h1,h2,h3,.nun{font-family:'Nunito',sans-serif}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+  a{text-decoration:none;color:inherit}
+  section{padding:96px 0}
+  @media(max-width:700px){section{padding:66px 0}}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--verde);font-weight:800;font-family:'Nunito';font-size:13px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:16px}
+  .eyebrow::before{content:"";width:22px;height:2px;background:var(--ambar);border-radius:2px}
+  h2{font-size:clamp(30px,4.6vw,46px);font-weight:900;color:var(--verde-esc);letter-spacing:-.02em;line-height:1.08}
+  .sub{color:var(--cinza);font-size:19px;max-width:640px;margin-top:14px}
+  .center{text-align:center}.center .sub{margin:14px auto 0}
 
-<!-- TOPO -->
-<header class="top"><div class="wrap">
-  <div class="brand"><img src="zelia.svg" alt="Zélia">Zélia</div>
-  <a class="func" href="app/">Sou funcionário — bater ponto</a>
-</div></header>
+  /* Reveal on scroll */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;gap:10px;font-family:'Nunito';font-weight:800;font-size:17px;padding:16px 28px;border-radius:999px;transition:transform .16s, box-shadow .16s;cursor:pointer;border:none}
+  .btn svg{width:22px;height:22px;flex:none}
+  .btn-w{background:var(--verde);color:#fff;box-shadow:0 14px 30px -12px rgba(12,75,53,.6)}
+  .btn-w:hover{transform:translateY(-3px);box-shadow:0 20px 38px -12px rgba(12,75,53,.7)}
+  .btn-a{background:var(--ambar);color:var(--verde-esc);box-shadow:0 14px 30px -12px rgba(217,134,20,.55)}
+  .btn-a:hover{transform:translateY(-3px)}
+  .btn-ghost{color:var(--verde-esc);font-weight:800;font-family:'Nunito';padding:16px 14px;display:inline-flex;align-items:center;gap:8px}
+  .btn-ghost:hover{color:var(--verde)}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:80;background:rgba(251,247,240,.82);backdrop-filter:blur(12px);border-bottom:1px solid transparent;transition:border-color .3s, box-shadow .3s}
+  nav.scrolled{border-color:var(--linha);box-shadow:0 6px 24px -18px rgba(6,48,31,.4)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:72px}
+  .brand{display:flex;align-items:center;gap:11px}
+  .brand .ava{width:44px;height:44px;border-radius:50%;box-shadow:0 4px 12px -4px rgba(12,75,53,.5)}
+  .brand .wm{font-family:'Nunito';font-weight:900;font-size:24px;color:var(--verde-esc);letter-spacing:-.02em}
+  .brand .wm .d{color:var(--ambar)}
+  nav .btn{padding:11px 20px;font-size:15px}
+  @media(max-width:560px){nav .navcta .full{display:none}}
+
+  /* HERO */
+  .hero{position:relative;padding:70px 0 60px;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:0;background:
+     radial-gradient(60% 60% at 82% 8%, rgba(20,166,115,.14), transparent 60%),
+     radial-gradient(50% 50% at 10% 90%, rgba(246,169,59,.12), transparent 60%);z-index:-1}
+  .hero .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:46px;align-items:center}
+  @media(max-width:900px){.hero .grid{grid-template-columns:1fr;text-align:center}}
+  .badge-live{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--linha);border-radius:999px;padding:7px 15px;font-size:13px;font-weight:700;color:var(--verde-esc);box-shadow:var(--shadow)}
+  .badge-live .dot{width:8px;height:8px;border-radius:50%;background:var(--wpp);box-shadow:0 0 0 0 rgba(37,211,102,.6);animation:pulse 2s infinite}
+  h1.hero-h{font-size:clamp(38px,6.4vw,66px);font-weight:900;color:var(--verde-esc);line-height:1.0;letter-spacing:-.03em;margin-top:20px}
+  h1.hero-h .hl{position:relative;color:var(--verde);white-space:nowrap}
+  h1.hero-h .hl::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:12px;background:rgba(246,169,59,.35);z-index:-1;border-radius:6px}
+  .hero p.lead{font-size:20px;color:#39493f;margin-top:20px;max-width:540px}
+  @media(max-width:900px){.hero p.lead{margin-left:auto;margin-right:auto}}
+  .hero .cta{display:flex;gap:14px;align-items:center;margin-top:30px;flex-wrap:wrap}
+  @media(max-width:900px){.hero .cta{justify-content:center}}
+  .microcta{margin-top:14px;font-size:14px;color:var(--cinza);display:flex;gap:16px;flex-wrap:wrap}
+  @media(max-width:900px){.microcta{justify-content:center}}
+  .microcta span{display:inline-flex;align-items:center;gap:6px}
+  .microcta .ok{color:var(--verde)}
+
+  /* hero art */
+  .hero .art{position:relative;display:flex;justify-content:center;align-items:center;min-height:400px}
+  .halo{position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(20,166,115,.22),transparent 62%);filter:blur(6px)}
+  .ava-hero{width:330px;height:330px;border-radius:50%;border:12px solid #fff;box-shadow:0 40px 80px -30px rgba(6,48,31,.6);position:relative;z-index:2}
+  @media(max-width:420px){.ava-hero{width:260px;height:260px}}
+  .pop{position:absolute;z-index:3;background:#fff;border:1px solid var(--linha);border-radius:16px;padding:11px 15px;box-shadow:0 18px 40px -18px rgba(6,48,31,.4);display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600}
+  .pop .ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex:none}
+  .pop b{font-family:'Nunito'}
+  .pop small{display:block;color:var(--cinza);font-weight:500;font-size:12px}
+  .pop1{top:44px;left:-6px;animation:float1 5s ease-in-out infinite}
+  .pop2{bottom:96px;right:-10px;animation:float2 6s ease-in-out infinite}
+  .pop3{bottom:20px;left:24px;animation:float1 5.5s ease-in-out infinite}
+  @media(max-width:900px){.pop1{left:2%}.pop2{right:2%}.pop3{display:none}}
+  @keyframes float1{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  @keyframes float2{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(37,211,102,.6)}70%{box-shadow:0 0 0 10px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}
+
+  /* MARQUEE trust strip */
+  .strip{background:var(--verde-esc);color:#eafff5;padding:0;overflow:hidden;position:relative}
+  .marq{display:flex;gap:56px;white-space:nowrap;padding:18px 0;animation:scroll 26s linear infinite;font-family:'Nunito';font-weight:800;font-size:16px;letter-spacing:.02em}
+  .marq span{display:inline-flex;align-items:center;gap:12px;color:#bfeeda}
+  .marq span::after{content:"•";color:var(--ambar);margin-left:44px}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* PROBLEM */
+  .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:48px}
+  @media(max-width:820px){.cards3{grid-template-columns:1fr}}
+  .pcard{background:#fff;border:1px solid var(--linha);border-radius:22px;padding:30px 26px;box-shadow:0 10px 30px -24px rgba(6,48,31,.4)}
+  .pcard .ic{width:56px;height:56px;border-radius:15px;background:#fdecec;display:flex;align-items:center;justify-content:center;font-size:26px}
+  .pcard h3{font-size:20px;font-weight:800;color:var(--verde-esc);margin:16px 0 6px}
+  .pcard p{font-size:15.5px;color:#4a5a52}
+
+  /* STEPS timeline */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:52px;position:relative}
+  @media(max-width:820px){.steps{grid-template-columns:1fr}}
+  .step{background:#fff;border:1px solid var(--linha);border-radius:24px;padding:34px 28px 30px;position:relative;box-shadow:0 12px 34px -26px rgba(6,48,31,.5)}
+  .step .n{position:absolute;top:-18px;left:28px;width:44px;height:44px;border-radius:13px;background:var(--verde);color:#fff;font-family:'Nunito';font-weight:900;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 10px 20px -8px rgba(12,75,53,.6)}
+  .step .ic{font-size:40px;margin-bottom:6px}
+  .step h3{font-size:21px;font-weight:800;color:var(--verde-esc);margin:10px 0 8px}
+  .step p{font-size:15.5px;color:#4a5a52}
+
+  /* OWNER dark */
+  .owner{background:linear-gradient(180deg,var(--verde-esc),var(--verde-deep));color:#eafff5;border-radius:40px;margin:0 16px;position:relative;overflow:hidden;padding:84px 0}
+  @media(max-width:700px){.owner{margin:0 8px;border-radius:28px;padding:56px 0}}
+  .owner::before{content:"";position:absolute;top:-120px;right:-80px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(20,166,115,.35),transparent 65%)}
+  .owner .eyebrow{color:var(--ambar)}.owner .eyebrow::before{background:var(--ambar)}
+  .owner h2{color:#fff}
+  .owner .grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;margin-top:40px}
+  @media(max-width:880px){.owner .grid{grid-template-columns:1fr;gap:36px}}
+  .benefit{display:flex;gap:15px;align-items:flex-start;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+  .benefit:last-child{border-bottom:none}
+  .benefit .bi{width:48px;height:48px;flex:none;border-radius:13px;background:rgba(246,169,59,.16);border:1px solid rgba(246,169,59,.4);color:var(--ambar);display:flex;align-items:center;justify-content:center;font-size:22px}
+  .benefit b{font-family:'Nunito';font-size:18px;color:#fff;display:block;margin-bottom:3px}
+  .benefit span{font-size:14.5px;color:#c4e8d8}
+  /* chat */
+  .phone{background:#0a2c1e;border:8px solid #123a29;border-radius:34px;padding:14px;box-shadow:0 40px 80px -30px rgba(0,0,0,.7);max-width:350px;margin:0 auto;width:100%}
+  .chead{display:flex;align-items:center;gap:10px;padding:4px 6px 12px}
+  .chead .ava{width:40px;height:40px;border-radius:50%}
+  .chead .nm{font-family:'Nunito';font-weight:800;color:#fff;font-size:15px}
+  .chead .st{font-size:11px;color:#7fd3b0;display:flex;align-items:center;gap:5px}
+  .chead .st::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--wpp)}
+  .bubbles{background:linear-gradient(180deg,#0f5138,#0c4530);border-radius:18px;padding:15px;display:flex;flex-direction:column;gap:10px;min-height:300px}
+  .bub{max-width:84%;padding:10px 13px;border-radius:15px;font-size:13.5px;line-height:1.45;opacity:0;transform:translateY(8px);animation:bub .5s forwards}
+  .bub.z{background:#fff;color:#1f2a26;align-self:flex-start;border-bottom-left-radius:5px}
+  .bub.u{background:#d9fdd3;color:#10331f;align-self:flex-end;border-bottom-right-radius:5px}
+  .bub .t{display:block;font-size:10px;color:#93a; text-align:right;margin-top:3px;opacity:.55}
+  .bub.b1{animation-delay:.2s}.bub.b2{animation-delay:.7s}.bub.b3{animation-delay:1.2s}.bub.b4{animation-delay:1.7s}.bub.b5{animation-delay:2.2s}
+  @keyframes bub{to{opacity:1;transform:none}}
+
+  /* LEGAL / defesa */
+  .legal{text-align:center}
+  .legal .quote{font-family:'Nunito';font-weight:900;font-size:clamp(30px,5vw,52px);color:var(--verde-esc);letter-spacing:-.02em;line-height:1.1;max-width:820px;margin:16px auto 0}
+  .legal .quote em{color:var(--ambar);font-style:normal}
+  .alerts{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:34px;max-width:820px;margin-left:auto;margin-right:auto}
+  .alert{background:#fff;border:1px solid var(--linha);border-radius:999px;padding:11px 20px;font-size:15px;font-weight:600;color:var(--verde-esc);display:inline-flex;align-items:center;gap:9px;box-shadow:0 8px 22px -18px rgba(6,48,31,.5)}
+  .alert .ai{color:var(--ambar);font-size:17px}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px}
+  @media(max-width:700px){.stats{grid-template-columns:1fr}}
+  .stat{background:var(--verde-claro);border:1px solid #d3ecdf;border-radius:20px;padding:26px;text-align:center}
+  .stat .big{font-family:'Nunito';font-weight:900;font-size:40px;color:var(--verde);line-height:1}
+  .stat p{font-size:14.5px;color:#41564c;margin-top:8px}
+
+  /* WHO */
+  .who{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:46px}
+  @media(max-width:820px){.who{grid-template-columns:repeat(2,1fr)}}
+  .wcard{background:#fff;border:1px solid var(--linha);border-radius:20px;padding:28px 20px;text-align:center;transition:transform .2s, box-shadow .2s}
+  .wcard:hover{transform:translateY(-6px);box-shadow:var(--shadow)}
+  .wcard .ic{font-size:42px}
+  .wcard b{font-family:'Nunito';display:block;margin-top:12px;color:var(--verde-esc);font-size:18px}
+  .wcard span{font-size:13.5px;color:var(--cinza)}
+
+  /* SECURITY */
+  .trust{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:46px}
+  @media(max-width:820px){.trust{grid-template-columns:1fr}}
+  .tcard{background:#fff;border:1px solid var(--linha);border-radius:22px;padding:30px 26px;box-shadow:0 10px 30px -26px rgba(6,48,31,.4)}
+  .tcard .ic{width:54px;height:54px;border-radius:14px;background:var(--verde-claro);display:flex;align-items:center;justify-content:center;font-size:26px}
+  .tcard b{font-family:'Nunito';display:block;color:var(--verde-esc);font-size:19px;margin:14px 0 6px}
+  .tcard p{font-size:15px;color:#4a5a52}
+
+  /* FAQ */
+  .faq{max-width:800px;margin:40px auto 0}
+  details{background:#fff;border:1px solid var(--linha);border-radius:16px;padding:0 22px;margin-bottom:13px;transition:box-shadow .2s}
+  details[open]{box-shadow:var(--shadow)}
+  summary{list-style:none;cursor:pointer;padding:20px 0;font-family:'Nunito';font-weight:800;color:var(--verde-esc);font-size:17.5px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  summary::-webkit-details-marker{display:none}
+  summary .plus{width:28px;height:28px;flex:none;border-radius:8px;background:var(--verde-claro);color:var(--verde);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;transition:transform .2s, background .2s, color .2s}
+  details[open] summary .plus{transform:rotate(45deg);background:var(--verde);color:#fff}
+  details p{padding:0 0 20px;color:#4a5a52;font-size:15.5px}
+
+  /* FINAL */
+  .final{position:relative;background:linear-gradient(140deg,#17b47d,var(--verde) 45%,#0f8a5f);color:#fff;text-align:center;border-radius:40px;margin:0 16px;padding:70px 24px;overflow:hidden}
+  @media(max-width:700px){.final{margin:0 8px;border-radius:28px;padding:54px 20px}}
+  .final::before{content:"";position:absolute;top:-100px;left:-60px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.08)}
+  .final::after{content:"";position:absolute;bottom:-120px;right:-70px;width:340px;height:340px;border-radius:50%;background:rgba(6,48,31,.15)}
+  .final .ava{width:104px;height:104px;border-radius:50%;border:6px solid rgba(255,255,255,.9);box-shadow:0 20px 40px -18px rgba(0,0,0,.4);position:relative;z-index:2}
+  .final h2{color:#fff;margin-top:16px;position:relative;z-index:2}
+  .final p{color:#eafff5;font-size:19px;margin-top:12px;position:relative;z-index:2}
+  .final .btn{margin-top:28px;position:relative;z-index:2}
+  .final .handle{margin-top:20px;color:#dff6ec;font-weight:600;position:relative;z-index:2}
+
+  footer{padding:52px 0 60px;border-top:1px solid var(--linha);margin-top:80px}
+  footer .wrap{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap}
+  footer .fcol .wm{font-size:22px}
+  footer p.tg{color:var(--cinza);font-size:14px;max-width:280px;margin-top:10px}
+  footer .flinks{display:flex;gap:28px;flex-wrap:wrap}
+  footer .flinks a{color:var(--verde-esc);font-weight:600;font-size:14.5px}
+  footer .flinks a:hover{color:var(--verde)}
+  footer .fbot{width:100%;border-top:1px solid var(--linha);margin-top:30px;padding-top:22px;color:var(--cinza);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+  /* FAB */
+  .fab{position:fixed;bottom:24px;right:24px;z-index:90;background:var(--wpp);width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 16px 34px -10px rgba(0,0,0,.45);animation:pulse 2.4s infinite}
+  .fab svg{width:33px;height:33px;fill:#fff}
+  .fab:hover{transform:scale(1.06)}
+</style>
+</head>
+<body id="top">
+
+<!-- ===== SVG symbols ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="zbg" cx="35%" cy="22%" r="90%"><stop offset="0%" stop-color="#1cbd84"/><stop offset="55%" stop-color="#14A673"/><stop offset="100%" stop-color="#0f8a5f"/></radialGradient>
+    <linearGradient id="zhair" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4C382E"/><stop offset="100%" stop-color="#33241d"/></linearGradient>
+    <clipPath id="zclip"><circle cx="200" cy="200" r="200"/></clipPath>
+    <symbol id="zelia" viewBox="0 0 400 400">
+      <g clip-path="url(#zclip)">
+        <rect width="400" height="400" fill="url(#zbg)"/>
+        <circle cx="200" cy="212" r="150" fill="#ffffff" opacity="0.06"/>
+        <path d="M70 400 C70 322 128 300 200 300 C272 300 330 322 330 400 Z" fill="#FBF7F0"/>
+        <path d="M175 305 L200 340 L225 305 L214 300 L200 322 L186 300 Z" fill="#F6A93B"/>
+        <path d="M178 262 C178 300 222 300 222 262 L222 236 L178 236 Z" fill="#D69E77"/>
+        <path d="M110 214 C104 128 150 70 200 70 C250 70 296 128 290 214 C286 268 276 300 262 322 C270 250 262 210 246 196 C250 176 240 150 200 150 C160 150 150 176 154 196 C138 210 130 250 138 322 C124 300 114 268 110 214 Z" fill="url(#zhair)"/>
+        <path d="M150 120 C168 96 176 92 190 88 C176 100 170 120 168 140 C160 132 154 126 150 120 Z" fill="#B9AFA6" opacity="0.85"/>
+        <path d="M138 196 C138 150 162 122 200 122 C238 122 262 150 262 196 C262 244 236 276 200 276 C164 276 138 244 138 196 Z" fill="#E7B490"/>
+        <circle cx="140" cy="204" r="14" fill="#E7B490"/><circle cx="260" cy="204" r="14" fill="#E7B490"/>
+        <circle cx="140" cy="214" r="4" fill="#F6A93B"/><circle cx="260" cy="214" r="4" fill="#F6A93B"/>
+        <ellipse cx="164" cy="222" rx="16" ry="10" fill="#e79a8a" opacity="0.35"/><ellipse cx="236" cy="222" rx="16" ry="10" fill="#e79a8a" opacity="0.35"/>
+        <path d="M158 182 C168 174 186 174 194 180" stroke="#4C382E" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M206 180 C214 174 232 174 242 182" stroke="#4C382E" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="176" cy="198" rx="8.5" ry="9.5" fill="#3a2a23"/><ellipse cx="224" cy="198" rx="8.5" ry="9.5" fill="#3a2a23"/>
+        <circle cx="179" cy="195" r="2.6" fill="#fff"/><circle cx="227" cy="195" r="2.6" fill="#fff"/>
+        <g fill="none" stroke="#0C4B35" stroke-width="4" opacity="0.9">
+          <rect x="156" y="184" width="42" height="30" rx="13"/><rect x="202" y="184" width="42" height="30" rx="13"/>
+          <path d="M198 197 C200 194 200 194 202 197"/><path d="M156 195 L146 198"/><path d="M244 195 L254 198"/>
+        </g>
+        <path d="M200 206 C196 218 194 224 200 228 C204 228 206 226 206 224" stroke="#cf9270" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M176 240 C190 256 210 256 224 240" stroke="#a85a4a" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M182 244 C192 252 208 252 218 244 C208 250 192 250 182 244 Z" fill="#fff"/>
+        <path d="M138 196 C132 150 158 108 200 108 C242 108 268 150 262 196 C258 178 250 160 236 152 C244 168 244 184 240 196 C236 176 224 158 200 158 C176 158 164 176 160 196 C156 184 156 168 164 152 C150 160 142 178 138 196 Z" fill="url(#zhair)"/>
+      </g>
+    </symbol>
+    <symbol id="wpp" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.517 5.26l-.999 3.648 3.971-1.607zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></symbol>
+  </defs>
+</svg>
+
+<nav id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><svg class="ava" viewBox="0 0 400 400"><use href="#zelia"/></svg><span class="wm">Zélia<span class="d">.</span></span></a>
+    <a class="btn btn-w navcta wpp-link" href="#"><svg><use href="#wpp"/></svg><span class="full">Falar com a Zélia</span></a>
+  </div>
+</nav>
+
+<a class="fab wpp-link" href="#" aria-label="WhatsApp"><svg><use href="#wpp"/></svg></a>
 
 <!-- HERO -->
-<section class="hero">
-  <div class="hero-bg" aria-hidden="true">
-    <span class="orb orb-1"></span><span class="orb orb-2"></span>
-    <span class="ghost g1"></span><span class="ghost g2"></span><span class="ghost g3"></span>
-    <span class="grain"></span>
-  </div>
-  <div class="wrap hero-grid">
-  <div class="hero-txt reveal">
-    <h1>Você cuida da loja.<br><span class="hl">A Zélia cuida do ponto.</span></h1>
-    <p class="lead">Ela controla o ponto da sua equipe e te avisa dos riscos trabalhistas antes de virarem processo — tudo pelo WhatsApp.</p>
-    <p class="mini">Se você usa WhatsApp, você já sabe usar a Zélia. Sem instalar nada, sem treinar ninguém.</p>
-    <div class="hero-cta">
-      <a class="btn-wa js-wa"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.5.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.6-1.5-.9-2.1-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 .9-1 2.3s1 2.7 1.2 2.9c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg>Falar com a Zélia no WhatsApp</a>
-      <p class="btn-sub">Resposta rápida, no seu WhatsApp mesmo.</p>
-    </div>
-  </div>
-  <!-- VISUAL DO HERO: mockup animado (app batendo ponto). Espaço reservado pro vídeo-manifesto futuro. -->
-  <div class="hero-visual reveal reveal-r">
-    <div class="mk mk-phone">
-      <div class="mk-scr app-scr">
-        <div class="app-top"><img src="zelia.svg" alt="">Zélia Ponto</div>
-        <div class="selfie"><div class="selfie-ring"></div>
-          <img class="selfie-face" src="selfie.jpg" alt="Funcionário batendo o ponto" loading="lazy">
-          <i class="scan"></i></div>
-        <div class="loc"><b>📍 Você está na Padaria do Zé</b><span class="ok-badge">no local ✓</span></div>
-        <div class="pt-btn">Bater ponto</div>
-        <div class="pt-ok">✅ Ponto registrado · <b>08:02</b></div>
+<header class="hero">
+  <div class="wrap grid">
+    <div>
+      <span class="badge-live reveal in"><span class="dot"></span> Funciona dentro do seu WhatsApp</span>
+      <h1 class="hero-h reveal in">Você cuida da loja.<br>A <span class="hl">Zélia</span> cuida do ponto.</h1>
+      <p class="lead reveal in d1">A secretária de RH que mora no seu WhatsApp. Seus funcionários batem ponto com uma selfie, e você recebe tudo: quem chegou, quem atrasou e o alerta antes de virar processo.</p>
+      <div class="cta reveal in d2">
+        <a class="btn btn-w wpp-link" href="#"><svg><use href="#wpp"/></svg> Falar com a Zélia agora</a>
+        <a class="btn-ghost" href="#como">Ver como funciona ↓</a>
+      </div>
+      <div class="microcta reveal in d3">
+        <span><span class="ok">✓</span> Resposta na hora</span>
+        <span><span class="ok">✓</span> Sem compromisso</span>
+        <span><span class="ok">✓</span> Sem instalar nada complicado</span>
       </div>
     </div>
-    <p class="video-hint">🎬 Em breve: um vídeo da Zélia se apresentando.</p>
+    <div class="art reveal in d1">
+      <div class="halo"></div>
+      <svg class="ava-hero" viewBox="0 0 400 400"><use href="#zelia"/></svg>
+      <div class="pop pop1"><div class="ic" style="background:#e7f7ef">📸</div><div><b>João</b> bateu ponto<small>há 2 min · na loja ✓</small></div></div>
+      <div class="pop pop2"><div class="ic" style="background:#fff2dc">⏰</div><div><b>9h05</b> — Carlos<small>ainda não chegou</small></div></div>
+      <div class="pop pop3"><div class="ic" style="background:#e7f7ef">🧾</div><div><b>Resumo do dia</b><small>pronto no seu Zap</small></div></div>
+    </div>
   </div>
-</div></section>
+</header>
 
-<!-- PRODUTO VIVO (prova honesta) -->
-<div class="vivo"><div class="wrap"><span class="live-dot"></span> A Zélia já registra pontos de verdade, todos os dias.</div></div>
-
-<!-- PROBLEMA -->
-<section><div class="wrap">
-  <div class="sec-title reveal"><div class="eyebrow">Soa familiar?</div>
-    <h2>O ponto no papel dá dor de cabeça</h2></div>
-  <div class="dores">
-    <div class="dor reveal"><div class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v18l2-1.2L9 21l2-1.2L13 21l2-1.2L17 21l2-1.2V3l-2 1.2L15 3l-2 1.2L11 3 9 4.2 7 3Z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></div><p>O papelzinho do ponto some, rasura e ninguém acha na hora que precisa.</p></div>
-    <div class="dor reveal" style="transition-delay:.08s"><div class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 21h10M6 7l-3 6a3 3 0 0 0 6 0L6 7Zm12 0l-3 6a3 3 0 0 0 6 0l-3-6ZM6 7l6-1.6L18 7"/></svg></div><p>O funcionário sai, procura um advogado, e você descobre o problema tarde demais.</p></div>
-    <div class="dor reveal" style="transition-delay:.16s"><div class="ic-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.2a2.8 2.8 0 0 1 5.2 1.2c0 1.9-2.4 2.4-2.4 2.4"/><path d="M12 16.5h.01"/></svg></div><p>Você não sabe quem chegou, quem faltou e quem está atrasado — só indo até lá ver.</p></div>
+<!-- TRUST STRIP -->
+<div class="strip">
+  <div class="marq">
+    <span>Ponto por selfie</span><span>Reconhecimento facial</span><span>GPS com cerca virtual</span><span>Alertas no WhatsApp</span><span>Fechamento pro contador</span><span>Em conformidade com a LGPD</span>
+    <span>Ponto por selfie</span><span>Reconhecimento facial</span><span>GPS com cerca virtual</span><span>Alertas no WhatsApp</span><span>Fechamento pro contador</span><span>Em conformidade com a LGPD</span>
   </div>
-</div></section>
+</div>
 
-<!-- FEATURES ZIGUE-ZAGUE -->
-<section class="feats alt"><div class="wrap">
+<!-- PROBLEM -->
+<section>
+  <div class="wrap center">
+    <span class="eyebrow reveal">O problema</span>
+    <h2 class="reveal d1">O ponto de papel some.<br>O processo aparece.</h2>
+    <p class="sub reveal d2">Sem controle de verdade, você só descobre o problema quando ele já virou dor de cabeça — e conta.</p>
+    <div class="cards3">
+      <div class="pcard reveal d1"><div class="ic">📄</div><h3>Folha de papel some</h3><p>Cartão de ponto se perde, molha, é rasurado — e na hora do aperto, você não tem como provar nada.</p></div>
+      <div class="pcard reveal d2"><div class="ic">⚖️</div><h3>Processo pega de surpresa</h3><p>Hora extra não paga, descanso não registrado… você descobre tarde, quando já virou reclamação trabalhista.</p></div>
+      <div class="pcard reveal d3"><div class="ic">🙈</div><h3>Você não enxerga o dia</h3><p>Quem chegou? Quem faltou? Sem visão do time, você toca o negócio no escuro.</p></div>
+    </div>
+  </div>
+</section>
 
-  <!-- F1: painel visão do dia (mídia à esquerda) -->
-  <div class="feat">
-    <div class="feat-media reveal reveal-l">
-      <div class="mk mk-panel">
-        <div class="mk-bar"><span></span><span></span><span></span><em>Visão do dia</em></div>
-        <div class="mk-tiles">
-          <div class="tile t-ok"><b data-c="4">0</b><span>presentes</span></div>
-          <div class="tile t-warn"><b data-c="1">0</b><span>atrasado</span></div>
-          <div class="tile t-red"><b data-c="1">0</b><span>faltou</span></div>
+<!-- HOW -->
+<section id="como" style="background:var(--areia2)">
+  <div class="wrap center">
+    <span class="eyebrow reveal">Como funciona</span>
+    <h2 class="reveal d1">Do ponto batido ao seu WhatsApp,<br>em segundos</h2>
+    <p class="sub reveal d2">Se você usa WhatsApp, você já sabe usar a Zélia. Sem relógio de parede, sem planilha, sem sistema complicado.</p>
+    <div class="steps" style="text-align:left">
+      <div class="step reveal d1"><span class="n">1</span><div class="ic">📲</div><h3>O time bate ponto</h3><p>Baixa o app grátis, entra com o CPF e bate ponto com uma selfie. Reconhecimento facial confirma quem é, e o GPS confirma que está na empresa.</p></div>
+      <div class="step reveal d2"><span class="n">2</span><div class="ic">💬</div><h3>Você recebe no Zap</h3><p>Alertas na hora, resumo do dia no horário que você escolher, e nada de ficar olhando sistema. Chega tudo mastigado.</p></div>
+      <div class="step reveal d3"><span class="n">3</span><div class="ic">🧾</div><h3>Fim do mês, sem dor</h3><p>A Zélia entrega o relatório de horas prontinho. Você aprova pendências pelo painel e manda pro contador. Acabou.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- OWNER dark + chat -->
+<section>
+  <div class="owner">
+    <div class="wrap">
+      <span class="eyebrow reveal">No seu bolso, o dia todo</span>
+      <h2 class="reveal d1">Tudo que o dono precisa saber<br>chega no WhatsApp</h2>
+      <div class="grid">
+        <div class="reveal d1">
+          <div class="benefit"><div class="bi">⏰</div><div><b>Alertas na hora</b><span>"9h e o Carlos não chegou." "João bateu ponto a 2 km da loja." Você sabe na hora, não no fim do mês.</span></div></div>
+          <div class="benefit"><div class="bi">📊</div><div><b>Resumo diário no seu horário</b><span>Presentes, ausentes e atrasados do dia — entregues quando você quiser.</span></div></div>
+          <div class="benefit"><div class="bi">🛡️</div><div><b>Alerta antes de virar processo</b><span>Férias vencendo, experiência acabando, hora extra demais. A Zélia te avisa antes do risco.</span></div></div>
+          <div class="benefit"><div class="bi">✅</div><div><b>Fechamento pro contador</b><span>Horas do mês fechadas e organizadas. Menos erro, menos retrabalho.</span></div></div>
         </div>
-        <div class="mk-rows">
-          <div class="mk-row"><span class="av g">A</span>Ana<em>entrou 07:58 ✓</em></div>
-          <div class="mk-row"><span class="av a">J</span>João<em>atrasou · 08:22</em></div>
-          <div class="mk-row"><span class="av g">C</span>Carla<em>entrou 08:00 ✓</em></div>
+        <div class="reveal d2">
+          <div class="phone">
+            <div class="chead"><svg class="ava" viewBox="0 0 400 400"><use href="#zelia"/></svg><div><div class="nm">Zélia</div><div class="st">online agora</div></div></div>
+            <div class="bubbles">
+              <div class="bub z b1">Oi! 👋 Bom te ver. Quer que eu te mostre como funciona o controle de ponto?<span class="t">09:41</span></div>
+              <div class="bub u b2">Quero sim 👍<span class="t">09:41</span></div>
+              <div class="bub z b3">É rapidinho: seu funcionário bate ponto com uma selfie 📸 e eu te aviso tudo por aqui. Quantos funcionários você tem?<span class="t">09:42</span></div>
+              <div class="bub u b4">Tenho 8<span class="t">09:42</span></div>
+              <div class="bub z b5">Perfeito pra você! Bora ver funcionando, sem compromisso? 💚<span class="t">09:42</span></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="feat-txt reveal reveal-r">
-      <div class="eyebrow">No painel</div>
-      <h3>Você vê a loja inteira sem sair do lugar</h3>
-      <p>Quem chegou, quem atrasou, quem faltou — de um olhar só, do celular ou do computador. Sem planilha, sem papelzinho.</p>
+  </div>
+</section>
+
+<!-- LEGAL -->
+<section class="legal">
+  <div class="wrap">
+    <span class="eyebrow reveal" style="justify-content:center">Sua proteção</span>
+    <div class="quote reveal d1">Quem tem registro, <em>tem defesa.</em></div>
+    <p class="sub reveal d2" style="margin-top:18px">Cada ponto tem rosto, hora e lugar. Se um dia bater na Justiça, você tem prova — não a palavra de um contra a do outro.</p>
+    <div class="alerts">
+      <span class="alert reveal d1"><span class="ai">🔔</span> Férias vencendo</span>
+      <span class="alert reveal d1"><span class="ai">🔔</span> Fim da experiência</span>
+      <span class="alert reveal d2"><span class="ai">🔔</span> Hora extra demais</span>
+      <span class="alert reveal d2"><span class="ai">🔔</span> Descanso não registrado</span>
+      <span class="alert reveal d3"><span class="ai">🔔</span> Intervalo esquecido</span>
     </div>
   </div>
+</section>
 
-  <!-- F2: conversa da Zélia (mídia à direita) -->
-  <div class="feat rev">
-    <div class="feat-media reveal reveal-r">
-      <div class="mk mk-phone"><div class="mk-scr wa-scr">
-        <div class="wa-head"><img src="zelia.svg" alt=""><div><div class="nome">Zélia</div><div class="st">online</div></div></div>
-        <div class="wa-body" data-chat="1">
-          <div class="wb wb-out" data-s="1">quem faltou hoje?<div class="t">08:40</div></div>
-          <div class="typing" data-tp="1"><i></i><i></i><i></i></div>
-          <div class="wb wb-in" data-s="2">Hoje só a Maria faltou, chefe. O resto tá tudo na loja 👍<div class="t">08:40</div></div>
-        </div>
-      </div></div>
-    </div>
-    <div class="feat-txt reveal reveal-l">
-      <div class="eyebrow">É só perguntar</div>
-      <h3>Pergunta pra Zélia, ela responde na hora</h3>
-      <p>Do jeito que você fala com uma pessoa. "Quem faltou hoje?", "a Maria bateu?", "manda um toque no João" — e ela resolve, no seu WhatsApp.</p>
+<!-- WHO -->
+<section style="background:var(--areia2)">
+  <div class="wrap center">
+    <span class="eyebrow reveal">Pra quem é</span>
+    <h2 class="reveal d1">Feita pra quem vive no corre</h2>
+    <p class="sub reveal d2">De 1 a 50 funcionários, no comércio, na cozinha, na obra ou no escritório.</p>
+    <div class="who">
+      <div class="wcard reveal d1"><div class="ic">🛍️</div><b>Lojas</b><span>Comércio e varejo</span></div>
+      <div class="wcard reveal d2"><div class="ic">🍽️</div><b>Restaurantes</b><span>Bares e food service</span></div>
+      <div class="wcard reveal d3"><div class="ic">🏗️</div><b>Obras</b><span>Construção e serviços</span></div>
+      <div class="wcard reveal d4"><div class="ic">💇</div><b>Salões & escritórios</b><span>Equipes e clínicas</span></div>
     </div>
   </div>
+</section>
 
-  <!-- F3: sentinela alerta -> contador (mídia à esquerda) -->
-  <div class="feat">
-    <div class="feat-media reveal reveal-l">
-      <div class="mk mk-phone"><div class="mk-scr wa-scr">
-        <div class="wa-head"><img src="zelia.svg" alt=""><div><div class="nome">Zélia</div><div class="st">online</div></div></div>
-        <div class="wa-body" data-chat="2">
-          <div class="typing" data-tp="2"><i></i><i></i><i></i></div>
-          <div class="wb wb-in" data-s="1">⚠️ Chefe, a Maria completa 1 ano dia 15/09. As férias dela já precisam entrar no radar. Vale confirmar com teu contador 👍<div class="t">09:04</div></div>
-          <div class="wb wb-out" data-s="2">manda pro meu contador<div class="t">09:05</div></div>
-          <div class="typing" data-tp="3"><i></i><i></i><i></i></div>
-          <div class="wb wb-in" data-s="3">Prontinho, enviei pro seu contador ✅<div class="t">09:05</div></div>
-        </div>
-      </div></div>
-    </div>
-    <div class="feat-txt reveal reveal-r">
-      <div class="eyebrow">A Sentinela</div>
-      <h3>Ela te avisa antes do problema virar processo</h3>
-      <p>Férias vencendo, contrato de experiência no fim, hora extra passando do limite. A Zélia te cutuca no sinal amarelo — e manda direto pro seu contador, se você quiser.</p>
+<!-- SECURITY -->
+<section>
+  <div class="wrap center">
+    <span class="eyebrow reveal">Pode confiar</span>
+    <h2 class="reveal d1">Segurança de verdade,<br>do jeito que você controla</h2>
+    <div class="trust" style="text-align:left">
+      <div class="tcard reveal d1"><div class="ic">🤳</div><b>Selfie com reconhecimento facial</b><p>Nada de bater ponto pelo colega. Cada registro carrega o rosto de quem bateu.</p></div>
+      <div class="tcard reveal d2"><div class="ic">📍</div><b>GPS com cerca virtual</b><p>Se você quiser, o ponto só vale dentro da empresa. Você define as regras.</p></div>
+      <div class="tcard reveal d3"><div class="ic">🔒</div><b>Dados protegidos e LGPD</b><p>Informações guardadas com segurança e em conformidade com a LGPD. Seu negócio é só seu.</p></div>
     </div>
   </div>
-
-</div></section>
-
-<!-- SENTINELA DESTAQUE -->
-<section class="sentinela"><div class="wrap">
-  <div class="sec-title reveal"><div class="eyebrow" style="color:#7BE3B0">O diferencial</div>
-    <h2>De olho no que dá processo</h2>
-    <p>A Zélia conhece as regras que dão dor de cabeça na Justiça do Trabalho — e te avisa a tempo:</p></div>
-  <div class="sent-grid">
-    <ul class="sent-list">
-      <li class="reveal"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Férias de alguém vencendo</li>
-      <li class="reveal" style="transition-delay:.06s"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Contrato de experiência chegando no fim</li>
-      <li class="reveal" style="transition-delay:.12s"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Hora extra passando do limite do dia</li>
-      <li class="reveal" style="transition-delay:.18s"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Funcionário sem folgar na semana</li>
-      <li class="reveal" style="transition-delay:.24s"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Almoço que não foi registrado</li>
-    </ul>
-    <div class="sent-side reveal reveal-r"><div class="card">
-      <h3>Quem tem registro, tem defesa</h3>
-      <p>A Zélia te ajuda a manter tudo anotado, do jeito certo. Se um dia precisar, você tem como mostrar o que aconteceu.</p>
-    </div></div>
-  </div>
-</div></section>
-
-<!-- PRA QUEM É -->
-<section><div class="wrap">
-  <div class="sec-title reveal"><div class="eyebrow">Feita pra você</div>
-    <h2>Pra quem toca um comércio</h2>
-    <p>De 1 a 50 funcionários. Se tem gente batendo ponto, a Zélia dá conta.</p></div>
-  <div class="quem reveal">
-    <span>Padaria</span><span>Loja</span><span>Mercado</span>
-    <span>Salão</span><span>Restaurante</span><span>Escritório</span>
-  </div>
-</div></section>
+</section>
 
 <!-- FAQ -->
-<section class="alt"><div class="wrap">
-  <div class="sec-title reveal"><div class="eyebrow">Perguntas frequentes</div>
-    <h2>Ficou com dúvida?</h2></div>
-  <div class="faq reveal">
-    <details><summary>Preciso instalar alguma coisa?<i></i></summary><p>Não. A Zélia funciona pelo WhatsApp que você já usa. Seu funcionário bate o ponto por um link no navegador do celular — sem baixar nada.</p></details>
-    <details><summary>Meu funcionário precisa de celular bom?<i></i></summary><p>Qualquer celular com câmera e internet dá conta. Nada de aparelho caro.</p></details>
-    <details><summary>Como a Zélia sabe se a pessoa tá mesmo na loja?<i></i></summary><p>Na hora de bater o ponto, o app tira uma selfie e confere a localização. Se a pessoa estiver longe da loja, você fica sabendo.</p></details>
-    <details><summary>E se o funcionário não bater o ponto?<i></i></summary><p>A Zélia te avisa. Você recebe no WhatsApp quem faltou e quem não registrou — sem ficar cobrando um por um.</p></details>
-    <details><summary>Quanto custa?<i></i></summary><p>Fala com a gente no WhatsApp que a gente te mostra tudo funcionando e combina certinho pro tamanho da sua equipe. <a class="faq-link js-wa">Falar no WhatsApp →</a></p></details>
-    <details><summary>Funciona pra quantos funcionários?<i></i></summary><p>De 1 a 50. Seja você sozinho com um ajudante ou uma equipe inteira, a Zélia acompanha todo mundo.</p></details>
+<section style="background:var(--areia2)">
+  <div class="wrap center">
+    <span class="eyebrow reveal">Dúvidas</span>
+    <h2 class="reveal d1">Perguntas frequentes</h2>
+    <div class="faq" style="text-align:left">
+      <details class="reveal d1" open><summary>Preciso comprar algum equipamento? <span class="plus">+</span></summary><p>Não. O funcionário usa o app grátis no próprio celular pra bater ponto, e você acompanha tudo pelo WhatsApp e por um painel simples. Zero relógio de parede, zero instalação.</p></details>
+      <details class="reveal d1"><summary>O ponto por selfie é seguro e válido? <span class="plus">+</span></summary><p>Sim. Cada registro tem reconhecimento facial e localização por GPS — mais seguro que o ponto em papel. Os relatórios saem organizados pro seu contador.</p></details>
+      <details class="reveal d2"><summary>Como funciona o preço? <span class="plus">+</span></summary><p>É uma assinatura mensal que varia conforme o número de funcionários. Chama a Zélia no WhatsApp que ela te mostra o valor certinho pro seu caso — e você pode ver funcionando sem compromisso.</p></details>
+      <details class="reveal d2"><summary>E se o funcionário tiver um celular simples? <span class="plus">+</span></summary><p>O app é leve e roda em celulares básicos. Pra casos específicos, dá pra configurar pontos de registro compartilhados. A Zélia te ajuda a achar o melhor jeito.</p></details>
+      <details class="reveal d3"><summary>Dá pra testar antes de assinar? <span class="plus">+</span></summary><p>Dá! É só chamar a Zélia no WhatsApp. Ela faz a demonstração com você na hora e te ajuda a começar.</p></details>
+    </div>
   </div>
-</div></section>
+</section>
 
-<!-- CTA FINAL -->
-<section class="final"><div class="wrap reveal">
-  <h2>Bora tirar o ponto do papel?</h2>
-  <p>Fale com a gente e veja a Zélia funcionando em 10 minutos.</p>
-  <a class="btn-wa js-wa"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.5.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.6-1.5-.9-2.1-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 .9-1 2.3s1 2.7 1.2 2.9c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg>Falar com a Zélia no WhatsApp</a>
-</div></section>
-
-<!-- FOOTER  (futuro: WhatsApp duplo Comercial/Suporte quando a Vendedora existir) -->
-<footer><div class="wrap">
-  <div class="fbrand"><img src="zelia.svg" alt="">Zélia</div>
-  <div class="flinks">
-    <a href="https://instagram.com/zeliaponto" target="_blank" rel="noopener">Instagram @zeliaponto</a>
-    <a href="app/">Sou funcionário — bater ponto</a>
-    <a href="painel/">Painel do dono</a>
+<!-- FINAL -->
+<section style="padding-bottom:20px">
+  <div class="final reveal">
+    <svg class="ava" viewBox="0 0 400 400"><use href="#zelia"/></svg>
+    <h2>Bora ver a Zélia<br>funcionando no seu negócio?</h2>
+    <p>Ela mesma te mostra, na hora, pelo WhatsApp. Sem compromisso.</p>
+    <div><a class="btn btn-a wpp-link" href="#"><svg><use href="#wpp"/></svg> Falar com a Zélia agora</a></div>
+    <div class="handle">@zeliaponto · zeliaponto.com.br</div>
   </div>
-  <p style="margin-top:12px;font-size:13px">zeliaponto.com.br · a secretária de RH que mora no seu WhatsApp</p>
-</div></footer>
+</section>
 
-<a class="float-wa js-wa" aria-label="Falar com a Zélia no WhatsApp"><svg viewBox="0 0 24 24"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.5.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.6-1.5-.9-2.1-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 .9-1 2.3s1 2.7 1.2 2.9c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg></a>
+<footer>
+  <div class="wrap">
+    <div class="fcol">
+      <a class="brand" href="#top"><svg class="ava" viewBox="0 0 400 400"><use href="#zelia"/></svg><span class="wm">Zélia<span class="d">.</span></span></a>
+      <p class="tg">A secretária de RH que mora no WhatsApp do dono. Controle de ponto digital para pequenos negócios.</p>
+    </div>
+    <div class="flinks">
+      <a class="wpp-link" href="#">Falar no WhatsApp</a>
+      <a href="https://instagram.com/zeliaponto">Instagram</a>
+      <a href="#como">Como funciona</a>
+    </div>
+    <div class="fbot">
+      <span>© 2026 Zélia · zeliaponto.com.br</span>
+      <span>Feito com 💚 pra quem toca o negócio no dia a dia</span>
+    </div>
+  </div>
+</footer>
 
-<script src="landing.js"></script>
+<script>
+  // >>> TROQUE AQUI o número do WhatsApp (DDI+DDD, só números) <<<
+  var NUMERO_WHATSAPP = "55SEUNUMERO";
+  var MENSAGEM = "Oi Zélia! Quero ver como funciona o controle de ponto 😊";
+  var link = "https://wa.me/" + NUMERO_WHATSAPP + "?text=" + encodeURIComponent(MENSAGEM);
+  document.querySelectorAll('.wpp-link').forEach(function(a){ a.href = link; a.target = "_blank"; a.rel = "noopener"; });
+
+  // Scroll reveal
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold:.14 });
+  document.querySelectorAll('.reveal').forEach(function(el){ if(!el.classList.contains('in')) io.observe(el); });
+
+  // Nav shadow on scroll
+  var nav = document.getElementById('nav');
+  window.addEventListener('scroll', function(){ nav.classList.toggle('scrolled', window.scrollY > 12); });
+</script>
 </body>
 </html>
