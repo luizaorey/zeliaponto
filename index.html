@@ -34,7 +34,31 @@
     <div class="mk mk-phone">
       <div class="mk-scr app-scr">
         <div class="app-top"><img src="zelia.svg" alt="">Zélia Ponto</div>
-        <div class="selfie"><div class="selfie-ring"></div><span>📸</span><i class="scan"></i></div>
+        <div class="selfie"><div class="selfie-ring"></div>
+          <svg class="selfie-face" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+              <clipPath id="sc"><circle cx="50" cy="50" r="50"/></clipPath>
+              <radialGradient id="skin" cx="50%" cy="40%" r="62%"><stop offset="0%" stop-color="#F7CCA4"/><stop offset="100%" stop-color="#E6AC80"/></radialGradient>
+              <linearGradient id="sbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#EEF3F3"/><stop offset="100%" stop-color="#DBE6E6"/></linearGradient>
+            </defs>
+            <g clip-path="url(#sc)">
+              <rect width="100" height="100" fill="url(#sbg)"/>
+              <path d="M4 100 C4 74 27 65 50 65 C73 65 96 74 96 100 Z" fill="#3AA876"/>
+              <path d="M50 65 C40 65 31 67 25 70 L75 70 C69 67 60 65 50 65Z" fill="#2E9E6B"/>
+              <path d="M42 53 h16 v10 q-8 6 -16 0 Z" fill="#DE9F73"/>
+              <ellipse cx="50" cy="42" rx="21" ry="23" fill="url(#skin)"/>
+              <circle cx="29" cy="45" r="4" fill="#E6AC80"/><circle cx="71" cy="45" r="4" fill="#E6AC80"/>
+              <path d="M27 47 C25 25 41 17 50 17 C59 17 75 25 73 47 C73 40 70 33 66 31 C63 37 58 39 50 39 C42 39 37 37 34 31 C30 33 27 40 27 47Z" fill="#48342A"/>
+              <path d="M38 37 q4 -2.2 8 0" stroke="#48342A" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+              <path d="M54 37 q4 -2.2 8 0" stroke="#48342A" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+              <ellipse cx="43" cy="42" rx="2.5" ry="3" fill="#3A2A22"/><ellipse cx="57" cy="42" rx="2.5" ry="3" fill="#3A2A22"/>
+              <circle cx="43.7" cy="41" r=".8" fill="#fff"/><circle cx="57.7" cy="41" r=".8" fill="#fff"/>
+              <path d="M50 44 v5 q-2.2 1.4 -3.4 0" stroke="#D0916A" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+              <circle cx="38" cy="49" r="3.4" fill="#F2A084" opacity=".5"/><circle cx="62" cy="49" r="3.4" fill="#F2A084" opacity=".5"/>
+              <path d="M43 53 q7 6.5 14 0" stroke="#B0604A" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            </g>
+          </svg>
+          <i class="scan"></i></div>
         <div class="loc"><b>📍 Você está na Padaria do Zé</b><span class="ok-badge">no local ✓</span></div>
         <div class="pt-btn">Bater ponto</div>
         <div class="pt-ok">✅ Ponto registrado · <b>08:02</b></div>
