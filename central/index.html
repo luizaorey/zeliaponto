@@ -234,6 +234,17 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return
 function ini(s){s=String(s||'?').trim();return (s[0]||'?').toUpperCase();}
 function fone(w){w=String(w||'').replace(/\D/g,'');if(w.length>=12){var d=w.slice(2);return '('+d.slice(0,2)+') '+d.slice(2,7)+'-'+d.slice(7);}return w||'—';}
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on');},2400);}
+function mrrChart(hist){
+  if(!hist||hist.length<2) return '<div class="placeholder">O gráfico aparece quando houver pelo menos 2 meses de histórico — a Central já começou a guardar um retrato por mês 📈</div>';
+  var W=680,H=220,pad=44,n=hist.length;
+  var vals=hist.map(function(h){return Number(h.mrr)||0;});
+  var max=Math.max.apply(null,vals)*1.15||1;
+  var X=function(i){return pad+(W-pad-12)*(i/(n-1));},Y=function(v){return H-28-(H-50)*(v/max);};
+  var pts=hist.map(function(h,i){return X(i)+','+Y(Number(h.mrr)||0);}).join(' ');
+  var dots=hist.map(function(h,i){return '<circle cx="'+X(i)+'" cy="'+Y(Number(h.mrr)||0)+'" r="4" fill="#14A673"><title>'+esc(h.mes)+': '+brl(h.mrr)+'</title></circle>';}).join('');
+  var labs=hist.map(function(h,i){return '<text x="'+X(i)+'" y="'+(H-8)+'" fill="#9AA7A1" font-size="11" text-anchor="middle">'+esc(h.mes)+'</text>';}).join('');
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;margin-top:8px"><polyline points="'+pts+'" fill="none" stroke="#14A673" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+labs+'</svg>';
+}
 
 async function api(path,body){
   var r=await fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({token:TOKEN},body||{}))});
@@ -313,7 +324,7 @@ async function loadOverview(){
   var trials=(d.trials_acabando||[]).map(function(t){return '<div class="att-row"><div><b>'+esc(t.empresa)+'</b><small>'+esc(t.dono||'')+' · '+t.func+' func</small></div><span class="chip-days">'+(t.dias_restantes<=0?'acaba hoje':'faltam '+t.dias_restantes+'d')+'</span></div>';}).join('')||'<div class="emptyp">Nenhum trial acabando essa semana 🎉</div>';
   var atr=(d.pagamentos_atrasados||[]).map(function(p){return '<div class="att-row"><div><b>'+esc(p.empresa)+'</b><small>vencido há '+p.dias_atraso+' dias</small></div><span class="pay bad">'+brl(p.valor)+'</span></div>';}).join('')||'<div class="emptyp">Nenhum pagamento atrasado 💚</div>';
   el.innerHTML=kpis
-   +'<div class="panel" style="margin-top:20px"><div class="att-title">📈 Evolução do MRR</div><div class="placeholder">O gráfico de evolução aparece assim que houver histórico de meses. Por enquanto: <b>'+brl(d.mrr)+'</b> de receita recorrente · <b>'+d.leads_mes+'</b> leads no mês.</div></div>'
+   +'<div class="panel" style="margin-top:20px"><div class="att-title">📈 Evolução do MRR</div>'+mrrChart(d.mrr_historico)+'</div>'
    +'<div class="att"><div class="panel"><div class="att-title">⏳ Trials acabando <span class="badge b-warn" style="margin-left:auto">'+(d.trials_acabando||[]).length+'</span></div>'+trials+'</div>'
    +'<div class="panel"><div class="att-title">⚠️ Pagamentos atrasados <span class="badge b-crit" style="margin-left:auto">'+(d.pagamentos_atrasados||[]).length+'</span></div>'+atr+'</div></div>';
 }
