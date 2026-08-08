@@ -123,6 +123,18 @@ tbody tr.clk{cursor:pointer;transition:background .12s}tbody tr.clk:hover{backgr
 .toast.on{opacity:1}
 .spin{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px}
 @keyframes sp{to{transform:rotate(360deg)}}
+.modal{position:fixed;inset:0;background:rgba(12,40,28,.55);display:none;align-items:center;justify-content:center;z-index:150;padding:20px}
+.modal.on{display:flex}
+.modal-card{background:#fff;border-radius:18px;padding:26px;width:100%;max-width:400px;box-shadow:0 30px 70px -30px rgba(0,0,0,.5);animation:fade .2s}
+.modal-card h3{font-family:Nunito;font-weight:900;font-size:19px;color:var(--verde-esc);margin-bottom:6px}
+.modal-card p{font-size:14px;color:var(--cinza);margin-bottom:16px;line-height:1.4}
+.modal-card .fld{margin-bottom:14px}
+.modal-actions{display:flex;gap:10px;margin-top:6px}
+.modal-actions button{flex:1;border-radius:11px;padding:12px;font-family:Nunito;font-weight:800;font-size:14px;cursor:pointer;border:1px solid var(--linha)}
+.mbtn-cancel{background:#fff;color:var(--cinza)}
+.mbtn-ok{background:var(--verde);color:#fff;border-color:var(--verde)}
+.mbtn-ok.crit{background:var(--vermelho);border-color:var(--vermelho)}.mbtn-ok.warn{background:var(--ambar);border-color:var(--ambar)}
+.mbtn-ok:disabled{opacity:.6;cursor:default}
 </style></head><body>
 
 <!-- ===== LOGIN ===== -->
@@ -165,6 +177,7 @@ tbody tr.clk{cursor:pointer;transition:background .12s}tbody tr.clk:hover{backgr
     <div class="spacer"></div>
     <div class="navsec">Sistema</div>
     <div class="nav-i" data-s="saude"><span class="ni">🩺</span> Saúde do Sistema</div>
+    <div class="nav-i" onclick="openPin()"><span class="ni">🔒</span> Segurança (PIN)</div>
     <div class="logout" onclick="logout()">↩ Sair</div>
   </aside>
   <div class="main">
@@ -183,6 +196,29 @@ tbody tr.clk{cursor:pointer;transition:background .12s}tbody tr.clk:hover{backgr
   </div>
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- MODAL PIN -->
+<div class="modal" id="modal-pin">
+  <div class="modal-card">
+    <h3>🔒 PIN de segurança</h3>
+    <p>O PIN é o 2º fator para ações que mexem no cliente (suspender, cancelar, resetar senha). Se você já tem um, informe o atual para trocar.</p>
+    <div class="auth-err" id="pin-err"></div>
+    <label class="fld" id="pin-atual-wrap" style="display:none">PIN atual<input id="pin-atual" type="password" inputmode="numeric" maxlength="6" placeholder="••••"></label>
+    <label class="fld">Novo PIN (4 a 6 dígitos)<input id="pin-novo" type="password" inputmode="numeric" maxlength="6" placeholder="••••"></label>
+    <div class="modal-actions"><button class="mbtn-cancel" onclick="closeModal('modal-pin')">Cancelar</button><button class="mbtn-ok" id="pin-save" onclick="savePin()">Salvar PIN</button></div>
+  </div>
+</div>
+
+<!-- MODAL AÇÃO -->
+<div class="modal" id="modal-acao">
+  <div class="modal-card">
+    <h3 id="acao-titulo">Confirmar</h3>
+    <p id="acao-texto"></p>
+    <div class="auth-err" id="acao-err"></div>
+    <label class="fld">Seu PIN<input id="acao-pin" type="password" inputmode="numeric" maxlength="6" placeholder="••••"></label>
+    <div class="modal-actions"><button class="mbtn-cancel" onclick="closeModal('modal-acao')">Cancelar</button><button class="mbtn-ok" id="acao-ok" onclick="confirmAcao()">Confirmar</button></div>
+  </div>
+</div>
 
 <script>
 var API='https://giantfalcon-n8n.cloudfy.live/webhook/';
@@ -308,6 +344,7 @@ async function openDetalhe(id){
   try{var d=await api('admin-cliente',{empresa_id:id});}catch(e){return;}
   if(d.erro||!d.empresa){el.innerHTML='<button class="back" onclick="show(\'clientes\')">← Voltar</button><div class="emptyp">Empresa não encontrada.</div>';return;}
   var e=d.empresa,dono=d.dono||{},ass=d.assinatura;
+  curDet={id:e.id,nome:e.nome,ativo:e.ativo};
   var funcs=(d.funcionarios||[]).slice(0,6).map(function(f){return '<div><span class="ini">'+ini(f.nome)+'</span><div><b>'+esc(f.nome)+'</b>'+(f.cargo?' · '+esc(f.cargo):'')+'</div></div>';}).join('');
   if((d.func_total||0)>6)funcs+='<div style="color:var(--cinza);justify-content:center">+ '+(d.func_total-6)+' funcionários</div>';
   if(!funcs)funcs='<div class="emptyp">Nenhum funcionário cadastrado.</div>';
@@ -316,7 +353,9 @@ async function openDetalhe(id){
   el.innerHTML='<button class="back" onclick="show(\'clientes\')">← Voltar para Clientes</button>'
    +'<div class="det-head"><div class="big">'+ini(e.nome)+'</div><div><h2>'+esc(e.nome)+'</h2>'
    +'<div class="meta">'+esc(dono.nome||'—')+' · '+fone(dono.whatsapp)+' · '+esc(e.plano||'')+' · '+(d.func_total||0)+' funcionários</div></div>'
-   +'<div class="det-actions"><button class="abtn" disabled title="Fase 2">🔑 Resetar senha</button><button class="abtn warn" disabled title="Fase 2">⏸ Suspender</button><button class="abtn crit" disabled title="Fase 2">✕ Cancelar</button></div></div>'
+   +'<div class="det-actions"><button class="abtn" onclick="doAcao(\'reset_senha\')">🔑 Resetar senha do dono</button>'
+   +(e.ativo?'<button class="abtn warn" onclick="doAcao(\'suspender\')">⏸ Suspender</button><button class="abtn crit" onclick="doAcao(\'cancelar\')">✕ Cancelar</button>':'<button class="abtn pri" onclick="doAcao(\'reativar\')">▶ Reativar</button>')
+   +'</div></div>'
    +'<div class="det-grid"><div class="panel"><div class="att-title">💳 Assinatura</div>'+assHTML
    +'<div class="att-title" style="margin-top:18px">Histórico de pagamentos</div>'+pgs+'</div>'
    +'<div class="panel"><div class="att-title">👥 Funcionários ('+(d.func_total||0)+')</div><div class="emp-list">'+funcs+'</div></div></div>';
@@ -371,6 +410,51 @@ async function loadSaude(){
    +'<div class="health"><div class="panel"><div class="att-title">📱 Canais de WhatsApp</div>'+canais+'</div>'
    +'<div class="panel"><div class="att-title">📄 Templates da Meta</div>'+temps+'</div></div>'
    +'<div class="panel" style="margin-top:16px"><div class="att-title">🔔 Alertas do sistema</div>'+al+'</div>';
+}
+
+// ---------- PIN + AÇÕES ----------
+var curDet=null, curAcao=null;
+function closeModal(id){document.getElementById(id).classList.remove('on');}
+function openPin(){var e=document.getElementById('pin-err');e.classList.remove('on');document.getElementById('pin-novo').value='';document.getElementById('pin-atual').value='';document.getElementById('modal-pin').classList.add('on');}
+async function savePin(){
+  var b=document.getElementById('pin-save'),e=document.getElementById('pin-err');e.classList.remove('on');
+  var novo=document.getElementById('pin-novo').value.trim(),atual=document.getElementById('pin-atual').value.trim();
+  if(!/^\d{4,6}$/.test(novo)){e.textContent='O PIN deve ter 4 a 6 dígitos.';e.classList.add('on');return;}
+  b.disabled=true;b.innerHTML='<span class="spin"></span>';
+  try{
+    var body={pin:novo};if(atual)body.pin_atual=atual;
+    var j=await api('admin-set-pin',body);
+    if(!j.ok){e.textContent=(j.erro==='PIN atual incorreto')?'PIN atual incorreto. Se é a 1ª vez, deixe "PIN atual" vazio.':(j.erro||'Não consegui salvar.');e.classList.add('on');document.getElementById('pin-atual-wrap').style.display='block';return;}
+    closeModal('modal-pin');toast('PIN salvo 🔒');
+  }catch(err){e.textContent='Não consegui conectar.';e.classList.add('on');}
+  finally{b.disabled=false;b.textContent='Salvar PIN';}
+}
+var ACAO_TXT={suspender:['⏸ Suspender empresa','warn','A empresa deixa de acessar até você reativar. Nada é apagado.'],
+  cancelar:['✕ Cancelar empresa','crit','A empresa é desativada (cancelamento). Nada é apagado — dá pra reativar depois.'],
+  reativar:['▶ Reativar empresa','','A empresa volta a ter acesso.'],
+  reset_senha:['🔑 Resetar senha do dono','','Gera uma senha provisória nova e envia pro e-mail do dono; ele troca no próximo acesso.']};
+function doAcao(acao){
+  if(!curDet)return;curAcao=acao;
+  var t=ACAO_TXT[acao]||[acao,'',''];
+  document.getElementById('acao-titulo').textContent=t[0];
+  document.getElementById('acao-texto').textContent=(t[2]?t[2]+' ':'')+'Empresa: '+curDet.nome+'.';
+  var ok=document.getElementById('acao-ok');ok.className='mbtn-ok'+(t[1]?' '+t[1]:'');
+  document.getElementById('acao-err').classList.remove('on');document.getElementById('acao-pin').value='';
+  document.getElementById('modal-acao').classList.add('on');
+}
+async function confirmAcao(){
+  var b=document.getElementById('acao-ok'),e=document.getElementById('acao-err');e.classList.remove('on');
+  var pin=document.getElementById('acao-pin').value.trim();
+  if(!/^\d{4,6}$/.test(pin)){e.textContent='Informe seu PIN (4 a 6 dígitos).';e.classList.add('on');return;}
+  b.disabled=true;b.innerHTML='<span class="spin"></span>';
+  try{
+    var j=await api('admin-acao',{acao:curAcao,empresa_id:curDet.id,pin:pin});
+    if(!j.ok){e.textContent=(j.erro==='PIN incorreto')?'PIN incorreto. (Defina/valide em Segurança 🔒)':(j.erro||'Não consegui executar.');e.classList.add('on');return;}
+    closeModal('modal-acao');toast('Feito ✓');
+    loaded.clientes=false;loaded.overview=false;
+    openDetalhe(curDet.id);
+  }catch(err){e.textContent='Não consegui conectar.';e.classList.add('on');}
+  finally{b.disabled=false;b.textContent='Confirmar';}
 }
 
 // ---------- BOOT ----------
