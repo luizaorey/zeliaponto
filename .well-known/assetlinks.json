@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "br.com.zeliaponto.ponto",
+      "sha256_cert_fingerprints": [
+        "A5:97:66:EB:D9:2B:39:4E:64:94:EA:C2:B8:75:2D:65:E5:D3:C1:11:80:2B:73:F0:CA:58:B5:85:6F:54:D4:70"
+      ]
+    }
+  }
+]
