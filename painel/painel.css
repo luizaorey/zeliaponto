@@ -327,3 +327,17 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
   .conv-wrap.show-thread .conv-thread-col{ display:flex; }
   .conv-back{ display:inline; }
 }
+
+/* --- Editar funcionário (ficha) --- */
+.link-edit{ color:var(--azul,#0b6bcb); cursor:pointer; text-decoration:none; border-bottom:1px dashed rgba(11,107,203,.4); }
+.link-edit:hover{ border-bottom-style:solid; }
+.req{ color:#c0392b; }
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:0 14px; }
+@media (max-width:520px){ .grid2{ grid-template-columns:1fr; } }
+.jorn-block{ margin:6px 0 4px; padding:12px; border:1px solid rgba(0,0,0,.08); border-radius:12px; background:rgba(0,0,0,.02); }
+.jd-toggle{ display:flex; align-items:center; gap:8px; font-size:15px; cursor:pointer; }
+.jd-toggle input{ width:18px; height:18px; }
+.lbl-sm{ display:block; font-size:13px; color:var(--muted,#667); margin:6px 0 4px; }
+.jd-dias{ display:flex; flex-wrap:wrap; gap:8px; }
+.jd-chk{ display:inline-flex; align-items:center; gap:5px; padding:6px 10px; border:1px solid rgba(0,0,0,.12); border-radius:999px; font-size:14px; cursor:pointer; user-select:none; }
+.jd-chk input{ width:16px; height:16px; }

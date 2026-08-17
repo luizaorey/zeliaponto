@@ -6,7 +6,7 @@
 const WB = "https://giantfalcon-n8n.cloudfy.live/webhook";
 const EP = {
   login: WB + "/zelia-dono-login", senha: WB + "/zelia-dono-senha",
-  lista: WB + "/zelia-func-lista", criar: WB + "/zelia-func-criar",
+  lista: WB + "/zelia-func-lista", criar: WB + "/zelia-func-criar", editar: WB + "/zelia-func-editar",
   desativar: WB + "/zelia-func-desativar", reativar: WB + "/zelia-func-reativar",
   reset: WB + "/zelia-func-reset-senha",
   dia: WB + "/zelia-painel-dia", config: WB + "/zelia-config-salvar", configLer: WB + "/zelia-config-ler",
@@ -190,17 +190,18 @@ function statusBadges(f){
 }
 function acoesHtml(f){
   const foto = `<button class="act" disabled title="Em breve (app)">Atualizar fotos</button>`;
+  const editar = `<button class="act" onclick="abrirFicha('${f.id}')">Editar</button>`;
   const reset = `<button class="act" onclick="resetarSenha('${f.id}')">Resetar senha</button>`;
   const toggle = f.ativo
     ? `<button class="act red" onclick="desativar('${f.id}')">Desativar</button>`
     : `<button class="act green" onclick="reativar('${f.id}')">Reativar</button>`;
-  return `<div class="acoes">${f.ativo ? reset : ""}${toggle}${foto}</div>`;
+  return `<div class="acoes">${editar}${f.ativo ? reset : ""}${toggle}${foto}</div>`;
 }
 function renderFuncionarios(){
   if (!FUNCS.length){ $("func-lista").innerHTML = `<p class="muted" style="padding:14px 4px">Nenhum funcionário ainda. Clique em <b>+ Cadastrar</b>.</p>`; return; }
   const rows = FUNCS.map(f => `
     <tr class="${f.ativo ? "" : "inativo"}">
-      <td class="nome">${esc(f.nome)}</td>
+      <td class="nome"><a class="link-edit" onclick="abrirFicha('${f.id}')">${esc(f.nome)}</a></td>
       <td class="cpf">${mascaraCpf(f.cpf)}</td>
       <td>${(Number(f.carga_horaria_minutos) / 60).toLocaleString("pt-BR")}h</td>
       <td>${statusBadges(f)}</td>
@@ -208,7 +209,7 @@ function renderFuncionarios(){
     </tr>`).join("");
   const cards = FUNCS.map(f => `
     <div class="fcard ${f.ativo ? "" : "inativo"}">
-      <div class="r1"><div><div class="nome">${esc(f.nome)}</div>
+      <div class="r1"><div><div class="nome"><a class="link-edit" onclick="abrirFicha('${f.id}')">${esc(f.nome)}</a></div>
         <div class="meta">${mascaraCpf(f.cpf)} · ${(Number(f.carga_horaria_minutos) / 60).toLocaleString("pt-BR")}h</div></div>
         <div>${statusBadges(f)}</div></div>
       ${acoesHtml(f)}
@@ -271,6 +272,97 @@ async function salvarFuncionario(){
     return;
   }
   err.textContent = d.mensagem || "Não foi possível cadastrar.";
+}
+
+/* ---------- EDITAR (ficha completa) ---------- */
+const DIAS_LBL = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+function jornadaSimplesFromObj(j){
+  const def = { usar:false, entrada:"", saida:"", almoco_ini:"", almoco_fim:"", dias:[false,true,true,true,true,true,false] };
+  if (!j || typeof j !== "object") return def;
+  let base = null, dias = [false,false,false,false,false,false,false], tem = false;
+  for (let d=0; d<=6; d++){ const x = j[d] || j[String(d)]; if (!x) continue; tem = true;
+    if (x.trabalha){ dias[d] = true; if (!base) base = x; } }
+  if (!tem) return def;
+  base = base || {};
+  return { usar:true, entrada:base.entrada||"", saida:base.saida||"", almoco_ini:base.almoco_ini||"", almoco_fim:base.almoco_fim||"", dias };
+}
+function abrirFicha(id){
+  const f = FUNCS.find(x => x.id === id); if (!f) return;
+  const J = jornadaSimplesFromObj(f.jornada);
+  const horas = (Number(f.carga_horaria_minutos)||480)/60;
+  const opt = (v,label,cur)=>`<option value="${v}" ${String(cur||"")===v?"selected":""}>${label}</option>`;
+  const chks = DIAS_LBL.map((lbl,d)=>`<label class="jd-chk"><input type="checkbox" id="e-d${d}" ${J.dias[d]?"checked":""}><span>${lbl}</span></label>`).join("");
+  openModal(`
+    <h3>Editar funcionário</h3>
+    <div class="field"><label>Nome completo <span class="req">*</span></label><input id="e-nome" class="txt" value="${esc(f.nome)}" placeholder="Nome completo"></div>
+    <div class="field"><label>CPF <span class="req">*</span></label><input id="e-cpf" class="txt" inputmode="numeric" maxlength="14" value="${mascaraCpf(f.cpf)}"></div>
+    <div class="field"><label>WhatsApp <span class="muted">(pra Zélia falar com ele)</span></label>${phoneFieldHTML('e-wa', f.whatsapp||'')}</div>
+    <div class="grid2">
+      <div class="field"><label>Cargo / função</label><input id="e-cargo" class="txt" maxlength="60" value="${esc(f.cargo||'')}" placeholder="Ex.: Vendedor(a)"></div>
+      <div class="field"><label>Setor / departamento</label><input id="e-setor" class="txt" maxlength="60" value="${esc(f.setor||'')}" placeholder="Ex.: Loja"></div>
+      <div class="field"><label>Matrícula</label><input id="e-matricula" class="txt" maxlength="40" value="${esc(f.matricula||'')}"></div>
+      <div class="field"><label>PIS / NIS</label><input id="e-pis" class="txt" inputmode="numeric" maxlength="20" value="${esc(f.pis_nis||'')}"></div>
+      <div class="field"><label>Tipo de contrato <span class="muted">(Sentinela)</span></label><select id="e-contrato" class="txt">
+        ${opt("","—",f.tipo_contrato)}${opt("clt","CLT",f.tipo_contrato)}${opt("experiencia","Contrato de experiência",f.tipo_contrato)}${opt("jovem_aprendiz","Jovem aprendiz",f.tipo_contrato)}</select></div>
+      <div class="field"><label>Carga diária (horas)</label><input id="e-carga" class="txt" type="number" min="1" max="24" step="0.5" value="${horas}"></div>
+      <div class="field"><label>Data de admissão</label><input id="e-adm" class="txt" type="date" value="${esc(f.data_admissao||'')}"></div>
+      <div class="field"><label>Data de nascimento</label><input id="e-nasc" class="txt" type="date" value="${esc(f.data_nascimento||'')}"></div>
+    </div>
+    <div class="jorn-block">
+      <label class="jd-toggle"><input type="checkbox" id="e-jorn-on" ${J.usar?"checked":""} onchange="document.getElementById('e-jorn-box').style.display=this.checked?'block':'none'"> <b>Jornada individual</b> <span class="muted">(se desligado, usa a jornada da empresa)</span></label>
+      <div id="e-jorn-box" style="display:${J.usar?"block":"none"};margin-top:8px">
+        <div class="grid2">
+          <div class="field"><label>Entrada</label><input id="e-jent" class="txt" type="time" value="${esc(J.entrada)}"></div>
+          <div class="field"><label>Saída</label><input id="e-jsai" class="txt" type="time" value="${esc(J.saida)}"></div>
+          <div class="field"><label>Almoço — início</label><input id="e-jai" class="txt" type="time" value="${esc(J.almoco_ini)}"></div>
+          <div class="field"><label>Almoço — fim</label><input id="e-jaf" class="txt" type="time" value="${esc(J.almoco_fim)}"></div>
+        </div>
+        <label class="lbl-sm">Dias que trabalha</label>
+        <div class="jd-dias">${chks}</div>
+      </div>
+    </div>
+    <div class="field"><label>Status</label><select id="e-status" class="txt">${opt("ativo","Ativo",f.ativo?"ativo":"inativo")}${opt("inativo","Inativo",f.ativo?"ativo":"inativo")}</select></div>
+    <div class="err" id="e-err"></div>
+    <div class="modal-acts"><button class="btn ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn" id="e-salvar" onclick="salvarEdicao('${f.id}')">Salvar</button></div>`);
+  const cpf = $("e-cpf"); cpf.addEventListener("input", () => { cpf.value = mascaraCpf(cpf.value); });
+}
+async function salvarEdicao(id){
+  const err = $("e-err"); err.textContent = "";
+  const nome = $("e-nome").value.trim();
+  const cpf = soDig($("e-cpf").value);
+  if (!nome){ err.textContent = "Informe o nome."; return; }
+  if (!cpfValido(cpf)){ err.textContent = "CPF inválido — confira os números."; return; }
+  const vwa = phoneValido('e-wa');
+  if (!vwa.ok){ err.textContent = vwa.msg; return; }
+  const whatsapp = vwa.empty ? "" : vwa.canonical;
+  const horas = parseFloat($("e-carga").value);
+  const carga = (horas > 0 && horas <= 24) ? Math.round(horas * 60) : 480;
+  // jornada individual (opcional)
+  let jornada = null;
+  if ($("e-jorn-on").checked){
+    const ent = $("e-jent").value, sai = $("e-jsai").value, ai = $("e-jai").value, af = $("e-jaf").value;
+    const dias = DIAS_LBL.map((_,d)=>$("e-d"+d).checked);
+    if (!ent || !sai){ err.textContent = "Na jornada individual, informe entrada e saída."; return; }
+    if (!dias.some(Boolean)){ err.textContent = "Marque ao menos um dia de trabalho."; return; }
+    jornada = {};
+    for (let d=0; d<=6; d++) jornada[d] = dias[d]
+      ? { trabalha:true, entrada:ent, saida:sai, almoco_ini:ai||null, almoco_fim:af||null }
+      : { trabalha:false };
+  }
+  const payload = {
+    id, nome, cpf, whatsapp,
+    cargo: $("e-cargo").value.trim(), setor: $("e-setor").value.trim(),
+    matricula: $("e-matricula").value.trim(), pis_nis: soDig($("e-pis").value),
+    tipo_contrato: $("e-contrato").value, data_admissao: $("e-adm").value, data_nascimento: $("e-nasc").value,
+    carga_horaria_minutos: carga, jornada, ativo: $("e-status").value === "ativo",
+  };
+  $("e-salvar").disabled = true;
+  const d = await apiPost(EP.editar, payload);
+  $("e-salvar").disabled = false;
+  if (d.ok){ closeModal(); toast("Funcionário atualizado."); carregarFuncionarios(); return; }
+  const m = { cpf_existe:"Já há outro funcionário com esse CPF.", cpf_invalido:"CPF inválido.", sem_nome:"Informe o nome.", sem_id:"Erro ao identificar o funcionário.", sessao:"Sessão expirada — entre de novo." }[d.motivo];
+  err.textContent = m || "Não foi possível salvar.";
 }
 
 /* ---------- AÇÕES (com confirmação) ---------- */
