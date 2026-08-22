@@ -341,3 +341,7 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
 .jd-dias{ display:flex; flex-wrap:wrap; gap:8px; }
 .jd-chk{ display:inline-flex; align-items:center; gap:5px; padding:6px 10px; border:1px solid rgba(0,0,0,.12); border-radius:999px; font-size:14px; cursor:pointer; user-select:none; }
 .jd-chk input{ width:16px; height:16px; }
+
+/* --- Esqueci minha senha --- */
+.link-forgot{ display:block; margin:12px auto 0; background:none; border:none; color:var(--azul,#0b6bcb); font-size:14px; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+.link-forgot:hover{ color:#0a3f6b; }

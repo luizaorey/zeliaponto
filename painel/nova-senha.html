@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nova senha · Painel Zélia</title>
+<link rel="icon" href="../zelia.svg">
+<style>
+  :root{ --verde:#0C4B35; --verde2:#14A673; --bg:#FBF7F0; --card:#fff; --txt:#1F2A26; --muted:#6B7B74; --erro:#c0392b; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--txt);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .card{ width:100%; max-width:400px; background:var(--card); border:1px solid #eae3d7; border-radius:18px; overflow:hidden; }
+  .head{ background:var(--verde); text-align:center; padding:22px 0; }
+  .head img{ width:76px; height:76px; border-radius:50%; border:3px solid #fff; background:#fff; }
+  .head .t{ color:#eafff5; font-weight:bold; margin-top:8px; font-size:17px; }
+  .body{ padding:24px 22px 26px; }
+  h1{ font-size:19px; margin:0 0 4px; }
+  .sub{ color:var(--muted); font-size:14px; margin:0 0 18px; }
+  label{ display:block; font-size:14px; margin:12px 0 5px; }
+  .txt{ width:100%; padding:12px 14px; border:1px solid #d9d2c6; border-radius:12px; font-size:16px; background:#fff; }
+  .txt:focus{ outline:none; border-color:var(--verde2); }
+  .btn{ width:100%; margin-top:18px; padding:13px; border:none; border-radius:12px; background:var(--verde2); color:#fff;
+    font-size:16px; font-weight:bold; cursor:pointer; }
+  .btn:disabled{ opacity:.6; cursor:default; }
+  .err{ color:var(--erro); font-size:14px; min-height:18px; margin-top:8px; }
+  .ok{ text-align:center; }
+  .ok .big{ font-size:40px; }
+  a.link{ color:var(--verde2); font-weight:bold; text-decoration:none; }
+  .hide{ display:none; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="head"><img src="https://zeliaponto.com.br/assets/zelia-avatar.png" alt="Zélia" onerror="this.src='../zelia.svg'"><div class="t">Zélia Ponto</div></div>
+    <div class="body">
+      <div id="form-wrap">
+        <h1>Criar nova senha</h1>
+        <p class="sub">Escolha uma senha nova pro seu painel.</p>
+        <label>Nova senha</label>
+        <input id="s1" class="txt" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+        <label>Confirmar senha</label>
+        <input id="s2" class="txt" type="password" autocomplete="new-password" placeholder="Repita a senha">
+        <div class="err" id="err"></div>
+        <button class="btn" id="salvar" onclick="salvar()">Salvar senha</button>
+      </div>
+      <div id="ok-wrap" class="ok hide">
+        <div class="big">✅</div>
+        <h1>Senha alterada!</h1>
+        <p class="sub">Pronto, sua senha foi atualizada.</p>
+        <p><a class="link" href="./">Ir para o login</a></p>
+      </div>
+    </div>
+  </div>
+<script>
+  var EP_NOVA = "https://giantfalcon-n8n.cloudfy.live/webhook/zelia-dono-nova-senha";
+  function token(){ return new URLSearchParams(location.search).get("token") || ""; }
+  function el(id){ return document.getElementById(id); }
+  window.addEventListener("DOMContentLoaded", function(){
+    if(!/^[0-9a-fA-F]{64}$/.test(token())){
+      el("form-wrap").innerHTML = '<h1>Link inválido</h1><p class="sub">Este link está incompleto ou já foi usado. Peça um novo em <a class="link" href="./">Esqueci minha senha</a>.</p>';
+    }
+  });
+  async function salvar(){
+    var s1 = el("s1").value, s2 = el("s2").value, err = el("err"); err.textContent = "";
+    if(s1.length < 6){ err.textContent = "A senha precisa de pelo menos 6 caracteres."; return; }
+    if(s1 === "123"){ err.textContent = 'Escolha uma senha menos óbvia.'; return; }
+    if(s1 !== s2){ err.textContent = "As senhas não são iguais."; return; }
+    el("salvar").disabled = true;
+    var d = {};
+    try{
+      var r = await fetch(EP_NOVA, { method:"POST", headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ token: token(), nova_senha: s1 }) });
+      d = await r.json().catch(function(){ return {}; });
+    }catch(e){ err.textContent = "Sem conexão. Tente de novo."; el("salvar").disabled = false; return; }
+    if(d.ok){ el("form-wrap").classList.add("hide"); el("ok-wrap").classList.remove("hide"); return; }
+    el("salvar").disabled = false;
+    var m = { invalido:"Este link expirou ou já foi usado. Peça um novo.", senha_fraca:"Escolha uma senha mais forte (mín. 6 caracteres)." }[d.motivo];
+    err.textContent = m || "Não foi possível salvar. Tente novamente.";
+  }
+</script>
+</body>
+</html>

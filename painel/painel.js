@@ -6,6 +6,7 @@
 const WB = "https://giantfalcon-n8n.cloudfy.live/webhook";
 const EP = {
   login: WB + "/zelia-dono-login", senha: WB + "/zelia-dono-senha",
+  recuperar: WB + "/zelia-dono-recuperar", novaSenha: WB + "/zelia-dono-nova-senha",
   lista: WB + "/zelia-func-lista", criar: WB + "/zelia-func-criar", editar: WB + "/zelia-func-editar",
   desativar: WB + "/zelia-func-desativar", reativar: WB + "/zelia-func-reativar",
   reset: WB + "/zelia-func-reset-senha",
@@ -100,6 +101,27 @@ function entrar(){
   atualizarBadgeAprovacoes();
   carregarResumoConversas();
 }
+/* ---------- RECUPERAR SENHA (esqueci) ---------- */
+function abrirRecuperar(){
+  const pre = ($("in-email") && $("in-email").value.trim()) || "";
+  openModal(`<h3>Recuperar senha</h3>
+    <p class="muted" style="margin:0 0 12px">Digite seu e-mail. Se estiver cadastrado, você recebe as instruções pra criar uma senha nova.</p>
+    <div class="field"><label>E-mail</label><input id="rec-email" class="txt" type="email" value="${esc(pre)}" placeholder="voce@empresa.com"></div>
+    <div class="err" id="rec-err"></div>
+    <div class="modal-acts"><button class="btn ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn" id="rec-enviar" onclick="enviarRecuperar()">Enviar</button></div>`);
+  setTimeout(() => { const e=$("rec-email"); if(e) e.focus(); }, 50);
+}
+async function enviarRecuperar(){
+  const email = ($("rec-email").value || "").trim();
+  const err = $("rec-err"); err.textContent = "";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ err.textContent = "Digite um e-mail válido."; return; }
+  $("rec-enviar").disabled = true;
+  try { await fetch(EP.recuperar, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ email }) }); } catch(e){}
+  closeModal();
+  toast("Se este e-mail estiver cadastrado, você receberá as instruções.");
+}
+
 function sair(expirou){
   localStorage.removeItem(LS_TOKEN); localStorage.removeItem(LS_NOME); localStorage.removeItem(LS_EMPRESA);
   go("s-login");
