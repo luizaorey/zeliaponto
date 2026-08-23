@@ -862,6 +862,7 @@ async function carregarConfig(){
   $("cfg-ct-email").value = ct.email || "";
   $("cfg-ct-wa").innerHTML = phoneFieldHTML('ctwa', ct.whatsapp || "");
   JOR3 = jornadaToUI(CFG.jornada_semanal); renderJornada();
+  $("cfg-semloc").checked = CFG.permitir_sem_localizacao !== false;
   $("cfg-fora").checked = CFG.alerta_fora_raio !== false;
   $("cfg-atraso").checked = CFG.alerta_atraso !== false;
   $("cfg-extra-sw").checked = CFG.alerta_extra !== false;
@@ -938,6 +939,7 @@ async function salvarConfig(){
     horario_resumo_diario: $("cfg-resumo").value || "18:30",
     limite_extra_semanal_minutos: Math.round((isNaN(extraH) ? 10 : extraH) * 60),
     tolerancia_minutos: (tol >= 0 && tol <= 180) ? tol : 10,
+    permitir_sem_localizacao: $("cfg-semloc").checked,
     alerta_fora_raio: $("cfg-fora").checked,
     alerta_atraso: $("cfg-atraso").checked,
     alerta_extra: $("cfg-extra-sw").checked,
@@ -991,7 +993,7 @@ async function salvarConfig(){
     CFGc = [{nome:"Dono Teste A",whatsapp:"5571992123439",recebe:true,fala:true,dono:true},{nome:"Gerente Ana",whatsapp:"5571988887777",recebe:true,fala:false}];
     renderContatos();
     JOR3 = { uteis:{trabalha:true,entrada:"08:00",carga_h:8}, sab:{trabalha:true,entrada:"08:30",carga_h:4.5}, dom:{trabalha:false,entrada:"",carga_h:8} }; renderJornada();
-    $("cfg-fora").checked = true; $("cfg-atraso").checked = true; $("cfg-extra-sw").checked = true; $("cfg-resumo-sw").checked = true; $("cfg-fecham").checked = true;
+    $("cfg-semloc").checked = true; $("cfg-fora").checked = true; $("cfg-atraso").checked = true; $("cfg-extra-sw").checked = true; $("cfg-resumo-sw").checked = true; $("cfg-fecham").checked = true;
     $("cfg-resumo").value = "18:30"; $("cfg-tol").value = 10; $("cfg-extra").value = 10;
     $("cfg-loading").style.display = "none"; $("cfg-form").style.display = "block"; return;
   }
