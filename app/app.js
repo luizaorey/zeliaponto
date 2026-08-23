@@ -24,7 +24,7 @@ function togglePw(btn){
   btn.querySelector(".eye-off").style.display=show?"":"none";
   btn.setAttribute("aria-label",show?"Ocultar senha":"Mostrar senha");
 }
-let stream=null, tipoPendente=null, enviando=false, mesAtual=null;
+let stream=null, tipoPendente=null, enviando=false, mesAtual=null, PERMITE_SEM_LOC=false;
 
 /* ---------- helpers ---------- */
 function go(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); document.getElementById(id).classList.add("active"); }
@@ -107,7 +107,7 @@ async function bloquearTipoRepetido(){
   if(navigator.onLine && getToken()){
     try{ const r=await fetch(EP.status+"?token="+encodeURIComponent(getToken()));
       if(r.status===401){ sair(); return; }
-      if(r.ok){ const d=await r.json(); if(d&&d.ultimo){ ultimoTipo=d.ultimo.tipo; quando=d.ultimo.registrado_em; } } }catch(e){}
+      if(r.ok){ const d=await r.json(); if(d){ if(d.ultimo){ ultimoTipo=d.ultimo.tipo; quando=d.ultimo.registrado_em; } PERMITE_SEM_LOC = d.permitir_sem_localizacao !== false; } } }catch(e){}
   }
   const hoje=diaBahia(new Date());
   const locais=(await filaAll()).filter(x=>diaBahia(new Date(x.registrado_em))===hoje).sort((a,b)=>a.registrado_em<b.registrado_em?-1:1);
@@ -127,7 +127,8 @@ async function iniciarRegistro(tipo){
   tipoPendente=tipo; document.getElementById("cam-titulo").textContent="Registrar "+LABELS[tipo]; go("s-camera");
   try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:1280}},audio:false});
     const v=document.getElementById("cam-video"); v.srcObject=stream; v.style.display="block"; document.getElementById("cam-capturar").style.display="block";
-  }catch(e){ document.getElementById("cam-video").style.display="none"; document.getElementById("cam-capturar").style.display="none"; document.getElementById("cam-fallback").click(); }
+    const sl=document.getElementById("cam-semloc"); if(sl) sl.style.display = PERMITE_SEM_LOC ? "block" : "none";
+  }catch(e){ document.getElementById("cam-video").style.display="none"; document.getElementById("cam-capturar").style.display="none"; const sl=document.getElementById("cam-semloc"); if(sl) sl.style.display="none"; document.getElementById("cam-fallback").click(); }
 }
 function pararCamera(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } }
 function cancelarCamera(){ pararCamera(); tipoPendente=null; voltarHome(); }
@@ -136,6 +137,9 @@ function pegarGPS(){ return new Promise(res=>{ if(!navigator.geolocation) return
 function comprimir(el){ const w0=el.videoWidth||el.naturalWidth,h0=el.videoHeight||el.naturalHeight; const s=Math.min(1,FOTO_MAX_LADO/Math.max(w0,h0)); const w=Math.round(w0*s),h=Math.round(h0*s); const c=document.getElementById("work-canvas"); c.width=w; c.height=h; c.getContext("2d").drawImage(el,0,0,w,h); return c.toDataURL("image/jpeg",FOTO_QUALIDADE).split(",")[1]; }
 async function capturar(){ if(enviando) return; const v=document.getElementById("cam-video"); if(!v.videoWidth){ toast("Aguarde a câmera abrir…"); return; }
   const agora=new Date(); const foto=comprimir(v); const gps=await pegarGPS(); pararCamera(); await enviarRegistro({tipo:tipoPendente,agora,foto,gps}); }
+// bate ponto SEM localização (pula o GPS) — só quando a empresa permite (dono liga no painel)
+async function capturarSemLoc(){ if(enviando) return; const v=document.getElementById("cam-video"); if(!v.videoWidth){ toast("Aguarde a câmera abrir…"); return; }
+  const agora=new Date(); const foto=comprimir(v); pararCamera(); await enviarRegistro({tipo:tipoPendente,agora,foto,gps:null}); }
 async function capturarInput(ev){ const file=ev.target.files&&ev.target.files[0]; if(!file){ voltarHome(); return; }
   const agora=new Date(); const img=new Image(); const gpsP=pegarGPS();
   img.onload=async()=>{ const foto=comprimir(img); const gps=await gpsP; await enviarRegistro({tipo:tipoPendente,agora,foto,gps}); URL.revokeObjectURL(img.src); }; img.src=URL.createObjectURL(file); }

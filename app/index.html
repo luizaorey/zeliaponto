@@ -84,7 +84,7 @@
   <section id="s-camera" class="screen">
     <div class="hdr" style="padding-bottom:16px"><div class="topbar"><span style="width:24px"></span><div class="name" id="cam-titulo">Registrar</div><button class="btn ghost" style="width:auto;padding:8px 12px;font-size:15px" onclick="cancelarCamera()">Cancelar</button></div></div>
     <video id="cam-video" playsinline autoplay muted></video>
-    <div class="cam-body"><p class="hint" style="text-align:center" id="cam-hint">Enquadre o rosto e toque em registrar.</p><div style="flex:1"></div><button class="btn" id="cam-capturar" onclick="capturar()">Registrar ponto</button></div>
+    <div class="cam-body"><p class="hint" style="text-align:center" id="cam-hint">Enquadre o rosto e toque em registrar.</p><div style="flex:1"></div><button class="btn" id="cam-capturar" onclick="capturar()">Registrar ponto</button><button class="btn ghost" id="cam-semloc" style="display:none;margin-top:8px" onclick="capturarSemLoc()">📍 Bater sem localização</button></div>
     <input id="cam-fallback" type="file" accept="image/*" capture="user" style="display:none" onchange="capturarInput(event)">
   </section>
 
