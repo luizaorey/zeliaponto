@@ -158,7 +158,11 @@
       <div class="field"><label>Nome do local</label>
         <input id="lf-nome" class="txt" maxlength="60" placeholder="Só o nome do lugar (ex.: Makro Boutique)" oninput="atualizarPreview()"></div>
 
-      <label class="lf-lbl">Onde fica <span class="muted" style="font-weight:600">— arraste o mapa até o pino marcar o local</span></label>
+      <label class="lf-lbl">Onde fica <span class="muted" style="font-weight:600">— busque o endereço ou arraste o mapa até o pino</span></label>
+      <div class="lf-busca-row">
+        <input id="lf-busca" class="txt" placeholder="Buscar cidade, bairro ou endereço…" onkeydown="if(event.key==='Enter'){event.preventDefault();buscarEndereco();}">
+        <button class="btn small" type="button" id="lf-busca-btn" onclick="buscarEndereco()">Buscar</button>
+      </div>
       <div class="map-box">
         <div id="map"></div>
         <div class="map-pin"><svg viewBox="0 0 24 24" fill="#E1592A" stroke="#fff" stroke-width="1.5"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9" r="2.5" fill="#fff" stroke="none"/></svg></div>

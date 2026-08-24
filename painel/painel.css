@@ -345,3 +345,8 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
 /* --- Esqueci minha senha --- */
 .link-forgot{ display:block; margin:12px auto 0; background:none; border:none; color:var(--azul,#0b6bcb); font-size:14px; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
 .link-forgot:hover{ color:#0a3f6b; }
+
+/* --- Busca de endereço no editor de local --- */
+.lf-busca-row{ display:flex; gap:8px; margin:6px 0 10px; }
+.lf-busca-row input{ flex:1; }
+.lf-busca-row .btn{ width:auto; white-space:nowrap; padding:0 18px; }

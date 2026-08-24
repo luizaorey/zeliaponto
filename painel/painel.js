@@ -580,6 +580,27 @@ function usarMinhaLocalizacao(){
     setPino(p.coords.latitude, p.coords.longitude, 17);
   }, () => toast("Não consegui pegar o GPS."), { enableHighAccuracy:true, timeout:12000 });
 }
+// Busca por nome (cidade/bairro/endereço) via Nominatim (OpenStreetMap) — grátis, sem chave, só leitura.
+async function buscarEndereco(){
+  const q = ($("lf-busca").value || "").trim();
+  if (q.length < 3){ toast("Digite ao menos 3 letras."); return; }
+  const btn = $("lf-busca-btn"); if (btn) btn.disabled = true;
+  toast("Buscando endereço…");
+  try {
+    const url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&addressdetails=0&countrycodes=br&accept-language=pt-BR&q=" + encodeURIComponent(q);
+    const r = await fetch(url, { headers: { "Accept": "application/json" } });
+    const arr = await r.json();
+    if (!Array.isArray(arr) || !arr.length){ toast("Não encontrei esse endereço. Tente ser mais específico (cidade + rua)."); return; }
+    const hit = arr[0];
+    setPino(parseFloat(hit.lat), parseFloat(hit.lon), 16);
+    const nome = hit.display_name ? hit.display_name.split(",").slice(0, 3).join(",") : "Local encontrado";
+    toast("📍 " + nome + " — ajuste o pino se precisar.");
+  } catch (e) {
+    toast("Não consegui buscar agora. Confira a internet e tente de novo.");
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
 function abrirColarCoord(){
   const lat0 = (LF && LF.lat != null) ? (+LF.lat).toFixed(6) : "";
   const lon0 = (LF && LF.lon != null) ? (+LF.lon).toFixed(6) : "";
