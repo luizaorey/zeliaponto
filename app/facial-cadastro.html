@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Zélia · Cadastrar rosto</title>
+<style>
+  :root{ --verde:#0C4B35; --verde2:#14A673; --bg:#0e1512; --card:#16211c; --txt:#eafff5; --muted:#9fb5ab; --ok:#33d69f; --no:#ff6b6b; --warn:#ffcf5c; }
+  *{box-sizing:border-box} body{ margin:0; font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--txt); padding:16px; text-align:center }
+  h1{ font-size:19px; margin:6px 0 2px } .sub{ color:var(--muted); font-size:13px; margin:0 0 12px }
+  .oval{ position:relative; width:260px; max-width:80vw; aspect-ratio:3/4; margin:0 auto; border-radius:50%/40%; overflow:hidden; background:#000; border:3px solid #24382f }
+  .oval.good{ border-color:var(--ok) } .oval.bad{ border-color:var(--no) }
+  video{ width:100%; height:100%; object-fit:cover; transform:scaleX(-1) }
+  .hint{ min-height:22px; font-size:15px; margin:12px 0 4px; font-weight:600 }
+  .hint.ok{color:var(--ok)} .hint.bad{color:var(--no)}
+  .dots{ display:flex; gap:8px; justify-content:center; margin:8px 0 }
+  .dot{ width:14px; height:14px; border-radius:50%; background:#26382f; border:1px solid #3a5145 }
+  .dot.on{ background:var(--verde2); border-color:var(--verde2) }
+  button{ width:100%; max-width:320px; padding:14px; border:none; border-radius:12px; background:var(--verde2); color:#fff; font-size:16px; font-weight:bold; margin-top:10px }
+  button:disabled{ opacity:.45 }
+  .status{ font-size:12px; color:var(--muted); margin-top:8px }
+  .box{ background:var(--card); border:1px solid #23342c; border-radius:14px; padding:14px; margin:0 auto 12px; max-width:340px }
+  .final .big{ font-size:52px } .link{ color:var(--verde2); font-weight:bold; text-decoration:none }
+  #log{ font-family:ui-monospace,monospace; font-size:10px; color:#7fa; white-space:pre-wrap; max-height:80px; overflow:auto; text-align:left; background:#0a0f0d; border-radius:8px; padding:6px; margin-top:8px }
+</style>
+</head>
+<body>
+  <h1>📸 Cadastrar meu rosto</h1>
+  <p class="sub" id="quem">Reconhecimento facial da Zélia</p>
+
+  <div id="etapa-intro" class="box">
+    <p>Vamos guardar o <b>padrão do seu rosto</b> (não uma foto — a foto some no aparelho). São <b>3 capturas</b> rápidas. Você vai precisar <b>piscar</b> pra provar que é você de verdade.</p>
+    <button id="btn-comecar" onclick="comecar()">Começar</button>
+    <div class="status" id="load-st">—</div>
+  </div>
+
+  <div id="etapa-cam" style="display:none">
+    <div class="oval" id="oval"><video id="v" playsinline autoplay muted></video></div>
+    <div class="hint" id="hint">Posicione o rosto no oval…</div>
+    <div class="dots"><span class="dot" id="d0"></span><span class="dot" id="d1"></span><span class="dot" id="d2"></span></div>
+    <button id="btn-cap" onclick="capturar()" disabled>Capturar</button>
+    <div class="status" id="st">—</div>
+  </div>
+
+  <div id="etapa-fim" class="box final" style="display:none">
+    <div class="big">✅</div>
+    <h1 id="fim-tit">Rosto cadastrado!</h1>
+    <p class="sub" id="fim-msg">Pronto — agora você pode bater ponto com o rosto.</p>
+    <p><a class="link" href="./">Voltar ao app</a></p>
+  </div>
+  <div id="log"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/human@3/dist/human.js"></script>
+<script>
+  var WEBHOOK="https://giantfalcon-n8n.cloudfy.live/webhook";
+  var human=null, video=document.getElementById("v"), embs=[], step=0, blinkSeen=false, MODEL_VERSION="", DIM=0, busy=false;
+  function log(m){ var el=document.getElementById("log"); el.textContent=("• "+m+"\n")+el.textContent; }
+  function tok(){ try{ return localStorage.getItem("zelia_token")||""; }catch(e){ return ""; } }
+  function nome(){ try{ return (localStorage.getItem("zelia_nome")||"").split(" ")[0]; }catch(e){ return ""; } }
+  document.getElementById("quem").textContent = nome()? ("Olá, "+nome()+" — vamos cadastrar seu rosto") : "Reconhecimento facial da Zélia";
+  if(!tok()){ document.getElementById("etapa-intro").innerHTML = '<p>Você precisa <b>entrar no app da Zélia</b> primeiro (com CPF e senha) e depois voltar aqui.</p><p><a class="link" href="./">Ir para o login</a></p>'; }
+
+  async function comecar(){
+    if(busy) return; busy=true; document.getElementById("btn-comecar").disabled=true;
+    var st=document.getElementById("load-st");
+    try{
+      if(typeof Human==="undefined"){ st.textContent="Biblioteca não carregou (internet?)."; busy=false; return; }
+      st.textContent="Preparando a câmera…";
+      var stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480}},audio:false});
+      video.srcObject=stream; await video.play().catch(function(){});
+      st.textContent="Baixando o modelo (uma vez)…";
+      human=new Human.Human({ modelBasePath:"https://cdn.jsdelivr.net/npm/@vladmandic/human@3/models/", backend:"humangl", cacheModels:true, warmup:"none",
+        face:{enabled:true, detector:{maxDetected:1, rotation:false}, mesh:{enabled:true}, iris:{enabled:true}, description:{enabled:true}, antispoof:{enabled:true}, liveness:{enabled:true}, emotion:{enabled:false}},
+        body:{enabled:false}, hand:{enabled:false}, object:{enabled:false}, gesture:{enabled:true}, filter:{enabled:false} });
+      await human.load(); await human.warmup();
+      MODEL_VERSION="human-"+(human.version||"3")+"-desc";
+      log("modelos OK, backend="+human.tf.getBackend());
+      document.getElementById("etapa-intro").style.display="none";
+      document.getElementById("etapa-cam").style.display="block";
+      loop();
+    }catch(e){ st.textContent="Não consegui abrir a câmera: "+(e&&e.message?e.message:e); busy=false; document.getElementById("btn-comecar").disabled=false; }
+  }
+
+  var lastFace=null;
+  async function loop(){
+    async function tick(){
+      try{
+        var r=await human.detect(video);
+        var f=r.face && r.face[0]; lastFace=null;
+        var oval=document.getElementById("oval"), hint=document.getElementById("hint"), btn=document.getElementById("btn-cap");
+        var gestures=(r.gesture||[]).map(function(g){return (g.gesture||"")}).join(",");
+        if(/blink|piscad|eye/i.test(gestures)) { if(!blinkSeen){ blinkSeen=true; log("piscada detectada ✓"); } }
+        if(r.face && r.face.length>1){ oval.className="oval bad"; hint.className="hint bad"; hint.textContent="Só um rosto por vez"; btn.disabled=true; }
+        else if(!f){ oval.className="oval"; hint.className="hint"; hint.textContent="Posicione o rosto no oval…"; btn.disabled=true; }
+        else{
+          var score=f.faceScore||f.score||0, live=(typeof f.live==="number"?f.live:1), real=(typeof f.real==="number"?f.real:1);
+          var emb=f.embedding; if(emb&&emb.length){ DIM=emb.length; }
+          var bomRosto = score>0.6 && emb && emb.length>0;
+          var vivo = live>0.6 && real>0.5;
+          if(!bomRosto){ oval.className="oval bad"; hint.className="hint bad"; hint.textContent="Aproxime e ilumine o rosto"; btn.disabled=true; }
+          else if(!blinkSeen){ oval.className="oval"; hint.className="hint"; hint.textContent="Pisque os olhos 👀 (pra provar que é você)"; btn.disabled=true; }
+          else if(!vivo){ oval.className="oval bad"; hint.className="hint bad"; hint.textContent="Rosto não parece vivo (foto?) — olhe pra câmera"; btn.disabled=true; }
+          else{ oval.className="oval good"; hint.className="hint ok"; hint.textContent=PROMPTS[step]; btn.disabled=false; lastFace={emb:Array.from(emb), live:live, real:real}; }
+          document.getElementById("st").textContent="nitidez "+score.toFixed(2)+" · vivo "+live.toFixed(2)+" · real "+real.toFixed(2)+(blinkSeen?" · piscada ✓":"");
+        }
+      }catch(e){ log("erro: "+(e&&e.message?e.message:e)); }
+      requestAnimationFrame(tick);
+    }
+    tick();
+  }
+
+  var PROMPTS=["Olhando de frente — toque em Capturar","Vire o rosto um POUCO pra direita ➡️","Vire um POUCO pra esquerda ⬅️"];
+  function capturar(){
+    if(!lastFace){ return; }
+    embs.push(lastFace.emb);
+    document.getElementById("d"+step).className="dot on";
+    step++;
+    if(step<3){ document.getElementById("btn-cap").disabled=true; return; }
+    enviar();
+  }
+
+  function l2norm(v){ var s=0; for(var i=0;i<v.length;i++) s+=v[i]*v[i]; s=Math.sqrt(s)||1; return v.map(function(x){return x/s;}); }
+  function media(vs){ var n=vs[0].length, out=new Array(n).fill(0); vs.forEach(function(v){ for(var i=0;i<n;i++) out[i]+=v[i]; }); for(var i=0;i<n;i++) out[i]/=vs.length; return l2norm(out); }
+
+  async function enviar(){
+    document.getElementById("hint").textContent="Guardando o padrão do seu rosto…";
+    document.getElementById("btn-cap").disabled=true;
+    // fecha a câmera — a imagem morre aqui, nunca sai do aparelho
+    try{ video.srcObject.getTracks().forEach(function(t){t.stop();}); }catch(e){}
+    var template = media(embs);   // vetor médio L2-normalizado (irreversível). NENHUMA foto é enviada.
+    try{
+      var r=await fetch(WEBHOOK+"/zelia-face-enroll",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ token:tok(), template:template, model_version:MODEL_VERSION, dim:template.length })});
+      var d=await r.json().catch(function(){return {};});
+      if(d.ok){ document.getElementById("etapa-cam").style.display="none"; document.getElementById("etapa-fim").style.display="block"; return; }
+      falhou(d.motivo||("erro "+r.status));
+    }catch(e){ falhou("sem conexão"); }
+  }
+  function falhou(m){
+    document.getElementById("hint").className="hint bad";
+    document.getElementById("hint").textContent="Não consegui salvar ("+m+"). Tente de novo.";
+    embs=[]; step=0; blinkSeen=false; for(var i=0;i<3;i++) document.getElementById("d"+i).className="dot";
+    log("falha enroll: "+m);
+    setTimeout(function(){ location.reload(); }, 3500);
+  }
+</script>
+</body>
+</html>
