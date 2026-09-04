@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Zélia · Teste Facial</title>
+<style>
+  :root{ --verde:#0C4B35; --verde2:#14A673; --bg:#0e1512; --card:#16211c; --txt:#eafff5; --muted:#9fb5ab; --ok:#33d69f; --no:#ff6b6b; --warn:#ffcf5c; }
+  *{box-sizing:border-box}
+  body{ margin:0; font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--txt); padding:16px; }
+  h1{ font-size:18px; margin:0 0 4px } .sub{ color:var(--muted); font-size:13px; margin:0 0 14px }
+  .card{ background:var(--card); border:1px solid #23342c; border-radius:14px; padding:14px; margin:0 0 12px }
+  .row{ display:flex; align-items:center; gap:10px; padding:7px 0; font-size:15px; border-bottom:1px solid #1e2c25 }
+  .row:last-child{border-bottom:none}
+  .st{ width:22px; text-align:center; font-size:16px }
+  .st.ok{color:var(--ok)} .st.no{color:var(--no)} .st.wait{color:var(--warn)}
+  .k{ flex:1 } .v{ color:var(--muted); font-size:13px; text-align:right; max-width:52% }
+  video{ width:100%; max-width:320px; border-radius:12px; background:#000; transform:scaleX(-1); display:block; margin:0 auto }
+  button{ width:100%; padding:14px; border:none; border-radius:12px; background:var(--verde2); color:#fff; font-size:16px; font-weight:bold; margin-top:8px }
+  button:disabled{opacity:.5}
+  .note{ background:#20140b; border:1px solid #4a3418; color:#ffcf5c; border-radius:10px; padding:10px 12px; font-size:13px; margin:0 0 12px }
+  .verdict{ font-size:20px; font-weight:bold; text-align:center; padding:12px; border-radius:12px; margin-top:6px }
+  .verdict.pass{ background:#0d3b2b; color:var(--ok) } .verdict.fail{ background:#3b1414; color:var(--no) } .verdict.na{ background:#2a2a2a; color:var(--muted) }
+  #log{ font-family:ui-monospace,monospace; font-size:11px; color:#8fa; white-space:pre-wrap; word-break:break-all; max-height:120px; overflow:auto; background:#0a0f0d; border-radius:8px; padding:8px; margin-top:8px }
+  .big{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+</style>
+</head>
+<body>
+  <h1>🧪 Zélia — Teste de Câmera + Facial</h1>
+  <p class="sub">Protótipo descartável. Não é o app de ponto.</p>
+
+  <div class="note">📱 <b>iPhone:</b> toque em <b>Compartilhar → Adicionar à Tela de Início</b> e abra por lá (modo instalado). Testar só na aba do Safari <b>não</b> prova o uso real.</div>
+
+  <div class="card">
+    <div class="row"><span class="st wait" id="s1i">•</span><span class="k">1. Câmera abriu</span><span class="v" id="s1v">—</span></div>
+    <div class="row"><span class="st wait" id="s2i">•</span><span class="k">2. Modelos carregaram</span><span class="v" id="s2v">—</span></div>
+    <div class="row"><span class="st wait" id="s3i">•</span><span class="k">3. Rosto detectado</span><span class="v" id="s3v">—</span></div>
+    <div class="row"><span class="st wait" id="s4i">•</span><span class="k">4. Descritor extraído (no device)</span><span class="v" id="s4v">—</span></div>
+    <div class="row"><span class="st wait" id="s5i">•</span><span class="k">5. Liveness / piscada</span><span class="v" id="s5v">—</span></div>
+    <div class="row"><span class="st wait" id="s6i">📈</span><span class="k">FPS (celular)</span><span class="v" id="s6v">—</span></div>
+    <div id="verdict" class="verdict na">Aguardando teste…</div>
+    <div class="big" id="plat">—</div>
+  </div>
+
+  <video id="v" playsinline autoplay muted></video>
+  <button id="btn" onclick="iniciar()">▶️ Iniciar teste (pede permissão da câmera)</button>
+  <div id="log"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/human@3/dist/human.js"></script>
+<script>
+  var human=null, video=document.getElementById("v"), running=false;
+  var proofs={cam:false,models:false,face:false,desc:false,live:false};
+  var blinkSeen=false, fpsEMA=0, modelsMs=0;
+  function log(m){ var el=document.getElementById("log"); el.textContent=("["+new Date().toLocaleTimeString()+"] "+m+"\n")+el.textContent; }
+  function set(n, ok, txt){ var i=document.getElementById("s"+n+"i"), v=document.getElementById("s"+n+"v");
+    i.className="st "+(ok===true?"ok":ok===false?"no":"wait"); i.textContent=(ok===true?"✅":ok===false?"❌":"•"); if(txt!=null) v.textContent=txt; }
+  function plat(){ var ua=navigator.userAgent, ios=/iPhone|iPad|iPod/.test(ua);
+    var standalone = (window.navigator.standalone===true) || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+    document.getElementById("plat").textContent = (ios?"iPhone/iPad":(/Android/.test(ua)?"Android":"Outro")) + " · " + (standalone?"INSTALADO (tela de início) ✅":"aba do navegador ⚠️ (instale p/ provar iOS)");
+    return {ios:ios, standalone:standalone}; }
+  plat();
+
+  function veredito(){
+    var ok = proofs.cam && proofs.models && proofs.face && proofs.desc && proofs.live;
+    var vd=document.getElementById("verdict"); var p=plat();
+    if(ok){ vd.className="verdict pass"; vd.textContent="PASSA ✅ — câmera + descritor + liveness OK aqui"+(p.ios&&!p.standalone?" (mas TESTE INSTALADO no iPhone!)":""); }
+    else { vd.className="verdict na"; vd.textContent="Rodando… "+(proofs.cam?"":"câmera ")+(proofs.models?"":"modelos ")+(proofs.face?"":"rosto ")+(proofs.desc?"":"descritor ")+(proofs.live?"":"liveness ")+"pendente"; }
+  }
+
+  async function iniciar(){
+    if(running) return; running=true; document.getElementById("btn").disabled=true;
+    try{
+      if(typeof Human==="undefined"){ set(2,false,"lib não carregou"); log("ERRO: biblioteca human não carregou (CDN)."); document.getElementById("verdict").className="verdict fail"; document.getElementById("verdict").textContent="NÃO PASSA — lib não carregou"; return; }
+      // 1) câmera (precisa de gesto + https)
+      log("pedindo câmera…");
+      var stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:"user", width:{ideal:640}, height:{ideal:480} }, audio:false });
+      video.srcObject=stream; await video.play().catch(function(){});
+      proofs.cam=true; set(1,true, (video.videoWidth||"?")+"×"+(video.videoHeight||"?")); log("câmera OK");
+      // 2) modelos human (só rosto: detector + descrição/embedding + mesh/iris + gesto + liveness/antispoof)
+      set(2,null,"baixando ~MB…"); var t0=performance.now();
+      human = new Human.Human({
+        modelBasePath:"https://cdn.jsdelivr.net/npm/@vladmandic/human@3/models/",
+        backend:"humangl", cacheModels:true, warmup:"none",
+        face:{ enabled:true, detector:{maxDetected:1, rotation:false}, mesh:{enabled:true}, iris:{enabled:true},
+               description:{enabled:true}, antispoof:{enabled:true}, liveness:{enabled:true}, emotion:{enabled:false} },
+        body:{enabled:false}, hand:{enabled:false}, object:{enabled:false}, gesture:{enabled:true}, filter:{enabled:false}
+      });
+      await human.load(); await human.warmup();
+      modelsMs=Math.round(performance.now()-t0); proofs.models=true; set(2,true, (modelsMs/1000).toFixed(1)+"s · backend "+human.tf.getBackend()); log("modelos OK em "+modelsMs+"ms, backend="+human.tf.getBackend());
+      loop();
+    }catch(e){
+      log("ERRO: "+(e&&e.message?e.message:e));
+      if(!proofs.cam){ set(1,false,"negada/sem HTTPS"); document.getElementById("verdict").className="verdict fail"; document.getElementById("verdict").textContent="NÃO PASSA — câmera bloqueada"; }
+      else { set(2,false,"falhou"); }
+    }
+  }
+
+  async function loop(){
+    var last=performance.now();
+    async function step(){
+      try{
+        var r = await human.detect(video);
+        var now=performance.now(); var fps=1000/(now-last); last=now; fpsEMA = fpsEMA? (fpsEMA*0.8+fps*0.2): fps;
+        set(6,null, fpsEMA.toFixed(1)+" fps");
+        var f = r.face && r.face[0];
+        if(f){ proofs.face=true; set(3,true,"score "+((f.faceScore||f.score||0).toFixed(2)));
+          var emb = f.embedding || (f.description) || null;
+          if(emb && emb.length){ proofs.desc=true; set(4,true,"dim "+emb.length+" · ["+emb.slice(0,3).map(function(x){return (+x).toFixed(2)}).join(", ")+"…]"); }
+          // liveness: human dá f.live (0..1) e f.real (antispoof); e piscada vem no gesture
+          var lv = (typeof f.live==="number")?f.live:null, rl=(typeof f.real==="number")?f.real:null;
+          var gestures = (r.gesture||[]).map(function(g){return (g.gesture||"")}).join(", ");
+          if(/blink|piscad|eye/i.test(gestures)) blinkSeen=true;
+          if(blinkSeen || (lv!=null && lv>0.5)){ proofs.live=true;
+            set(5,true, (blinkSeen?"piscada ✔ ":"")+(lv!=null?("live "+lv.toFixed(2)):"")+(rl!=null?(" · real "+rl.toFixed(2)):"")); }
+          else { set(5,null,"pisque devagar… "+(lv!=null?("live "+lv.toFixed(2)):"")); }
+        } else { set(3,null,"enquadre o rosto"); }
+        veredito();
+      }catch(e){ log("detect erro: "+(e&&e.message?e.message:e)); }
+      requestAnimationFrame(step);
+    }
+    step();
+  }
+</script>
+</body>
+</html>
