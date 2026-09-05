@@ -3,7 +3,7 @@
    - NUNCA cacheia os webhooks do n8n
    - Sync: notifica a página aberta para esvaziar a fila (o envio real acontece
      na página, que tem o token no localStorage — token NUNCA é gravado no IndexedDB) */
-const CACHE = "zelia-app-v1";
+const CACHE = "zelia-v6";
 const ASSETS = ["./","./index.html","./style.css","./app.js","./manifest.json","./zelia.svg","./icons/icon-192.png","./icons/icon-512.png","./icons/icon-192-maskable.png","./icons/icon-512-maskable.png"];
 const WEBHOOK_BASE = "https://giantfalcon-n8n.cloudfy.live/webhook";
 
