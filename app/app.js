@@ -107,7 +107,8 @@ async function bloquearTipoRepetido(){
   if(navigator.onLine && getToken()){
     try{ const r=await fetch(EP.status+"?token="+encodeURIComponent(getToken()));
       if(r.status===401){ sair(); return; }
-      if(r.ok){ const d=await r.json(); if(d){ if(d.ultimo){ ultimoTipo=d.ultimo.tipo; quando=d.ultimo.registrado_em; } PERMITE_SEM_LOC = d.permitir_sem_localizacao !== false; } } }catch(e){}
+      if(r.ok){ const d=await r.json(); if(d){ if(d.ultimo){ ultimoTipo=d.ultimo.tipo; quando=d.ultimo.registrado_em; } PERMITE_SEM_LOC = d.permitir_sem_localizacao !== false;
+        const cta=document.getElementById("face-cta"); if(cta) cta.style.display = (d.biometria_ativa===true && d.rosto_cadastrado!==true) ? "block" : "none"; } } }catch(e){}
   }
   const hoje=diaBahia(new Date());
   const locais=(await filaAll()).filter(x=>diaBahia(new Date(x.registrado_em))===hoje).sort((a,b)=>a.registrado_em<b.registrado_em?-1:1);
