@@ -25,7 +25,8 @@ function togglePw(btn){
   btn.querySelector(".eye-off").style.display=show?"":"none";
   btn.setAttribute("aria-label",show?"Ocultar senha":"Mostrar senha");
 }
-let stream=null, tipoPendente=null, enviando=false, mesAtual=null, PERMITE_SEM_LOC=false;
+let stream=null, tipoPendente=null, enviando=false, mesAtual=null;
+let PERMITE_SEM_LOC=(()=>{try{return localStorage.getItem("zelia_semloc")==="1";}catch(e){return false;}})(); // regra do DONO (offline usa a última conhecida)
 let BIO_ATIVA=false, ROSTO_OK=false, FACE_TEMPLATE=null, HUMAN_INST=null, recog=false, FACE_THRESH=0.50;
 
 /* ---------- helpers ---------- */
@@ -109,7 +110,7 @@ async function bloquearTipoRepetido(){
   if(navigator.onLine && getToken()){
     try{ const r=await fetch(EP.status+"?token="+encodeURIComponent(getToken()));
       if(r.status===401){ sair(); return; }
-      if(r.ok){ const d=await r.json(); if(d){ if(d.ultimo){ ultimoTipo=d.ultimo.tipo; quando=d.ultimo.registrado_em; } PERMITE_SEM_LOC = d.permitir_sem_localizacao !== false;
+      if(r.ok){ const d=await r.json(); if(d){ if(d.ultimo){ ultimoTipo=d.ultimo.tipo; quando=d.ultimo.registrado_em; } PERMITE_SEM_LOC = d.permitir_sem_localizacao !== false; try{localStorage.setItem("zelia_semloc", PERMITE_SEM_LOC?"1":"0");}catch(e){}
         BIO_ATIVA = d.biometria_ativa===true; ROSTO_OK = d.rosto_cadastrado===true;
         const cta=document.getElementById("face-cta"); if(cta) cta.style.display = (BIO_ATIVA && !ROSTO_OK) ? "block" : "none"; } } }catch(e){}
   }
@@ -132,8 +133,7 @@ async function iniciarRegistro(tipo){
   tipoPendente=tipo; document.getElementById("cam-titulo").textContent="Registrar "+LABELS[tipo]; go("s-camera");
   try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:1280}},audio:false});
     const v=document.getElementById("cam-video"); v.srcObject=stream; v.style.display="block"; document.getElementById("cam-capturar").style.display="block";
-    const sl=document.getElementById("cam-semloc"); if(sl) sl.style.display = PERMITE_SEM_LOC ? "block" : "none";
-  }catch(e){ document.getElementById("cam-video").style.display="none"; document.getElementById("cam-capturar").style.display="none"; const sl=document.getElementById("cam-semloc"); if(sl) sl.style.display="none"; document.getElementById("cam-fallback").click(); }
+  }catch(e){ document.getElementById("cam-video").style.display="none"; document.getElementById("cam-capturar").style.display="none"; document.getElementById("cam-fallback").click(); }
 }
 function pararCamera(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } }
 function cancelarCamera(){ pararCamera(); tipoPendente=null; voltarHome(); }
@@ -141,13 +141,15 @@ function pegarGPS(){ return new Promise(res=>{ if(!navigator.geolocation) return
   navigator.geolocation.getCurrentPosition(p=>res({latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy,ts:p.timestamp}),()=>res(null),{enableHighAccuracy:true,timeout:15000,maximumAge:0}); }); }
 function comprimir(el){ const w0=el.videoWidth||el.naturalWidth,h0=el.videoHeight||el.naturalHeight; const s=Math.min(1,FOTO_MAX_LADO/Math.max(w0,h0)); const w=Math.round(w0*s),h=Math.round(h0*s); const c=document.getElementById("work-canvas"); c.width=w; c.height=h; c.getContext("2d").drawImage(el,0,0,w,h); return c.toDataURL("image/jpeg",FOTO_QUALIDADE).split(",")[1]; }
 async function capturar(){ if(enviando) return; const v=document.getElementById("cam-video"); if(!v.videoWidth){ toast("Aguarde a câmera abrir…"); return; }
-  const agora=new Date(); const foto=comprimir(v); const gps=await pegarGPS(); pararCamera(); await enviarRegistro({tipo:tipoPendente,agora,foto,gps}); }
-// bate ponto SEM localização (pula o GPS) — só quando a empresa permite (dono liga no painel)
-async function capturarSemLoc(){ if(enviando) return; const v=document.getElementById("cam-video"); if(!v.videoWidth){ toast("Aguarde a câmera abrir…"); return; }
-  const agora=new Date(); const foto=comprimir(v); pararCamera(); await enviarRegistro({tipo:tipoPendente,agora,foto,gps:null}); }
+  const agora=new Date(); const foto=comprimir(v); const gps=await pegarGPS();
+  if(!gps && !PERMITE_SEM_LOC){ bloqueioSemGps(); return; }   // dono EXIGE localização e o GPS não veio → não bate (funcionário não escolhe)
+  pararCamera(); await enviarRegistro({tipo:tipoPendente,agora,foto,gps}); }
+// dono EXIGE localização e o GPS não veio: avisa e deixa tentar de novo (sem botão de escape)
+function bloqueioSemGps(){ toast("Ative a localização do celular pra bater o ponto"); const h=document.getElementById("cam-hint"); if(h) h.textContent="📍 Ative a localização do celular pra registrar o ponto e toque de novo."; }
 async function capturarInput(ev){ const file=ev.target.files&&ev.target.files[0]; if(!file){ voltarHome(); return; }
-  const agora=new Date(); const img=new Image(); const gpsP=pegarGPS();
-  img.onload=async()=>{ const foto=comprimir(img); const gps=await gpsP; await enviarRegistro({tipo:tipoPendente,agora,foto,gps}); URL.revokeObjectURL(img.src); }; img.src=URL.createObjectURL(file); }
+  const agora=new Date(); const img=new Image(); const gps=await pegarGPS();
+  if(!gps && !PERMITE_SEM_LOC){ bloqueioSemGps(); voltarHome(); return; }
+  img.onload=async()=>{ const foto=comprimir(img); await enviarRegistro({tipo:tipoPendente,agora,foto,gps}); URL.revokeObjectURL(img.src); }; img.src=URL.createObjectURL(file); }
 
 /* ---------- FACIAL: olha e bate (reconhecimento no device) ---------- */
 function loadHuman(){
@@ -182,7 +184,6 @@ async function iniciarRegistroFacial(tipo){
   document.getElementById("cam-titulo").textContent=LABELS[tipo]+" — olhe pra câmera";
   document.getElementById("cam-hint").textContent="Reconhecendo seu rosto…";
   document.getElementById("cam-capturar").style.display="none";
-  var slb=document.getElementById("cam-semloc"); if(slb) slb.style.display="none";
   var fb=document.getElementById("cam-selfie-fb"); if(fb) fb.style.display="none";
   go("s-camera");
   try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480}},audio:false});
@@ -219,8 +220,11 @@ async function reconhecerLoop(){
 async function baterReconhecido(v){
   try{ if(navigator.vibrate) navigator.vibrate(80); }catch(e){}
   document.getElementById("cam-hint").textContent="✅ Reconhecido! Batendo ponto…";
-  var agora=new Date(); var foto=comprimir(v); var gps=await pegarGPS(); pararCamera();
-  await enviarRegistro({tipo:tipoPendente, agora:agora, foto:foto, gps:gps});
+  // LGPD: batida por rosto NÃO sobe imagem — o reconhecimento (on-device) já provou quem é.
+  var agora=new Date(); var gps=await pegarGPS();
+  if(!gps && !PERMITE_SEM_LOC){ pararCamera(); bloqueioSemGps(); voltarHome(); return; }   // dono EXIGE localização
+  pararCamera();
+  await enviarRegistro({tipo:tipoPendente, agora:agora, foto:null, gps:gps, metodo:'facial'});
 }
 function baterComSelfie(){
   recog=true; // encerra o loop de reconhecimento
@@ -230,10 +234,10 @@ function baterComSelfie(){
   var fb=document.getElementById("cam-selfie-fb"); if(fb) fb.style.display="none";
 }
 
-function montarPayload({tipo,agora,foto,gps}){
+function montarPayload({tipo,agora,foto,gps,metodo}){
   return { tipo, registrado_em:isoBahia(agora), gps_timestamp:gps?isoBahia(new Date(gps.ts)):null,
     latitude:gps?gps.latitude:null, longitude:gps?gps.longitude:null, accuracy_metros:gps?gps.accuracy:null,
-    foto_base64:foto, device_id:getDeviceId(), local_id:uuid() }; // local_id = chave local da fila (não vai pro banco)
+    foto_base64:foto, metodo:metodo||'selfie', device_id:getDeviceId(), local_id:uuid() }; // local_id = chave local da fila (não vai pro banco)
 }
 async function enviarRegistro(dados){
   enviando=true; go("s-enviando"); document.getElementById("enviando-msg").textContent="Registrando "+LABELS[dados.tipo].toLowerCase()+"…";
