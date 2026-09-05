@@ -8,6 +8,7 @@ const EP = {
   trocarSenha: WEBHOOK_BASE + "/zelia-trocar-senha",
   registrar:   WEBHOOK_BASE + "/zelia-registrar",
   status:      WEBHOOK_BASE + "/zelia-status",
+  faceTemplate:WEBHOOK_BASE + "/zelia-face-template",
   historico:   WEBHOOK_BASE + "/zelia-historico",
 };
 const BAHIA_OFFSET = "-03:00", FOTO_MAX_LADO = 1280, FOTO_QUALIDADE = 0.7, SYNC_INTERVAL_MS = 60000;
@@ -25,6 +26,7 @@ function togglePw(btn){
   btn.setAttribute("aria-label",show?"Ocultar senha":"Mostrar senha");
 }
 let stream=null, tipoPendente=null, enviando=false, mesAtual=null, PERMITE_SEM_LOC=false;
+let BIO_ATIVA=false, ROSTO_OK=false, FACE_TEMPLATE=null, HUMAN_INST=null, recog=false, FACE_THRESH=0.50;
 
 /* ---------- helpers ---------- */
 function go(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); document.getElementById(id).classList.add("active"); }
@@ -108,7 +110,8 @@ async function bloquearTipoRepetido(){
     try{ const r=await fetch(EP.status+"?token="+encodeURIComponent(getToken()));
       if(r.status===401){ sair(); return; }
       if(r.ok){ const d=await r.json(); if(d){ if(d.ultimo){ ultimoTipo=d.ultimo.tipo; quando=d.ultimo.registrado_em; } PERMITE_SEM_LOC = d.permitir_sem_localizacao !== false;
-        const cta=document.getElementById("face-cta"); if(cta) cta.style.display = (d.biometria_ativa===true && d.rosto_cadastrado!==true) ? "block" : "none"; } } }catch(e){}
+        BIO_ATIVA = d.biometria_ativa===true; ROSTO_OK = d.rosto_cadastrado===true;
+        const cta=document.getElementById("face-cta"); if(cta) cta.style.display = (BIO_ATIVA && !ROSTO_OK) ? "block" : "none"; } } }catch(e){}
   }
   const hoje=diaBahia(new Date());
   const locais=(await filaAll()).filter(x=>diaBahia(new Date(x.registrado_em))===hoje).sort((a,b)=>a.registrado_em<b.registrado_em?-1:1);
@@ -125,6 +128,7 @@ function irRegistros(){ mesAtual=mesBahia(new Date()); carregarRegistros(); go("
 
 /* =================== CÂMERA + REGISTRO =================== */
 async function iniciarRegistro(tipo){
+  if(BIO_ATIVA && ROSTO_OK){ return iniciarRegistroFacial(tipo); }   // olha e bate (reconhecimento)
   tipoPendente=tipo; document.getElementById("cam-titulo").textContent="Registrar "+LABELS[tipo]; go("s-camera");
   try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:1280}},audio:false});
     const v=document.getElementById("cam-video"); v.srcObject=stream; v.style.display="block"; document.getElementById("cam-capturar").style.display="block";
@@ -144,6 +148,87 @@ async function capturarSemLoc(){ if(enviando) return; const v=document.getElemen
 async function capturarInput(ev){ const file=ev.target.files&&ev.target.files[0]; if(!file){ voltarHome(); return; }
   const agora=new Date(); const img=new Image(); const gpsP=pegarGPS();
   img.onload=async()=>{ const foto=comprimir(img); const gps=await gpsP; await enviarRegistro({tipo:tipoPendente,agora,foto,gps}); URL.revokeObjectURL(img.src); }; img.src=URL.createObjectURL(file); }
+
+/* ---------- FACIAL: olha e bate (reconhecimento no device) ---------- */
+function loadHuman(){
+  return new Promise(function(res,rej){
+    if(HUMAN_INST) return res(HUMAN_INST);
+    function make(){
+      try{
+        HUMAN_INST=new Human.Human({ modelBasePath:"https://cdn.jsdelivr.net/npm/@vladmandic/human@3/models/", backend:"humangl", cacheModels:true, warmup:"none",
+          face:{enabled:true, detector:{maxDetected:1,rotation:false}, mesh:{enabled:false}, iris:{enabled:false}, description:{enabled:true}, antispoof:{enabled:true}, liveness:{enabled:true}, emotion:{enabled:false}},
+          body:{enabled:false},hand:{enabled:false},object:{enabled:false},gesture:{enabled:false},filter:{enabled:false} });
+        HUMAN_INST.load().then(function(){return HUMAN_INST.warmup();}).then(function(){res(HUMAN_INST);}).catch(rej);
+      }catch(e){ rej(e); }
+    }
+    if(typeof Human!=="undefined") return make();
+    var s=document.createElement("script"); s.src="https://cdn.jsdelivr.net/npm/@vladmandic/human@3/dist/human.js";
+    s.onload=make; s.onerror=function(){rej(new Error("human CDN"));}; document.head.appendChild(s);
+  });
+}
+function l2v(v){ var s=0,i; for(i=0;i<v.length;i++) s+=v[i]*v[i]; s=Math.sqrt(s)||1; var o=new Array(v.length); for(i=0;i<v.length;i++) o[i]=v[i]/s; return o; }
+function cosSim(a,b){ var s=0,i,n=Math.min(a.length,b.length); for(i=0;i<n;i++) s+=a[i]*b[i]; return s; } // já L2-normalizados
+async function fetchTemplate(){
+  if(FACE_TEMPLATE) return FACE_TEMPLATE;
+  var r=await fetch(EP.faceTemplate,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token:getToken()})});
+  var d=await r.json();
+  if(!d.ok || !d.template) throw new Error("sem template");
+  var arr=(typeof d.template==="string")?JSON.parse(d.template):d.template;
+  FACE_TEMPLATE=l2v(arr.map(Number));
+  return FACE_TEMPLATE;
+}
+async function iniciarRegistroFacial(tipo){
+  tipoPendente=tipo; recog=false;
+  document.getElementById("cam-titulo").textContent=LABELS[tipo]+" — olhe pra câmera";
+  document.getElementById("cam-hint").textContent="Reconhecendo seu rosto…";
+  document.getElementById("cam-capturar").style.display="none";
+  var slb=document.getElementById("cam-semloc"); if(slb) slb.style.display="none";
+  var fb=document.getElementById("cam-selfie-fb"); if(fb) fb.style.display="none";
+  go("s-camera");
+  try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480}},audio:false});
+    var v=document.getElementById("cam-video"); v.srcObject=stream; v.style.display="block";
+  }catch(e){ document.getElementById("cam-hint").textContent="Não consegui abrir a câmera."; mostrarSelfieFallback(); return; }
+  try{ await loadHuman(); await fetchTemplate(); }
+  catch(e){ document.getElementById("cam-hint").textContent="Reconhecimento indisponível agora."; mostrarSelfieFallback(); return; }
+  reconhecerLoop();
+}
+function mostrarSelfieFallback(){ var fb=document.getElementById("cam-selfie-fb"); if(fb) fb.style.display="block"; }
+async function reconhecerLoop(){
+  var t0=Date.now(), okFrames=0;
+  async function step(){
+    if(recog || !stream) return;
+    var v=document.getElementById("cam-video");
+    if(!v.videoWidth){ requestAnimationFrame(step); return; }
+    try{
+      var r=await HUMAN_INST.detect(v);
+      var f=r.face && r.face[0], hint=document.getElementById("cam-hint");
+      if(f && f.embedding && f.embedding.length){
+        var live=(typeof f.live==="number"?f.live:1), real=(typeof f.real==="number"?f.real:1);
+        var sim=cosSim(l2v(Array.from(f.embedding)), FACE_TEMPLATE);
+        var vivo = live>0.6 && real>0.5;
+        if(sim>=FACE_THRESH && vivo){ okFrames++; hint.textContent="Reconhecendo… "+(sim*100).toFixed(0)+"%"; if(okFrames>=2){ recog=true; return baterReconhecido(v); } }
+        else if(sim>=FACE_THRESH && !vivo){ okFrames=0; hint.textContent="Rosto não parece vivo (foto?)"; }
+        else { okFrames=0; hint.textContent="Reconhecendo… "+(sim*100).toFixed(0)+"%"; }
+      } else { okFrames=0; document.getElementById("cam-hint").textContent="Enquadre o rosto no centro…"; }
+    }catch(e){}
+    if(Date.now()-t0>8000 && !recog) mostrarSelfieFallback();
+    requestAnimationFrame(step);
+  }
+  step();
+}
+async function baterReconhecido(v){
+  try{ if(navigator.vibrate) navigator.vibrate(80); }catch(e){}
+  document.getElementById("cam-hint").textContent="✅ Reconhecido! Batendo ponto…";
+  var agora=new Date(); var foto=comprimir(v); var gps=await pegarGPS(); pararCamera();
+  await enviarRegistro({tipo:tipoPendente, agora:agora, foto:foto, gps:gps});
+}
+function baterComSelfie(){
+  recog=true; // encerra o loop de reconhecimento
+  document.getElementById("cam-titulo").textContent="Registrar "+LABELS[tipoPendente];
+  document.getElementById("cam-hint").textContent="Enquadre o rosto e toque em registrar.";
+  document.getElementById("cam-capturar").style.display="block";
+  var fb=document.getElementById("cam-selfie-fb"); if(fb) fb.style.display="none";
+}
 
 function montarPayload({tipo,agora,foto,gps}){
   return { tipo, registrado_em:isoBahia(agora), gps_timestamp:gps?isoBahia(new Date(gps.ts)):null,
