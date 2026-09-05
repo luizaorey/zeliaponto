@@ -329,7 +329,14 @@ function renderRegistros(d){
 
 /* =================== BOOT =================== */
 async function boot(){
-  if("serviceWorker" in navigator){ try{ await navigator.serviceWorker.register("sw.js"); }catch(e){}
+  if("serviceWorker" in navigator){
+    try{
+      const reg=await navigator.serviceWorker.register("sw.js");
+      reg.update().catch(()=>{});                                                             // checa update ao abrir
+      document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="visible") reg.update().catch(()=>{}); }); // e ao voltar pro 1º plano
+      let recarregou=false;                                                                    // quando um SW novo assume, recarrega 1x sozinho
+      navigator.serviceWorker.addEventListener("controllerchange", ()=>{ if(recarregou) return; recarregou=true; location.reload(); });
+    }catch(e){}
     navigator.serviceWorker.addEventListener("message", e=>{ if(e.data&&e.data.type==="zelia-sync") sincronizarFila(); }); }
   window.addEventListener("online", ()=>{ atualizarRede(); sincronizarFila(); });
   window.addEventListener("offline", atualizarRede);
