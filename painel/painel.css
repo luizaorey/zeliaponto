@@ -172,6 +172,8 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
 .ap-foto:hover{border-color:var(--orange)}
 .ap-foto.semfoto{cursor:default;position:relative;border-style:dashed}
 .ap-foto.semfoto::after{content:"sem foto";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted)}
+.ap-foto.facial{cursor:default;position:relative;border-style:solid;border-color:#14A673;background:#E9F7F1;display:flex;align-items:flex-start;justify-content:center;font-size:26px;padding-top:6px}
+.ap-foto.facial::after{content:"rosto";position:absolute;left:0;right:0;bottom:5px;text-align:center;font-size:10px;font-weight:700;color:#14A673}
 .ap-info{flex:1;min-width:0}
 .ap-nome{font-weight:800;font-size:16px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ap-meta{font-size:13px;color:var(--muted);margin:2px 0 7px}

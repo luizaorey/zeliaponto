@@ -673,9 +673,11 @@ function renderAprovacoes(){
   if (!APROVS.length){ $("aprov-lista").innerHTML = `<div class="vazio-ap"><div class="emoji">🎉</div><p><b>Nenhuma pendência.</b><br><span class="muted">Tudo em dia — as batidas estão dentro das regras.</span></p></div>`; return; }
   $("aprov-lista").innerHTML = APROVS.map((p, i) => {
     const m = apMotivo(p);
-    const foto = p.foto_url
-      ? `<img class="ap-foto" src="${esc(p.foto_url)}" alt="selfie de ${esc(p.funcionario||"")}" onclick="verFoto(${i})" onerror="fotoFalhou(this)">`
-      : `<div class="ap-foto semfoto"></div>`;
+    const foto = p.metodo === "facial"
+      ? `<div class="ap-foto facial" title="Reconhecido pelo rosto — sem foto por LGPD">🙂</div>`
+      : p.foto_url
+        ? `<img class="ap-foto" src="${esc(p.foto_url)}" alt="selfie de ${esc(p.funcionario||"")}" onclick="verFoto(${i})" onerror="fotoFalhou(this)">`
+        : `<div class="ap-foto semfoto"></div>`;
     return `<div class="ap-card">
       ${foto}
       <div class="ap-info">
