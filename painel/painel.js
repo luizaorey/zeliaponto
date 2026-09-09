@@ -250,6 +250,7 @@ function abrirCadastro(){
     <div class="field"><label>WhatsApp <span class="muted">(pra Zélia falar com ele)</span></label>${phoneFieldHTML('c-wa','')}</div>
     <div class="field"><label>Data de admissão</label><input id="c-adm" class="txt" type="date"></div>
     <div class="field"><label>Sexo <span class="muted">(a Zélia usa em orientações trabalhistas)</span></label><select id="c-sexo" class="txt"><option value="">—</option><option value="feminino">Feminino</option><option value="masculino">Masculino</option></select></div>
+    <div class="field"><label>Salário mensal (R$) <span class="muted">(a Zélia usa pra estimar rescisão)</span></label><input id="c-salario" class="txt" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex.: 1800.00"></div>
     <div class="field"><label>Carga diária (horas)</label><input id="c-carga" class="txt" type="number" min="1" max="12" step="0.5" value="8"></div>
     <details class="opt-block">
       <summary>Mais dados <span class="muted">(opcional — a Zélia usa se você preencher)</span></summary>
@@ -283,9 +284,10 @@ async function salvarFuncionario(){
   const tipo_contrato = $("c-contrato") ? $("c-contrato").value : "";
   const data_nascimento = $("c-nasc") ? $("c-nasc").value : "";
   const sexo = $("c-sexo") ? $("c-sexo").value : "";
+  const salario = $("c-salario") ? $("c-salario").value : "";
   const carga = (horas > 0 && horas <= 24) ? Math.round(horas * 60) : 480;
   $("c-salvar").disabled = true;
-  const d = await apiPost(EP.criar, { nome, cpf, carga_horaria_minutos: carga, whatsapp, data_admissao, cargo, tipo_contrato, data_nascimento, sexo });
+  const d = await apiPost(EP.criar, { nome, cpf, carga_horaria_minutos: carga, whatsapp, data_admissao, cargo, tipo_contrato, data_nascimento, sexo, salario });
   $("c-salvar").disabled = false;
   if (d.ok){ closeModal(); toast("Funcionário cadastrado."); carregarFuncionarios(); return; }
   if (d.motivo === "cpf_existe"){ err.textContent = "Já há um funcionário com esse CPF."; return; }
@@ -332,6 +334,7 @@ function abrirFicha(id){
       <div class="field"><label>Data de admissão</label><input id="e-adm" class="txt" type="date" value="${esc(f.data_admissao||'')}"></div>
       <div class="field"><label>Data de nascimento</label><input id="e-nasc" class="txt" type="date" value="${esc(f.data_nascimento||'')}"></div>
       <div class="field"><label>Sexo <span class="muted">(orientações trabalhistas)</span></label><select id="e-sexo" class="txt">${opt("","—",f.sexo)}${opt("feminino","Feminino",f.sexo)}${opt("masculino","Masculino",f.sexo)}</select></div>
+      <div class="field"><label>Salário mensal (R$) <span class="muted">(estimar rescisão)</span></label><input id="e-salario" class="txt" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(f.salario||'')}" placeholder="Ex.: 1800.00"></div>
     </div>
     <div class="jorn-block">
       <label class="jd-toggle"><input type="checkbox" id="e-jorn-on" ${J.usar?"checked":""} onchange="document.getElementById('e-jorn-box').style.display=this.checked?'block':'none'"> <b>Jornada individual</b> <span class="muted">(se desligado, usa a jornada da empresa)</span></label>
@@ -381,6 +384,7 @@ async function salvarEdicao(id){
     matricula: $("e-matricula").value.trim(), pis_nis: soDig($("e-pis").value),
     tipo_contrato: $("e-contrato").value, data_admissao: $("e-adm").value, data_nascimento: $("e-nasc").value,
     sexo: $("e-sexo") ? $("e-sexo").value : "",
+    salario: $("e-salario") ? $("e-salario").value : "",
     carga_horaria_minutos: carga, jornada, ativo: $("e-status").value === "ativo",
   };
   $("e-salvar").disabled = true;
