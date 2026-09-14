@@ -125,7 +125,7 @@ tbody tr.clk{cursor:pointer;transition:background .12s}tbody tr.clk:hover{backgr
 @keyframes sp{to{transform:rotate(360deg)}}
 .modal{position:fixed;inset:0;background:rgba(12,40,28,.55);display:none;align-items:center;justify-content:center;z-index:150;padding:20px}
 .modal.on{display:flex}
-.modal-card{background:#fff;border-radius:18px;padding:26px;width:100%;max-width:400px;box-shadow:0 30px 70px -30px rgba(0,0,0,.5);animation:fade .2s}
+.modal-card{background:#fff;border-radius:18px;padding:26px;width:100%;max-width:400px;box-shadow:0 30px 70px -30px rgba(0,0,0,.5);animation:fade .2s;max-height:calc(100vh - 40px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .modal-card h3{font-family:Nunito;font-weight:900;font-size:19px;color:var(--verde-esc);margin-bottom:6px}
 .modal-card p{font-size:14px;color:var(--cinza);margin-bottom:16px;line-height:1.4}
 .modal-card .fld{margin-bottom:14px}
