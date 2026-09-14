@@ -172,6 +172,7 @@ tbody tr.clk{cursor:pointer;transition:background .12s}tbody tr.clk:hover{backgr
     <div class="navsec">Negócio</div>
     <div class="nav-i active" data-s="overview"><span class="ni">📊</span> Visão Geral</div>
     <div class="nav-i" data-s="clientes"><span class="ni">🏪</span> Clientes <span class="tag" id="tag-cli">–</span></div>
+    <div class="nav-i" onclick="openCortesia()"><span class="ni">🎁</span> Nova degustação</div>
     <div class="nav-i" data-s="financeiro"><span class="ni">💳</span> Financeiro</div>
     <div class="nav-i" data-s="funil"><span class="ni">🎯</span> Funil de Leads <span class="tag" id="tag-fun">–</span></div>
     <div class="spacer"></div>
@@ -217,6 +218,25 @@ tbody tr.clk{cursor:pointer;transition:background .12s}tbody tr.clk:hover{backgr
     <div class="auth-err" id="acao-err"></div>
     <label class="fld">Seu PIN<input id="acao-pin" type="password" inputmode="numeric" maxlength="6" placeholder="••••"></label>
     <div class="modal-actions"><button class="mbtn-cancel" onclick="closeModal('modal-acao')">Cancelar</button><button class="mbtn-ok" id="acao-ok" onclick="confirmAcao()">Confirmar</button></div>
+  </div>
+</div>
+
+<!-- MODAL DEGUSTAÇÃO -->
+<div class="modal" id="modal-cortesia">
+  <div class="modal-card">
+    <h3>🎁 Nova degustação</h3>
+    <p>Cria uma empresa em teste grátis + o login do comerciante. No fim dos dias, suspende sozinho.</p>
+    <div class="auth-err" id="cort-err"></div>
+    <div id="cort-form">
+      <label class="fld">Nome da empresa (loja)<input id="cort-emp" maxlength="120" placeholder="Ex.: Padaria do João"></label>
+      <label class="fld">Nome do comerciante<input id="cort-dono" maxlength="80" placeholder="Ex.: João Silva"></label>
+      <label class="fld">WhatsApp do comerciante<input id="cort-wa" inputmode="numeric" placeholder="(71) 99999-9999"></label>
+      <label class="fld">E-mail de login <small style="color:var(--cinza)">(opcional — vazio gera automático)</small><input id="cort-login" placeholder="comerciante@email.com"></label>
+      <label class="fld">Dias de degustação<select id="cort-dias" style="width:100%;padding:11px;border:1px solid var(--linha);border-radius:10px;font-size:15px"><option value="15">15 dias</option><option value="30" selected>30 dias</option><option value="7">7 dias</option></select></label>
+      <label class="fld">Seu PIN<input id="cort-pin" type="password" inputmode="numeric" maxlength="6" placeholder="••••"></label>
+      <div class="modal-actions"><button class="mbtn-cancel" onclick="closeModal('modal-cortesia')">Cancelar</button><button class="mbtn-ok" id="cort-ok" onclick="doCortesia()">Criar degustação</button></div>
+    </div>
+    <div id="cort-result" style="display:none"></div>
   </div>
 </div>
 
@@ -466,6 +486,42 @@ async function confirmAcao(){
     openDetalhe(curDet.id);
   }catch(err){e.textContent='Não consegui conectar.';e.classList.add('on');}
   finally{b.disabled=false;b.textContent='Confirmar';}
+}
+
+// ---------- DEGUSTAÇÃO ----------
+function openCortesia(){
+  document.getElementById('cort-err').classList.remove('on');
+  ['cort-emp','cort-dono','cort-wa','cort-login','cort-pin'].forEach(function(i){document.getElementById(i).value='';});
+  document.getElementById('cort-dias').value='30';
+  document.getElementById('cort-form').style.display='';
+  document.getElementById('cort-result').style.display='none';
+  document.getElementById('modal-cortesia').classList.add('on');
+}
+async function doCortesia(){
+  var b=document.getElementById('cort-ok'),e=document.getElementById('cort-err');e.classList.remove('on');
+  var emp=document.getElementById('cort-emp').value.trim(),dono=document.getElementById('cort-dono').value.trim();
+  var wa=document.getElementById('cort-wa').value.replace(/\D/g,''),login=document.getElementById('cort-login').value.trim();
+  var dias=document.getElementById('cort-dias').value,pin=document.getElementById('cort-pin').value.trim();
+  if(!emp||!dono){e.textContent='Informe a empresa e o nome do comerciante.';e.classList.add('on');return;}
+  if(wa.length<10){e.textContent='WhatsApp inválido.';e.classList.add('on');return;}
+  if(!/^\d{4,6}$/.test(pin)){e.textContent='Informe seu PIN (4 a 6 dígitos).';e.classList.add('on');return;}
+  b.disabled=true;b.innerHTML='<span class="spin"></span>';
+  try{
+    var j=await api('admin-cortesia',{empresa_nome:emp,dono_nome:dono,whatsapp:wa,login:login,dias:dias,pin:pin});
+    if(!j.ok){
+      var msg=j.motivo==='pin'?'PIN incorreto. (Defina/valide em Segurança 🔒)':j.motivo==='whatsapp_existe'?'Esse WhatsApp já tem conta na Zélia. Use outro número.':'Não consegui criar. Confira os dados.';
+      e.textContent=msg;e.classList.add('on');return;
+    }
+    document.getElementById('cort-form').style.display='none';
+    var r=document.getElementById('cort-result');r.style.display='';
+    r.innerHTML='<div class="panel" style="background:#E9F7F1;border-color:#14A673"><div class="att-title">✅ Degustação criada — '+esc(emp)+'</div>'
+      +'<p style="margin:6px 0 12px">Passe estes dados pro comerciante entrar no painel (<b>zeliaponto.com.br/painel</b>). Vale por <b>'+j.dias+' dias</b>.</p>'
+      +'<div class="mini"><span>Login</span><b class="mono">'+esc(j.login)+'</b></div>'
+      +'<div class="mini"><span>Senha</span><b class="mono">'+esc(j.senha)+'</b></div>'
+      +'<p style="margin-top:12px;color:var(--cinza);font-size:12px">Ele troca a senha no 1º acesso. No fim dos '+j.dias+' dias a empresa suspende sozinha (você reativa na ficha do cliente).</p>'
+      +'<div class="modal-actions"><button class="mbtn-ok" onclick="closeModal(\'modal-cortesia\');loaded.clientes=false;loaded.overview=false;toast(\'Degustação criada 🎁\')">Fechar</button></div></div>';
+  }catch(err){e.textContent='Não consegui conectar.';e.classList.add('on');}
+  finally{b.disabled=false;b.textContent='Criar degustação';}
 }
 
 // ---------- BOOT ----------
