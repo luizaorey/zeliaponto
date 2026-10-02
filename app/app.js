@@ -35,6 +35,7 @@ const BTN_LABEL = { entrada:"Bater entrada", pausa:"Sair pro almoço", retorno:"
 const TRILHA_ICON = { entrada:"→", pausa:"🍽️", retorno:"↩", saida:"🏁" };
 let BATIDAS_HOJE = { entrada:null, pausa:null, retorno:null, saida:null };
 let PROX_TIPO = "entrada", SEL_TIPO = "entrada", DIA_COMPLETO = false;
+let PERFIL = { cargo:null, local:null, empresa:null };  // best-effort (se o status trouxer)
 let GPS_STATUS = "buscando";        // buscando | ok | falha
 let GPS_CACHE = null;               // {latitude,longitude,accuracy,ts,fetchedAt} — reusa no capturar se fresco
 const GPS_MAX_AGE_MS = 30000;       // uma posição com <30s é considerada fresca o bastante pra bater
@@ -57,6 +58,7 @@ function fmtHM(min){ min=Math.abs(Math.round(min||0)); const h=Math.floor(min/60
 function fmtHoras(min){ min=Math.max(0,Math.round(min||0)); return Math.floor(min/60)+'h'+String(min%60).padStart(2,'0'); }
 function dataExtenso(d){ const s=new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Bahia',weekday:'long',day:'numeric',month:'long'}).format(d).replace('-feira',''); return s.charAt(0).toUpperCase()+s.slice(1); }
 function iniciais(n){ const p=(n||'').trim().split(/\s+/).filter(Boolean); if(!p.length) return '•'; return (p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase(); }
+function pintarAvatars(){ const ini=iniciais(localStorage.getItem(LS_NOME)); document.querySelectorAll('.av').forEach(a=>{ a.textContent=ini; }); }
 function minHora(hhmm){ const [h,m]=(hhmm||'0:0').split(':').map(Number); return (h||0)*60+(m||0); }
 function workedAoVivo(b){ const agora=minHora(new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Bahia',hour:'2-digit',minute:'2-digit'}).format(new Date())); let w=0;
   if(b.entrada){ const fim=b.pausa?minHora(b.pausa):(b.saida?minHora(b.saida):agora); w+=Math.max(0,fim-minHora(b.entrada)); }
@@ -117,7 +119,7 @@ async function refreshHome(){
   const nome=primeiroNome(localStorage.getItem(LS_NOME));
   document.getElementById("greet-nome").textContent="Oi, "+(nome||"você")+" 👋";
   document.getElementById("greet-data").textContent=dataExtenso(new Date());
-  document.getElementById("av-ini").textContent=iniciais(localStorage.getItem(LS_NOME));
+  pintarAvatars();
   tickClock(); atualizarRede(); await atualizarPendentes();
   await carregarEstadoHome();     // flags do dono + batidas de hoje + trilha/status/botão
   iniciarGPSHome();               // dispara a busca de GPS e trava o botão até confirmar
@@ -137,6 +139,9 @@ async function carregarEstadoHome(){
       if(r.ok){ const d=await r.json()||{};
         PERMITE_SEM_LOC = d.permitir_sem_localizacao !== false; try{localStorage.setItem("zelia_semloc", PERMITE_SEM_LOC?"1":"0");}catch(e){}
         BIO_ATIVA = d.biometria_ativa===true; ROSTO_OK = d.rosto_cadastrado===true;
+        PERFIL.cargo = d.cargo || d.funcao || PERFIL.cargo;          // best-effort (se o backend mandar)
+        PERFIL.local = d.nome_local || d.local_nome || PERFIL.local;
+        PERFIL.empresa = d.empresa_nome || d.empresa || PERFIL.empresa;
         const cta=document.getElementById("face-cta"); if(cta) cta.style.display = (BIO_ATIVA && !ROSTO_OK) ? "block" : "none";
       } }catch(e){}
   }
@@ -230,7 +235,32 @@ function tocarPonto(){
   if(st!=="1") return;                             // travado: ignora o toque
   iniciarRegistro(SEL_TIPO);                       // bate o tipo SELECIONADO (sugestão ou escolha na trilha)
 }
-function irRegistros(){ mesAtual=mesBahia(new Date()); carregarRegistros(); go("s-registros"); }
+function irRegistros(){ mesAtual=mesBahia(new Date()); pintarAvatars(); carregarRegistros(); go("s-registros"); }
+function irInicio(){ voltarHome(); }
+function irMais(){ pintarAvatars(); go("s-mais"); renderMais(); }
+function emBreve(nome){ toast(nome+" chega em breve 🙂"); }
+async function verOffline(){ const n=await filaCount();
+  if(n>0){ toast(n+" ponto(s) aguardando — tentando enviar agora…"); sincronizarFila(); }
+  else toast("Tudo sincronizado ✅ Nenhum ponto pendente."); }
+/* batidas de hoje a partir de uma lista de registros (reuso em Registros e Mais) */
+function diaBatidas(regs){ const b={entrada:null,pausa:null,retorno:null,saida:null};
+  (regs||[]).forEach(r=>{ if(b[r.tipo]==null && r.hora) b[r.tipo]=r.hora; }); return b; }
+/* pendências de um dia = slots vazios ANTES da batida mais avançada (mesmo conceito da trilha da home) */
+function pendDia(b){ let last=-1; ORDER.forEach((t,i)=>{ if(b[t]) last=i; }); let m=0; ORDER.forEach((t,i)=>{ if(!b[t] && i<last) m++; }); return m; }
+async function renderMais(){
+  document.getElementById("mais-ini").textContent=iniciais(localStorage.getItem(LS_NOME));
+  document.getElementById("mais-nome").textContent=localStorage.getItem(LS_NOME)||"Funcionário";
+  const sub=[PERFIL.local,PERFIL.cargo].filter(Boolean).join(" · ") || PERFIL.empresa || "";
+  const es=document.getElementById("mais-sub"); if(es){ es.textContent=sub; es.style.display=sub?"":"none"; }
+  // selo de pendências do mês em "Solicitações"
+  let pend=0;
+  try{ if(navigator.onLine && getToken()){ const r=await fetch(EP.historico+"?token="+encodeURIComponent(getToken())+"&mes="+mesBahia(new Date()));
+    if(r.ok){ const d=await r.json(); (d.dias||[]).forEach(x=>{ pend+=pendDia(diaBatidas(x.registros)); }); } } }catch(e){}
+  const ps=document.getElementById("mais-solic-pend"); if(ps){ if(pend>0){ ps.style.display=""; ps.textContent=pend+" pend."; } else ps.style.display="none"; }
+  // badge de pontos offline
+  const n=await filaCount(); const off=document.getElementById("mais-off-badge");
+  if(off){ if(n>0){ off.style.display=""; off.textContent=String(n); } else off.style.display="none"; }
+}
 
 /* =================== CÂMERA + REGISTRO =================== */
 async function iniciarRegistro(tipo){
@@ -365,16 +395,41 @@ async function enviarRegistro(dados){
 }
 async function guardarOffline(p){ await filaAdd({...p, origem:"offline"}); mostrarResultado("offline", p.tipo, null); registrarSync(); }
 function mostrarResultado(estado, tipo, resp){
-  const ic=document.getElementById("res-ic"), tit=document.getElementById("res-titulo"), msg=document.getElementById("res-msg"); const hora=horaBahia(new Date());
-  if(estado==="ok"){ ic.className="result-ic ric-ok"; ic.textContent=resp&&resp.duplicado?"✅":"✅"; tit.textContent=CONF[tipo];
-    let m="às "+hora; if(resp&&resp.nome_local) m+=" — "+resp.nome_local;
-    if(resp&&resp.dentro_raio===false) m+="\n⚠️ Fora da área cadastrada — sujeito a revisão.";
-    if(resp&&resp.duplicado) m="já estava registrado.";
-    msg.textContent=m;
-  } else if(estado==="recusa"){ ic.className="result-ic ric-err"; ic.textContent="🚫"; tit.textContent="Não registrado";
-    msg.textContent=(resp&&resp.mensagem)||"Não foi possível registrar.";
-  } else { ic.className="result-ic ric-off"; ic.textContent="📴"; tit.textContent="Registro salvo";
-    msg.textContent="Sem conexão — o registro foi salvo e será enviado automaticamente quando a internet voltar."; }
+  pintarAvatars();
+  const self=document.getElementById("res-self"), ck=document.getElementById("res-ck"), ph=document.getElementById("res-ph"),
+        tit=document.getElementById("res-titulo"), time=document.getElementById("res-time"),
+        tags=document.getElementById("res-tags"), msg=document.getElementById("res-msg"), cta=document.getElementById("res-cta");
+  const hora=horaBahia(new Date()); const nome=primeiroNome(localStorage.getItem(LS_NOME))||"";
+  const tagsHtml=arr=>arr.map(x=>`<span class="tag ${x.startsWith('⚠')?'warn':''}">${x}</span>`).join("");
+  if(estado==="ok"){
+    self.className="succ-self ok"; ck.textContent="✓"; ph.textContent="🧑";
+    tit.textContent=(CONF[tipo]||"Ponto registrado")+"!";
+    time.style.display=""; time.textContent=hora;
+    const t=[];
+    if(resp&&resp.metodo==='facial') t.push('📸 Rosto reconhecido');   // só quando o facial está ligado
+    if(resp&&resp.dentro_raio===true) t.push('📍 GPS confirmado');
+    else if(resp&&resp.sem_localizacao===true) t.push('📍 Sem GPS');
+    else if(resp&&resp.dentro_raio===false) t.push('⚠️ Fora da área');
+    tags.innerHTML=tagsHtml(t);
+    let m=`Bom trabalho, ${nome}! 💚<br>Seu registro foi salvo com segurança.`;
+    if(resp&&resp.dentro_raio===false) m=`Registro salvo, ${nome}.<br>⚠️ Fora da área cadastrada — sujeito a revisão do seu gestor.`;
+    if(resp&&resp.duplicado) m="Esse ponto já estava registrado.";
+    msg.innerHTML=m;
+    cta.textContent="Ver meus registros"; cta.onclick=irRegistros;
+  } else if(estado==="recusa"){
+    self.className="succ-self err"; ck.textContent="✕"; ph.textContent="😕";
+    tit.textContent="Não registrado";
+    time.style.display="none"; tags.innerHTML="";
+    msg.innerHTML=(resp&&resp.mensagem)||"Não foi possível registrar.";
+    cta.textContent="Voltar"; cta.onclick=voltarHome;
+  } else { // offline
+    self.className="succ-self off"; ck.textContent="📴"; ph.textContent="🧑";
+    tit.textContent=(CONF[tipo]||"Registro")+" salvo";
+    time.style.display=""; time.textContent=hora;
+    tags.innerHTML=tagsHtml(['📴 Aguardando internet']);
+    msg.innerHTML=`Tudo certo, ${nome}.<br>Sem internet agora — enviamos sozinho quando a conexão voltar.`;
+    cta.textContent="Ver meus registros"; cta.onclick=irRegistros;
+  }
   go("s-resultado");
 }
 async function voltarHome(){ tipoPendente=null; go("s-home"); await refreshHome(); }
@@ -414,29 +469,42 @@ async function carregarRegistros(){
     renderRegistros(d);
   }catch(e){ document.getElementById("dias-lista").innerHTML='<p class="hint" style="text-align:center;padding:20px">Sem conexão.</p>'; }
 }
+let ultimoHistorico=null, ordemReg="recentes";
+function toggleOrdem(){ ordemReg=(ordemReg==="recentes")?"antigos":"recentes";
+  const l=document.getElementById("ordem-label"); if(l) l.textContent=(ordemReg==="recentes")?"Recentes":"Antigos";
+  if(ultimoHistorico) renderRegistros(ultimoHistorico); }
 function renderRegistros(d){
-  const dias=d.dias||[];
-  let extras=0, faltantes=0;
-  dias.forEach(x=>{ if(typeof x.saldo_min==="number"){ if(x.saldo_min>0) extras+=x.saldo_min; else faltantes+=x.saldo_min; } });
-  document.getElementById("st-trab").textContent=fmtHM((d.resumo_mes||{}).trabalhado_min||0);
-  document.getElementById("st-falt").textContent="-"+fmtHM(faltantes);
-  document.getElementById("st-extra").textContent="+"+fmtHM(extras);
-  const bd={completo:["Completo","bd-done"], em_andamento:["Em andamento","bd-work"], incompleto:["Incompleto","bd-work"], falta:["Falta","bd-miss"], fim_de_semana:["—","bd-work"]};
+  ultimoHistorico=d;
+  const dias=(d.dias||[]).slice();
+  // indicadores do mês: banco de horas (saldo líquido), horas extras, pendências
+  let extras=0, banco=0, pend=0;
+  dias.forEach(x=>{ if(typeof x.saldo_min==="number"){ banco+=x.saldo_min; if(x.saldo_min>0) extras+=x.saldo_min; } pend+=pendDia(diaBatidas(x.registros)); });
+  const sb=document.getElementById("st-banco"); if(sb) sb.textContent=(banco>=0?"+":"-")+fmtHoras(Math.abs(banco));
+  const se=document.getElementById("st-extra2"); if(se) se.textContent="+"+fmtHoras(extras);
+  const sp=document.getElementById("st-pend"); if(sp) sp.textContent=String(pend);
   const box=document.getElementById("dias-lista");
-  if(!dias.length){ box.innerHTML='<p class="hint" style="text-align:center;padding:20px">Sem registros neste mês.</p>'; return; }
+  // só dias com batida OU falta (esconde fim de semana / dias vazios)
+  const vis=dias.filter(x=> (x.registros&&x.registros.length) || x.status==="falta");
+  if(!vis.length){ box.innerHTML='<p class="hint" style="text-align:center;padding:24px">Sem registros neste mês.</p>'; return; }
+  vis.sort((a,b)=> ordemReg==="recentes" ? (a.data<b.data?1:-1) : (a.data<b.data?-1:1));
   box.innerHTML="";
-  dias.forEach(x=>{
-    const [Y,M,D]=x.data.split("-"); const badge=bd[x.status]||["—","bd-work"];
-    const byTipo={}; (x.registros||[]).forEach(r=>{ if(!byTipo[r.tipo]) byTipo[r.tipo]=r; });
-    const linha=(t)=>{ const r=byTipo[t]; const v=r?r.hora:"—"; const cls=r?(r.pendente?"v warn":"v"):"v dash";
-      return `<div class="pu"><span class="t">${LABELS[t]}</span><span class="${cls}">${v}${r&&r.pendente?" ⚠️":""}</span></div>`; };
-    let saldoHtml=""; if(typeof x.saldo_min==="number"){ const neg=x.saldo_min<0;
-      saldoHtml=`<div class="saldo ${neg?'neg':'pos'}">${neg?'Faltantes':'Extras'}: ${neg?'-':'+'}${fmtHM(x.saldo_min)}</div>`; }
-    const trab=(typeof x.trabalhado_min==="number")?fmtHM(x.trabalhado_min):"--:--";
-    const el=document.createElement("div"); el.className="day";
-    el.innerHTML=`<div class="r1"><span class="date">${D}/${M}</span><span class="bd ${badge[1]}">${badge[0]}</span></div>
-      <div class="pu" style="margin-top:10px"><span class="t" style="font-weight:700;color:var(--ink)">Horas trabalhadas</span><span class="v">${trab}</span></div>
-      <div class="punches">${linha('entrada')}${linha('pausa')}${linha('retorno')}${linha('saida')}</div>${saldoHtml}`;
+  vis.forEach(x=>{
+    const [Y,M,D]=x.data.split("-");
+    const b=diaBatidas(x.registros); const temAlgo=ORDER.some(t=>b[t]);
+    if(!temAlgo && x.status==="falta"){
+      const el=document.createElement("div"); el.className="daycard";
+      el.innerHTML=`<div class="dh">🗓️ ${D}/${M}/${Y} <span class="falta">Falta</span></div><div class="nreg">Nenhuma batida registrada neste dia.</div>`;
+      box.appendChild(el); return;
+    }
+    const pd=pendDia(b); const completo=ORDER.every(t=>b[t]);
+    let badge=""; if(completo) badge='<span class="ok">✓ Dia completo</span>';
+      else if(pd>0) badge=`<span class="warn">⚠ ${pd} pendência${pd>1?"s":""}</span>`;
+    let last=-1; ORDER.forEach((t,i)=>{ if(b[t]) last=i; });
+    const linhas=ORDER.map((t,i)=>{ const done=!!b[t]; const miss=!done && i<last;
+      const val=done?b[t]:(miss?"faltou":"--:--");
+      return `<div class="p ${miss?"miss":(!done?"fut":"")}"><span class="lb">${LABELS[t]}</span><span class="tm">${val}</span></div>`; }).join("");
+    const el=document.createElement("div"); el.className="daycard";
+    el.innerHTML=`<div class="dh">🗓️ ${D}/${M}/${Y} ${badge}</div><div class="tl">${linhas}</div>`;
     box.appendChild(el);
   });
 }

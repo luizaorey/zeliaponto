@@ -53,7 +53,7 @@
       <div class="zlogo"><span class="zdot">Z</span><b>Zélia<span>.</span></b></div>
       <div class="avrow">
         <span class="net"><span id="net-dot" class="dot"></span><span id="net-txt"></span></span>
-        <button class="av" id="av-ini" onclick="sair()" aria-label="Sair">•</button>
+        <button class="av" id="av-ini" onclick="irMais()" aria-label="Minha conta">•</button>
       </div>
     </div>
     <div class="hbody">
@@ -83,8 +83,9 @@
       <p class="pend-hint" id="pend-hint" style="display:none"></p>
     </div>
     <div class="bn">
-      <a class="act"><span class="i">⏱️</span>Início</a>
+      <a class="act" onclick="irInicio()"><span class="i">⏱️</span>Início</a>
       <a onclick="irRegistros()"><span class="i">📋</span>Registros</a>
+      <a onclick="irMais()"><span class="i">☰</span>Mais</a>
     </div>
   </section>
 
@@ -98,25 +99,77 @@
 
   <section id="s-enviando" class="screen center"><div class="spinner"></div><p id="enviando-msg">Registrando…</p></section>
 
-  <section id="s-resultado" class="screen center">
-    <div class="result-ic ric-ok" id="res-ic">✅</div>
-    <h2 id="res-titulo"></h2>
-    <p id="res-msg" style="white-space:pre-line"></p>
-    <button class="btn" onclick="voltarHome()">OK</button>
+  <section id="s-resultado" class="screen">
+    <div class="appbar">
+      <div class="zlogo"><span class="zdot">Z</span><b>Zélia<span>.</span></b></div>
+      <div class="avrow"><button class="av" onclick="irMais()" aria-label="Minha conta">•</button></div>
+    </div>
+    <div class="succ">
+      <div class="succ-self ok" id="res-self"><div class="rng"></div><div class="ph" id="res-ph">🧑</div><div class="ck" id="res-ck">✓</div></div>
+      <h2 id="res-titulo"></h2>
+      <div class="succ-time" id="res-time"></div>
+      <div class="succ-tags" id="res-tags"></div>
+      <div class="succ-msg" id="res-msg"></div>
+      <button class="succ-cta" id="res-cta" onclick="irRegistros()">Ver meus registros</button>
+    </div>
+    <div class="bn">
+      <a class="act" onclick="irInicio()"><span class="i">⏱️</span>Início</a>
+      <a onclick="irRegistros()"><span class="i">📋</span>Registros</a>
+      <a onclick="irMais()"><span class="i">☰</span>Mais</a>
+    </div>
   </section>
 
-  <!-- MEUS REGISTROS -->
+  <!-- REGISTROS (espelho de ponto) -->
   <section id="s-registros" class="screen">
-    <div class="hdr">
-      <div class="topbar"><button class="iconbtn" onclick="voltarHome()" aria-label="Voltar"><svg class="ico" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><div class="name">Meus Registros</div><span style="width:24px"></span></div>
-      <div class="stats">
-        <div class="stat"><div class="k">Trabalhado</div><div class="v" id="st-trab">--:--</div></div>
-        <div class="stat"><div class="k">Faltantes</div><div class="v" id="st-falt">--:--</div></div>
-        <div class="stat"><div class="k">Extras</div><div class="v" id="st-extra">--:--</div></div>
-      </div>
-      <div class="mnav"><button onclick="mudarMes(-1)"><svg viewBox="0 0 24 24"><path d="M18 6l-6 6 6 6M12 6l-6 6 6 6"/></svg></button><div class="pill" id="mes-label">—</div><button onclick="mudarMes(1)"><svg viewBox="0 0 24 24"><path d="M6 6l6 6-6 6M12 6l6 6-6 6"/></svg></button></div>
+    <div class="appbar">
+      <div class="zlogo"><span class="zdot">Z</span><b>Zélia<span>.</span></b></div>
+      <div class="avrow"><button class="av" onclick="irMais()" aria-label="Minha conta">•</button></div>
     </div>
-    <div class="body"><div id="dias-lista"></div></div>
+    <div class="hbody">
+      <div class="page-t">Registros<small>Seu espelho de ponto</small></div>
+      <div class="stat-row">
+        <div class="stat"><div class="si">⚖️</div><div class="v" id="st-banco">+0h00</div><div class="l">Banco de horas</div></div>
+        <div class="stat warn"><div class="si">⏱️</div><div class="v" id="st-extra2">0h00</div><div class="l">Horas extras</div></div>
+        <div class="stat pend"><div class="si">⚠️</div><div class="v" id="st-pend">0</div><div class="l">Pendências</div></div>
+      </div>
+      <div class="filterbar">
+        <button class="fbtn" onclick="mudarMes(-1)" aria-label="Mês anterior">‹</button>
+        <span class="fi">Período<b id="mes-label">—</b></span>
+        <button class="fbtn" onclick="mudarMes(1)" aria-label="Próximo mês">›</button>
+        <span class="fi fi-ordem" onclick="toggleOrdem()">Ordem<b id="ordem-label">Recentes</b></span>
+      </div>
+      <div id="dias-lista"></div>
+    </div>
+    <div class="bn">
+      <a onclick="irInicio()"><span class="i">⏱️</span>Início</a>
+      <a class="act" onclick="irRegistros()"><span class="i">📋</span>Registros</a>
+      <a onclick="irMais()"><span class="i">☰</span>Mais</a>
+    </div>
+  </section>
+
+  <!-- MAIS (minha conta) -->
+  <section id="s-mais" class="screen">
+    <div class="appbar">
+      <div class="zlogo"><span class="zdot">Z</span><b>Zélia<span>.</span></b></div>
+      <div class="avrow"><button class="av" onclick="irMais()" aria-label="Minha conta">•</button></div>
+    </div>
+    <div class="hbody">
+      <div class="profcard"><div class="pa" id="mais-ini">•</div><div><div class="nm" id="mais-nome">—</div><div class="em" id="mais-sub"></div></div></div>
+      <div class="mtitle">Minha conta</div>
+      <div class="mlist">
+        <div class="mitem" onclick="emBreve('Notificações')"><span class="mic">🔔</span><span class="ml">Notificações</span><span class="chev">›</span></div>
+        <div class="mitem" onclick="emBreve('Solicitações')"><span class="mic">📝</span><span class="ml">Solicitações<small>ajustes e abonos</small></span><span class="pend" id="mais-solic-pend" style="display:none"></span></div>
+        <div class="mitem" onclick="irRegistros()"><span class="mic">📋</span><span class="ml">Espelho de ponto<small>sua jornada do mês</small></span><span class="chev">›</span></div>
+        <div class="mitem" onclick="verOffline()"><span class="mic">📴</span><span class="ml">Pontos offline<small>aguardando sincronizar</small></span><span class="badge" id="mais-off-badge" style="display:none"></span></div>
+        <div class="mitem" onclick="emBreve('Configurações')"><span class="mic">⚙️</span><span class="ml">Configurações<small>rosto, câmera, som</small></span><span class="chev">›</span></div>
+        <div class="mitem danger" onclick="sair()"><span class="mic">🚪</span><span class="ml">Sair</span></div>
+      </div>
+    </div>
+    <div class="bn">
+      <a onclick="irInicio()"><span class="i">⏱️</span>Início</a>
+      <a onclick="irRegistros()"><span class="i">📋</span>Registros</a>
+      <a class="act" onclick="irMais()"><span class="i">☰</span>Mais</a>
+    </div>
   </section>
 
 </div>
