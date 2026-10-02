@@ -161,7 +161,7 @@
         <div class="mitem" onclick="emBreve('Solicitações')"><span class="mic">📝</span><span class="ml">Solicitações<small>ajustes e abonos</small></span><span class="pend" id="mais-solic-pend" style="display:none"></span></div>
         <div class="mitem" onclick="irRegistros()"><span class="mic">📋</span><span class="ml">Espelho de ponto<small>sua jornada do mês</small></span><span class="chev">›</span></div>
         <div class="mitem" onclick="verOffline()"><span class="mic">📴</span><span class="ml">Pontos offline<small>aguardando sincronizar</small></span><span class="badge" id="mais-off-badge" style="display:none"></span></div>
-        <div class="mitem" onclick="emBreve('Configurações')"><span class="mic">⚙️</span><span class="ml">Configurações<small>rosto, câmera, som</small></span><span class="chev">›</span></div>
+        <div class="mitem" onclick="irConfig()"><span class="mic">⚙️</span><span class="ml">Configurações<small>rosto, câmera, som</small></span><span class="chev">›</span></div>
         <div class="mitem danger" onclick="sair()"><span class="mic">🚪</span><span class="ml">Sair</span></div>
       </div>
     </div>
@@ -169,6 +169,23 @@
       <a onclick="irInicio()"><span class="i">⏱️</span>Início</a>
       <a onclick="irRegistros()"><span class="i">📋</span>Registros</a>
       <a class="act" onclick="irMais()"><span class="i">☰</span>Mais</a>
+    </div>
+  </section>
+
+  <!-- CONFIGURAÇÕES -->
+  <section id="s-config" class="screen">
+    <div class="back-t"><button class="bk" onclick="irMais()" aria-label="Voltar">‹</button><span class="tt">Configurações</span></div>
+    <div class="hbody">
+      <div class="facecard" id="cfg-facecard" style="display:none">
+        <div class="fh"><span class="fi">😊</span><div><b>Reconhecimento facial</b><small>bater ponto olhando pra câmera</small></div><span class="badge-on" id="cfg-face-badge" style="display:none">✓ Cadastrado</span></div>
+        <div class="ft" id="cfg-face-txt">Cadastre seu rosto uma vez e bata o ponto só olhando — rápido e seguro.</div>
+        <button class="fcta" id="cfg-face-cta" onclick="location.href='facial-cadastro.html'">⊕ Cadastrar meu rosto</button>
+      </div>
+      <div class="cfg" onclick="emBreve('Câmera')"><span class="ci" style="background:#5f6f68">📷</span><b>Câmera</b><span class="chev">›</span></div>
+      <div class="cfg" onclick="emBreve('Visor')"><span class="ci" style="background:var(--z-verde)">🔆</span><b>Visor</b><span class="chev">›</span></div>
+      <div class="cfg" onclick="emBreve('Som')"><span class="ci" style="background:#3B82C4">🔊</span><b>Som</b><span class="chev">›</span></div>
+      <div class="cfg" onclick="emBreve('Acessibilidade')"><span class="ci" style="background:var(--z-ambar)">♿</span><b>Acessibilidade</b><span class="chev">›</span></div>
+      <div class="cfg" onclick="emBreve('Suporte')"><span class="ci" style="background:#22303a">🎧</span><b>Suporte</b><span class="chev">›</span></div>
     </div>
   </section>
 

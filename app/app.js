@@ -238,6 +238,20 @@ function tocarPonto(){
 function irRegistros(){ mesAtual=mesBahia(new Date()); pintarAvatars(); carregarRegistros(); go("s-registros"); }
 function irInicio(){ voltarHome(); }
 function irMais(){ pintarAvatars(); go("s-mais"); renderMais(); }
+function irConfig(){ go("s-config"); renderConfig(); }
+/* card do rosto só aparece com a flag do dono ligada (biometria_ativa). Flag off = oculto (testadores não veem) */
+function renderConfig(){
+  const fc=document.getElementById("cfg-facecard"); if(!fc) return;
+  if(!BIO_ATIVA){ fc.style.display="none"; return; }   // flag desligada → rosto oculto
+  fc.style.display="";
+  const badge=document.getElementById("cfg-face-badge"), txt=document.getElementById("cfg-face-txt"), cta=document.getElementById("cfg-face-cta");
+  if(ROSTO_OK){ if(badge) badge.style.display="";
+    if(txt) txt.textContent="Seu rosto já está cadastrado. Você pode atualizar quando quiser.";
+    if(cta) cta.textContent="🔄 Atualizar meu rosto";
+  } else { if(badge) badge.style.display="none";
+    if(txt) txt.textContent="Cadastre seu rosto uma vez e bata o ponto só olhando — rápido e seguro.";
+    if(cta) cta.textContent="⊕ Cadastrar meu rosto"; }
+}
 function emBreve(nome){ toast(nome+" chega em breve 🙂"); }
 async function verOffline(){ const n=await filaCount();
   if(n>0){ toast(n+" ponto(s) aguardando — tentando enviar agora…"); sincronizarFila(); }

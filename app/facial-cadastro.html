@@ -6,51 +6,95 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Zélia · Cadastrar rosto</title>
 <style>
-  :root{ --verde:#0C4B35; --verde2:#14A673; --bg:#0e1512; --card:#16211c; --txt:#eafff5; --muted:#9fb5ab; --ok:#33d69f; --no:#ff6b6b; --warn:#ffcf5c; }
-  *{box-sizing:border-box} body{ margin:0; font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--txt); padding:16px; text-align:center }
-  h1{ font-size:19px; margin:6px 0 2px } .sub{ color:var(--muted); font-size:13px; margin:0 0 12px }
-  .oval{ position:relative; width:260px; max-width:80vw; aspect-ratio:3/4; margin:0 auto; border-radius:50%/40%; overflow:hidden; background:#000; border:3px solid #24382f }
-  .oval.good{ border-color:var(--ok) } .oval.bad{ border-color:var(--no) }
-  video{ width:100%; height:100%; object-fit:cover; transform:scaleX(-1) }
-  .hint{ min-height:22px; font-size:15px; margin:12px 0 4px; font-weight:600 }
-  .hint.ok{color:var(--ok)} .hint.bad{color:var(--no)}
-  .dots{ display:flex; gap:8px; justify-content:center; margin:8px 0 }
-  .dot{ width:14px; height:14px; border-radius:50%; background:#26382f; border:1px solid #3a5145 }
-  .dot.on{ background:var(--verde2); border-color:var(--verde2) }
-  button{ width:100%; max-width:320px; padding:14px; border:none; border-radius:12px; background:var(--verde2); color:#fff; font-size:16px; font-weight:bold; margin-top:10px }
-  button:disabled{ opacity:.45 }
-  .status{ font-size:12px; color:var(--muted); margin-top:8px }
-  .box{ background:var(--card); border:1px solid #23342c; border-radius:14px; padding:14px; margin:0 auto 12px; max-width:340px }
-  .final .big{ font-size:52px } .link{ color:var(--verde2); font-weight:bold; text-decoration:none }
-  #log{ font-family:ui-monospace,monospace; font-size:10px; color:#7fa; white-space:pre-wrap; max-height:80px; overflow:auto; text-align:left; background:#0a0f0d; border-radius:8px; padding:6px; margin-top:8px }
+  :root{--verde:#14A673;--verde-esc:#0C4B35;--verde-cl:#E6F5EE;--roxo:#7b5cff;--azul:#5b8def;
+    --bg:#EEF4F0;--card:#fff;--texto:#1C2926;--cinza:#6B7B74;--linha:#E7ECE9;--ok:#14A673;--no:#E5533D;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"SF Pro Rounded",system-ui,Segoe UI,Roboto,Arial,sans-serif;color:var(--texto);
+    background:radial-gradient(120% 80% at 15% 0%,#e6f5ee 0%,#eef4f0 45%,#e9f2ec 100%);min-height:100dvh;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:460px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 16px)}
+  .back-t{display:flex;align-items:center;gap:10px;padding:2px 0 12px;flex:none}
+  .back-t .bk{width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid var(--linha);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--verde-esc);text-decoration:none;line-height:1}
+  .back-t .tt{font-weight:800;font-size:18px;color:var(--verde-esc)}
+  /* intro */
+  .intro{display:flex;flex-direction:column;align-items:center;text-align:center;flex:1}
+  .intro .big{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#7b5cff,#5b8def);display:flex;align-items:center;justify-content:center;font-size:48px;color:#fff;box-shadow:0 18px 36px -16px rgba(123,92,255,.6);margin:8px 0 14px}
+  .intro h2{font-weight:800;font-size:21px;color:var(--verde-esc)}
+  .intro .lead{font-size:13px;color:var(--cinza);margin-top:6px;line-height:1.5;padding:0 6px}
+  .steps{width:100%;margin-top:18px;display:flex;flex-direction:column;gap:9px}
+  .step{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--linha);border-radius:13px;padding:11px 13px;text-align:left}
+  .step .n{width:26px;height:26px;border-radius:50%;background:var(--verde-cl);color:#0f7a52;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
+  .step .tx{font-size:12.5px;color:#3a4a43}.step .tx b{color:var(--verde-esc)}
+  .lgpd{display:flex;gap:9px;align-items:flex-start;background:var(--verde-cl);border-radius:13px;padding:11px 12px;margin-top:14px;text-align:left}
+  .lgpd .ic{font-size:16px}.lgpd .tx{font-size:11px;color:#0f7a52;line-height:1.45}.lgpd .tx b{font-weight:700}
+  .cta-full{width:100%;background:var(--verde);color:#fff;font-weight:800;font-size:15px;padding:14px;border-radius:14px;border:none;margin-top:auto;cursor:pointer}
+  .cta-full:disabled{opacity:.5}
+  .status{font-size:12px;color:var(--cinza);margin-top:10px;min-height:16px}
+  /* câmera (dark, tela cheia) */
+  #etapa-cam{position:fixed;inset:0;z-index:20}
+  .cam{position:absolute;inset:0;background:radial-gradient(130% 90% at 50% 35%,#1a2a24,#0c1512);display:flex;flex-direction:column;align-items:center;padding:calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 20px)}
+  .cam .inst{color:#fff;font-weight:800;font-size:15px;margin-top:6px;text-align:center}
+  .oval{position:relative;width:200px;max-width:70vw;aspect-ratio:3/4;margin:22px auto 0;border-radius:50%/40%;overflow:hidden;background:#000;border:4px solid rgba(255,255,255,.25)}
+  .oval.good{border-color:var(--ok)} .oval.bad{border-color:var(--no)}
+  video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+  .hint{min-height:22px;font-size:14.5px;margin:16px 0 4px;font-weight:700;color:#fff;text-align:center;padding:0 10px}
+  .hint.ok{color:#5ef0b4}.hint.bad{color:#ff9a8f}
+  .prog{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:10px}
+  .prog .foto-lb{color:rgba(255,255,255,.9);font-size:12.5px;font-weight:700}
+  .dots{display:flex;gap:8px;justify-content:center}
+  .dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.3)}
+  .dot.on{background:var(--verde)}
+  .st{font-size:11px;color:rgba(255,255,255,.5);margin-top:8px}
+  /* sucesso */
+  #etapa-fim{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 10px}
+  #etapa-fim .big{width:120px;height:120px;border-radius:50%;background:var(--verde-cl);display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:20px;font-size:62px}
+  #etapa-fim .big .ck{position:absolute;bottom:2px;right:6px;width:40px;height:40px;border-radius:50%;background:var(--verde);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;border:4px solid var(--bg)}
+  #etapa-fim h1{font-weight:800;font-size:23px;color:var(--verde-esc)}
+  #etapa-fim .sub{font-size:13.5px;color:var(--cinza);margin-top:8px;line-height:1.5}
+  .link{display:block;width:100%;max-width:320px;margin:26px auto 0;background:var(--verde);color:#fff;font-weight:800;font-size:15px;padding:14px;border-radius:14px;text-decoration:none;text-align:center}
+  #log{display:none}
+  button#btn-cap{display:none}
 </style>
 </head>
 <body>
-  <h1>📸 Cadastrar meu rosto</h1>
-  <p class="sub" id="quem">Reconhecimento facial da Zélia</p>
+<div class="wrap">
+  <div class="back-t"><a class="bk" href="./" aria-label="Voltar">‹</a><span class="tt" id="quem">Cadastrar rosto</span></div>
 
-  <div id="etapa-intro" class="box">
-    <p>Vamos guardar o <b>padrão do seu rosto</b> (não uma foto — a foto some no aparelho). São <b>3 capturas</b> rápidas. Você vai precisar <b>piscar</b> pra provar que é você de verdade.</p>
-    <button id="btn-comecar" onclick="comecar()">Começar</button>
-    <div class="status" id="load-st">—</div>
+  <div id="etapa-intro" class="intro">
+    <div class="big">😊</div>
+    <h2>Vamos cadastrar seu rosto</h2>
+    <p class="lead">São só 3 fotos rápidas. Depois é só olhar pra câmera pra bater o ponto.</p>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><span class="tx">Fique num lugar <b>bem iluminado</b></span></div>
+      <div class="step"><span class="n">2</span><span class="tx">Tire <b>3 fotos</b> seguindo a tela</span></div>
+      <div class="step"><span class="n">3</span><span class="tx"><b>Pisque</b> quando pedir (confirma que é você)</span></div>
+    </div>
+    <div class="lgpd"><span class="ic">🔒</span><span class="tx"><b>Sua privacidade:</b> a foto do seu rosto <b>não fica guardada</b>. A gente transforma seu rosto num código protegido — que não vira foto de volta.</span></div>
+    <button id="btn-comecar" class="cta-full" onclick="comecar()">Começar</button>
+    <div class="status" id="load-st"></div>
   </div>
 
   <div id="etapa-cam" style="display:none">
-    <div class="oval" id="oval"><video id="v" playsinline autoplay muted></video></div>
-    <div class="hint" id="hint">Posicione o rosto no oval…</div>
-    <div class="dots"><span class="dot" id="d0"></span><span class="dot" id="d1"></span><span class="dot" id="d2"></span></div>
-    <button id="btn-cap" style="display:none">Capturar</button>
-    <p class="status">É automático — só posicione e pisque. Ele captura sozinho. 📸</p>
-    <div class="status" id="st">—</div>
+    <div class="cam">
+      <div class="inst">Posicione o rosto no círculo</div>
+      <div class="oval" id="oval"><video id="v" playsinline autoplay muted></video></div>
+      <div class="hint" id="hint">Posicione o rosto no oval…</div>
+      <div class="prog">
+        <div class="foto-lb" id="foto-lb">Foto 1 de 3</div>
+        <div class="dots"><span class="dot" id="d0"></span><span class="dot" id="d1"></span><span class="dot" id="d2"></span></div>
+        <div class="st" id="st">—</div>
+      </div>
+      <button id="btn-cap">Capturar</button>
+    </div>
   </div>
 
-  <div id="etapa-fim" class="box final" style="display:none">
-    <div class="big">✅</div>
+  <div id="etapa-fim" style="display:none">
+    <div class="big">🧑<span class="ck">✓</span></div>
     <h1 id="fim-tit">Rosto cadastrado!</h1>
-    <p class="sub" id="fim-msg">Pronto — agora você pode bater ponto com o rosto.</p>
-    <p><a class="link" href="./">Voltar ao app</a></p>
+    <p class="sub" id="fim-msg">Pronto — agora você pode bater ponto só olhando pra câmera, sem digitar nada.</p>
+    <a class="link" href="./">Concluir</a>
   </div>
   <div id="log"></div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@vladmandic/human@3/dist/human.js"></script>
 <script>
@@ -59,8 +103,8 @@
   function log(m){ var el=document.getElementById("log"); el.textContent=("• "+m+"\n")+el.textContent; }
   function tok(){ try{ return localStorage.getItem("zelia_token")||""; }catch(e){ return ""; } }
   function nome(){ try{ return (localStorage.getItem("zelia_nome")||"").split(" ")[0]; }catch(e){ return ""; } }
-  document.getElementById("quem").textContent = nome()? ("Olá, "+nome()+" — vamos cadastrar seu rosto") : "Reconhecimento facial da Zélia";
-  if(!tok()){ document.getElementById("etapa-intro").innerHTML = '<p>Você precisa <b>entrar no app da Zélia</b> primeiro (com CPF e senha) e depois voltar aqui.</p><p><a class="link" href="./">Ir para o login</a></p>'; }
+  if(nome()){ document.getElementById("quem").textContent = "Cadastrar rosto"; }
+  if(!tok()){ document.getElementById("etapa-intro").innerHTML = '<p class="lead">Você precisa <b>entrar no app da Zélia</b> primeiro (com CPF e senha) e depois voltar aqui.</p><a class="link" href="./">Ir para o login</a>'; }
 
   async function comecar(){
     if(busy) return; busy=true; document.getElementById("btn-comecar").disabled=true;
@@ -79,6 +123,7 @@
       log("modelos OK, backend="+human.tf.getBackend());
       document.getElementById("etapa-intro").style.display="none";
       document.getElementById("etapa-cam").style.display="block";
+      var fl=document.getElementById("foto-lb"); if(fl) fl.textContent="Foto 1 de 3";
       loop();
     }catch(e){ st.textContent="Não consegui abrir a câmera: "+(e&&e.message?e.message:e); busy=false; document.getElementById("btn-comecar").disabled=false; }
   }
@@ -122,6 +167,7 @@
     embs.push(lastFace.emb);
     document.getElementById("d"+step).className="dot on";
     step++;
+    var fl=document.getElementById("foto-lb"); if(fl) fl.textContent="Foto "+Math.min(step+1,3)+" de 3";
     if(step<3){ return; }
     enviar();
   }
@@ -139,7 +185,7 @@
       var r=await fetch(WEBHOOK+"/zelia-face-enroll",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({ token:tok(), template:template, model_version:MODEL_VERSION, dim:template.length })});
       var d=await r.json().catch(function(){return {};});
-      if(d.ok){ document.getElementById("etapa-cam").style.display="none"; document.getElementById("etapa-fim").style.display="block"; return; }
+      if(d.ok){ document.getElementById("etapa-cam").style.display="none"; document.getElementById("etapa-fim").style.display="flex"; return; }
       falhou(d.motivo||("erro "+r.status));
     }catch(e){ falhou("sem conexão"); }
   }
