@@ -29,6 +29,16 @@ let stream=null, tipoPendente=null, enviando=false, mesAtual=null;
 let PERMITE_SEM_LOC=(()=>{try{return localStorage.getItem("zelia_semloc")==="1";}catch(e){return false;}})(); // regra do DONO (offline usa a última conhecida)
 let BIO_ATIVA=false, ROSTO_OK=false, FACE_TEMPLATE=null, HUMAN_INST=null, recog=false, FACE_THRESH=0.50;
 
+/* ---- home (trilha + botão adaptativo + GPS) ---- */
+const ORDER = ["entrada","pausa","retorno","saida"];
+const BTN_LABEL = { entrada:"Bater entrada", pausa:"Sair pro almoço", retorno:"Voltar do almoço", saida:"Bater saída" };
+const TRILHA_ICON = { entrada:"→", pausa:"🍽️", retorno:"↩", saida:"🏁" };
+let BATIDAS_HOJE = { entrada:null, pausa:null, retorno:null, saida:null };
+let PROX_TIPO = "entrada", SEL_TIPO = "entrada", DIA_COMPLETO = false;
+let GPS_STATUS = "buscando";        // buscando | ok | falha
+let GPS_CACHE = null;               // {latitude,longitude,accuracy,ts,fetchedAt} — reusa no capturar se fresco
+const GPS_MAX_AGE_MS = 30000;       // uma posição com <30s é considerada fresca o bastante pra bater
+
 /* ---------- helpers ---------- */
 function go(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); document.getElementById(id).classList.add("active"); }
 let toastTimer; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),3200); }
@@ -41,8 +51,17 @@ function isoBahia(d){ const p=new Intl.DateTimeFormat("en-CA",{timeZone:"America
 function horaBahia(d){ return new Intl.DateTimeFormat("pt-BR",{timeZone:"America/Bahia",hour:"2-digit",minute:"2-digit"}).format(d); }
 function diaBahia(d){ return isoBahia(d).slice(0,10); }
 function mesBahia(d){ return isoBahia(d).slice(0,7); }
-function tickClock(){ const el=document.getElementById('clock-now'); if(el) el.textContent=new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Bahia',hour:'2-digit',minute:'2-digit'}).format(new Date()); }
+function tickClock(){ const el=document.getElementById('clock-now'); if(el) el.textContent=new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Bahia',hour:'2-digit',minute:'2-digit'}).format(new Date());
+  const home=document.getElementById('s-home'); if(home&&home.classList.contains('active')) renderWorked(); }
 function fmtHM(min){ min=Math.abs(Math.round(min||0)); const h=Math.floor(min/60), m=min%60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
+function fmtHoras(min){ min=Math.max(0,Math.round(min||0)); return Math.floor(min/60)+'h'+String(min%60).padStart(2,'0'); }
+function dataExtenso(d){ const s=new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Bahia',weekday:'long',day:'numeric',month:'long'}).format(d).replace('-feira',''); return s.charAt(0).toUpperCase()+s.slice(1); }
+function iniciais(n){ const p=(n||'').trim().split(/\s+/).filter(Boolean); if(!p.length) return '•'; return (p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase(); }
+function minHora(hhmm){ const [h,m]=(hhmm||'0:0').split(':').map(Number); return (h||0)*60+(m||0); }
+function workedAoVivo(b){ const agora=minHora(new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Bahia',hour:'2-digit',minute:'2-digit'}).format(new Date())); let w=0;
+  if(b.entrada){ const fim=b.pausa?minHora(b.pausa):(b.saida?minHora(b.saida):agora); w+=Math.max(0,fim-minHora(b.entrada)); }
+  if(b.retorno){ const fim=b.saida?minHora(b.saida):agora; w+=Math.max(0,fim-minHora(b.retorno)); }
+  return w; }
 function soDigitos(v){ return (v||'').replace(/\D/g,''); }
 
 /* ---------- IndexedDB fila offline (guarda payload SEM token) ---------- */
@@ -95,35 +114,121 @@ function sair(){ localStorage.removeItem(LS_TOKEN); localStorage.removeItem(LS_N
 /* =================== HOME =================== */
 async function irHome(){ go("s-home"); await refreshHome(); sincronizarFila(); }
 async function refreshHome(){
-  document.getElementById("ola").textContent="Olá, "+primeiroNome(localStorage.getItem(LS_NOME))+"!";
-  document.getElementById("sub-empresa").textContent="Bem-vindo ao seu ponto";
-  tickClock(); atualizarRede(); await atualizarPendentes(); await bloquearTipoRepetido();
+  const nome=primeiroNome(localStorage.getItem(LS_NOME));
+  document.getElementById("greet-nome").textContent="Oi, "+(nome||"você")+" 👋";
+  document.getElementById("greet-data").textContent=dataExtenso(new Date());
+  document.getElementById("av-ini").textContent=iniciais(localStorage.getItem(LS_NOME));
+  tickClock(); atualizarRede(); await atualizarPendentes();
+  await carregarEstadoHome();     // flags do dono + batidas de hoje + trilha/status/botão
+  iniciarGPSHome();               // dispara a busca de GPS e trava o botão até confirmar
 }
-function atualizarRede(){ const on=navigator.onLine; document.getElementById("net-dot").className="dot "+(on?"on":"off"); document.getElementById("net-txt").textContent=on?"Conectado":"Sem conexão"; }
+function atualizarRede(){ const on=navigator.onLine; const d=document.getElementById("net-dot"), t=document.getElementById("net-txt");
+  if(d) d.className="dot "+(on?"on":"off"); if(t) t.textContent=on?"":"⚠️ Sem conexão"; }
 async function atualizarPendentes(){
   const n=await filaCount(); const h=document.getElementById("pend-hint");
+  if(!h) return;
   if(n>0){ h.style.display="block"; h.textContent="📴 "+n+" registro(s) aguardando envio — enviaremos quando houver conexão."; } else h.style.display="none";
 }
-async function bloquearTipoRepetido(){
-  document.querySelectorAll(".btn-ponto").forEach(b=>b.disabled=false);
-  let ultimoTipo=null, quando=null;
+/* lê flags do dono (status) + monta as batidas de hoje (histórico + fila offline) */
+async function carregarEstadoHome(){
   if(navigator.onLine && getToken()){
     try{ const r=await fetch(EP.status+"?token="+encodeURIComponent(getToken()));
       if(r.status===401){ sair(); return; }
-      if(r.ok){ const d=await r.json(); if(d){ if(d.ultimo){ ultimoTipo=d.ultimo.tipo; quando=d.ultimo.registrado_em; } PERMITE_SEM_LOC = d.permitir_sem_localizacao !== false; try{localStorage.setItem("zelia_semloc", PERMITE_SEM_LOC?"1":"0");}catch(e){}
+      if(r.ok){ const d=await r.json()||{};
+        PERMITE_SEM_LOC = d.permitir_sem_localizacao !== false; try{localStorage.setItem("zelia_semloc", PERMITE_SEM_LOC?"1":"0");}catch(e){}
         BIO_ATIVA = d.biometria_ativa===true; ROSTO_OK = d.rosto_cadastrado===true;
-        const cta=document.getElementById("face-cta"); if(cta) cta.style.display = (BIO_ATIVA && !ROSTO_OK) ? "block" : "none"; } } }catch(e){}
+        const cta=document.getElementById("face-cta"); if(cta) cta.style.display = (BIO_ATIVA && !ROSTO_OK) ? "block" : "none";
+      } }catch(e){}
   }
+  BATIDAS_HOJE = await baterTimesHoje();
+  DIA_COMPLETO = ORDER.every(t=>BATIDAS_HOJE[t]);
+  const ultimo = [...ORDER].reverse().find(t=>BATIDAS_HOJE[t]) || null;
+  PROX_TIPO = DIA_COMPLETO ? "entrada" : (SEQ[ultimo]||"entrada");
+  SEL_TIPO = PROX_TIPO;                 // sugestão padrão; o funcionário pode trocar tocando na trilha
+  renderTrilha(); renderStatusPill(ultimo); renderWorked();
+}
+/* funcionário toca numa etapa da trilha pra escolher qual batida está fazendo */
+function selecionarTipo(t){
+  if(BATIDAS_HOJE[t]){ toast(LABELS[t]+" já foi registrado hoje."); return; }  // slot já batido: não re-bate
+  SEL_TIPO=t; renderTrilha(); atualizarBotao();
+}
+/* horários das batidas de hoje: histórico do mês (online) + fila offline */
+async function baterTimesHoje(){
   const hoje=diaBahia(new Date());
-  const locais=(await filaAll()).filter(x=>diaBahia(new Date(x.registrado_em))===hoje).sort((a,b)=>a.registrado_em<b.registrado_em?-1:1);
-  if(locais.length){ ultimoTipo=locais[locais.length-1].tipo; quando=locais[locais.length-1].registrado_em; }
-  const box=document.getElementById("ultimo-box"), sub=document.getElementById("clock-sub");
-  if(ultimoTipo){
-    const btn=document.querySelector(`.btn-ponto[data-tipo="${ultimoTipo}"]`); if(btn) btn.disabled=true;
-    const prox=SEQ[ultimoTipo]||"entrada";
-    box.style.display="block"; box.innerHTML=`Último: <b>${LABELS[ultimoTipo]}</b>${quando?(" às "+horaBahia(new Date(quando))):""}. Próximo: <b>${LABELS[prox]}</b>.`;
-    if(sub) sub.textContent=`Próximo: ${LABELS[prox]}`;
-  } else { box.style.display="none"; if(sub) sub.textContent="Toque num botão para bater o ponto"; }
+  const b={entrada:null,pausa:null,retorno:null,saida:null};
+  if(navigator.onLine && getToken()){
+    try{ const r=await fetch(EP.historico+"?token="+encodeURIComponent(getToken())+"&mes="+mesBahia(new Date()));
+      if(r.status===401){ sair(); return b; }
+      if(r.ok){ const d=await r.json(); const dia=(d.dias||[]).find(x=>x.data===hoje);
+        if(dia){ (dia.registros||[]).forEach(rr=>{ if(b[rr.tipo]==null && rr.hora) b[rr.tipo]=rr.hora; }); } } }catch(e){}
+  }
+  const q=(await filaAll()).filter(x=>diaBahia(new Date(x.registrado_em))===hoje);
+  q.forEach(x=>{ if(b[x.tipo]==null) b[x.tipo]=horaBahia(new Date(x.registrado_em)); });
+  return b;
+}
+function renderTrilha(){
+  // índice da batida mais avançada já feita — slots vazios ANTES dele = "faltou"
+  let lastDone=-1; ORDER.forEach((t,i)=>{ if(BATIDAS_HOJE[t]) lastDone=i; });
+  const selIdx = ORDER.indexOf(SEL_TIPO);
+  const reached = DIA_COMPLETO ? 3 : Math.max(lastDone, selIdx, 0);
+  const fill=document.getElementById("track-fill"); if(fill) fill.style.width=(reached*25)+"%";
+  ORDER.forEach((t,i)=>{
+    const stop=document.getElementById("stop-"+t); if(!stop) return;
+    const c=stop.querySelector(".c"), tm=stop.querySelector(".tm");
+    const done=!!BATIDAS_HOJE[t];
+    const sel = !done && !DIA_COMPLETO && t===SEL_TIPO;   // a da vez (selecionada)
+    const miss = !done && i<lastDone;                      // pulou: vira pendência
+    stop.className="stop"+(done?" done":sel?" now sel":miss?" miss":"");
+    if(done){ c.textContent="✓"; tm.className="tm"; tm.textContent=BATIDAS_HOJE[t]; }
+    else if(sel){ c.textContent=TRILHA_ICON[t]; tm.className="tm"; tm.textContent="agora"; }
+    else if(miss){ c.textContent="!"; tm.className="tm miss"; tm.textContent="faltou"; }
+    else { c.textContent=TRILHA_ICON[t]; tm.className="tm e"; tm.textContent="--:--"; }
+  });
+}
+function renderStatusPill(ultimo){
+  const el=document.getElementById("clock-status"); if(!el) return;
+  const h=t=>BATIDAS_HOJE[t]||"";
+  // pendências = slots pulados (vazios ANTES da batida mais avançada) → visibilidade
+  let lastDone=-1; ORDER.forEach((t,i)=>{ if(BATIDAS_HOJE[t]) lastDone=i; });
+  let miss=0; ORDER.forEach((t,i)=>{ if(!BATIDAS_HOJE[t] && i<lastDone) miss++; });
+  const pend = miss>0 ? ` · ${miss} pendência${miss>1?'s':''}` : "";
+  const cls = miss>0 ? "wait" : "go";   // pendência pinta de âmbar (atenção)
+  if(BATIDAS_HOJE.saida){ el.className="status "+cls;
+    el.textContent = miss>0 ? ("🏁 Saída às "+h("saida")+pend) : ("🏁 Dia encerrado às "+h("saida")); return; }
+  if(!ultimo){ el.className="status wait"; el.textContent="⏰ Hora de bater a entrada"; return; }
+  if(ultimo==="entrada"){ el.className="status "+cls; el.textContent="✅ Entrada às "+h("entrada")+" — bom trabalho"+pend; return; }
+  if(ultimo==="pausa"){ el.className="status "+cls; el.textContent="🍽️ Você saiu pro almoço às "+h("pausa")+pend; return; }
+  if(ultimo==="retorno"){ el.className="status "+cls; el.textContent="💪 De volta desde "+h("retorno")+pend; return; }
+  el.className="status wait"; el.textContent="⏰ Hora de bater o ponto"+pend;
+}
+function renderWorked(){ const el=document.getElementById("worked"); if(el) el.textContent=fmtHoras(workedAoVivo(BATIDAS_HOJE))+" trabalhadas"; }
+/* GPS: busca ao abrir a home; botão TRAVA até confirmar */
+function iniciarGPSHome(){ GPS_STATUS="buscando"; atualizarBotao();
+  if(!navigator.geolocation){ GPS_STATUS="falha"; atualizarBotao(); return; }
+  navigator.geolocation.getCurrentPosition(
+    p=>{ GPS_CACHE={latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy,ts:p.timestamp,fetchedAt:Date.now()}; GPS_STATUS="ok"; atualizarBotao(); },
+    ()=>{ GPS_STATUS="falha"; atualizarBotao(); },
+    {enableHighAccuracy:true,timeout:15000,maximumAge:0});
+}
+function atualizarBotao(){
+  const btn=document.getElementById("big-btn"), core=document.getElementById("big-core"),
+        cam=document.getElementById("big-cam"), lb=document.getElementById("big-lb"), loc=document.getElementById("loc-txt");
+  if(!btn) return;
+  if(GPS_STATUS==="buscando"){ btn.classList.add("off"); btn.dataset.ready="0"; core.className="core locked";
+    cam.textContent="📍"; lb.textContent="Localizando…"; loc.innerHTML="Buscando sua localização…"; return; }
+  if(GPS_STATUS==="falha" && !PERMITE_SEM_LOC){ btn.classList.add("off"); btn.dataset.ready="retry"; core.className="core locked";
+    cam.textContent="📍"; lb.textContent="Ativar GPS"; loc.innerHTML='<span class="warn">Ative a localização e toque pra tentar de novo</span>'; return; }
+  // GPS ok, ou falhou mas o dono permite bater sem localização
+  btn.classList.remove("off"); btn.dataset.ready="1"; core.className="core";
+  cam.textContent="📸"; lb.textContent=BTN_LABEL[SEL_TIPO]||"Bater ponto";
+  if(GPS_STATUS==="ok") loc.innerHTML='📍 <span class="ok">GPS confirmado ✓</span>';
+  else loc.innerHTML='<span class="warn">📍 Sem GPS — você ainda pode bater</span>';
+}
+function tocarPonto(){
+  const btn=document.getElementById("big-btn"); const st=btn&&btn.dataset.ready;
+  if(st==="retry"){ iniciarGPSHome(); return; }   // tentar localizar de novo
+  if(st!=="1") return;                             // travado: ignora o toque
+  iniciarRegistro(SEL_TIPO);                       // bate o tipo SELECIONADO (sugestão ou escolha na trilha)
 }
 function irRegistros(){ mesAtual=mesBahia(new Date()); carregarRegistros(); go("s-registros"); }
 
@@ -137,8 +242,13 @@ async function iniciarRegistro(tipo){
 }
 function pararCamera(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } }
 function cancelarCamera(){ pararCamera(); tipoPendente=null; voltarHome(); }
-function pegarGPS(){ return new Promise(res=>{ if(!navigator.geolocation) return res(null);
-  navigator.geolocation.getCurrentPosition(p=>res({latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy,ts:p.timestamp}),()=>res(null),{enableHighAccuracy:true,timeout:15000,maximumAge:0}); }); }
+function pegarGPS(){
+  // reaproveita a posição que a home já confirmou, se for recente (<30s) — senão busca de novo
+  if(GPS_CACHE && (Date.now()-GPS_CACHE.fetchedAt)<GPS_MAX_AGE_MS) return Promise.resolve(GPS_CACHE);
+  return new Promise(res=>{ if(!navigator.geolocation) return res(null);
+    navigator.geolocation.getCurrentPosition(
+      p=>{ GPS_CACHE={latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy,ts:p.timestamp,fetchedAt:Date.now()}; res(GPS_CACHE); },
+      ()=>res(null),{enableHighAccuracy:true,timeout:15000,maximumAge:0}); }); }
 function comprimir(el){ const w0=el.videoWidth||el.naturalWidth,h0=el.videoHeight||el.naturalHeight; const s=Math.min(1,FOTO_MAX_LADO/Math.max(w0,h0)); const w=Math.round(w0*s),h=Math.round(h0*s); const c=document.getElementById("work-canvas"); c.width=w; c.height=h; c.getContext("2d").drawImage(el,0,0,w,h); return c.toDataURL("image/jpeg",FOTO_QUALIDADE).split(",")[1]; }
 async function capturar(){ if(enviando) return; const v=document.getElementById("cam-video"); if(!v.videoWidth){ toast("Aguarde a câmera abrir…"); return; }
   const agora=new Date(); const foto=comprimir(v); const gps=await pegarGPS();

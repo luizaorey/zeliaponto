@@ -49,35 +49,42 @@
 
   <!-- HOME / BATER PONTO -->
   <section id="s-home" class="screen">
-    <div class="hdr">
-      <div class="topbar">
-        <span style="width:24px"></span>
-        <div class="name name-wrap"><span class="avatar-sm"><img src="zelia.svg" alt=""></span>Zélia</div>
-        <button class="iconbtn" onclick="sair()" aria-label="Sair"><svg class="ico" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg></button>
+    <div class="appbar">
+      <div class="zlogo"><span class="zdot">Z</span><b>Zélia<span>.</span></b></div>
+      <div class="avrow">
+        <span class="net"><span id="net-dot" class="dot"></span><span id="net-txt"></span></span>
+        <button class="av" id="av-ini" onclick="sair()" aria-label="Sair">•</button>
       </div>
-      <div class="hello" id="ola">Olá!</div>
-      <div class="subtle" id="sub-empresa">—</div>
     </div>
-    <div class="body">
-      <div class="card clock">
-        <div class="st"><span id="net-dot" class="dot"></span><span id="net-txt">—</span></div>
-        <div class="big" id="clock-now">--:--</div>
-        <div class="since" id="clock-sub">Toque num botão para bater o ponto</div>
+    <div class="hbody">
+      <div class="greet"><span id="greet-nome">Oi 👋</span><small id="greet-data">—</small></div>
+      <div class="clock">
+        <div class="t" id="clock-now">--:--</div>
+        <div><span id="clock-status" class="status wait">⏰ Hora de bater a entrada</span></div>
       </div>
-      <div class="sec">Bater ponto</div>
-      <div class="grid">
-        <button class="btn-ponto b-entrada" data-tipo="entrada" onclick="iniciarRegistro('entrada')"><svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg><span>Entrada</span></button>
-        <button class="btn-ponto b-pausa" data-tipo="pausa" onclick="iniciarRegistro('pausa')"><svg viewBox="0 0 24 24"><path d="M4 8h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8z"/><path d="M17 9h2a2 2 0 0 1 0 4h-2"/></svg><span>Almoço</span></button>
-        <button class="btn-ponto b-retorno" data-tipo="retorno" onclick="iniciarRegistro('retorno')"><svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M14 17l5-5-5-5M19 12H7"/></svg><span>Retorno</span></button>
-        <button class="btn-ponto b-saida" data-tipo="saida" onclick="iniciarRegistro('saida')"><svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg><span>Saída</span></button>
+      <div class="bigwrap">
+        <button class="bigbtn off" id="big-btn" data-ready="0" onclick="tocarPonto()">
+          <span class="ring"></span>
+          <span class="core locked" id="big-core"><span class="cam" id="big-cam">📍</span><span class="lb" id="big-lb">Localizando…</span></span>
+        </button>
+        <div class="loc" id="loc-txt">Buscando sua localização…</div>
       </div>
-      <button id="face-cta" onclick="location.href='facial-cadastro.html'" style="display:none;width:100%;margin:12px 0 0;padding:14px;border:none;border-radius:14px;background:#14A673;color:#fff;font-size:16px;font-weight:bold">📸 Cadastrar meu rosto</button>
-      <div id="ultimo-box" class="info-box" style="display:none"></div>
+      <button id="face-cta" onclick="location.href='facial-cadastro.html'" style="display:none">📸 Cadastrar meu rosto</button>
+      <div class="jcard">
+        <div class="jh"><span class="jt">Sua jornada de hoje</span><span class="worked" id="worked">0h00 trabalhadas</span></div>
+        <div class="track">
+          <div class="fill" id="track-fill" style="width:0"></div>
+          <div class="stop" id="stop-entrada" onclick="selecionarTipo('entrada')"><div class="c">→</div><div class="lb">Entrada</div><div class="tm e">--:--</div></div>
+          <div class="stop" id="stop-pausa" onclick="selecionarTipo('pausa')"><div class="c">🍽️</div><div class="lb">Almoço</div><div class="tm e">--:--</div></div>
+          <div class="stop" id="stop-retorno" onclick="selecionarTipo('retorno')"><div class="c">↩</div><div class="lb">Retorno</div><div class="tm e">--:--</div></div>
+          <div class="stop" id="stop-saida" onclick="selecionarTipo('saida')"><div class="c">🏁</div><div class="lb">Saída</div><div class="tm e">--:--</div></div>
+        </div>
+      </div>
       <p class="pend-hint" id="pend-hint" style="display:none"></p>
-      <div class="tabs">
-        <button class="tab on"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Início</button>
-        <button class="tab" onclick="irRegistros()"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 15l5-4 4 3 6-6"/></svg>Registros</button>
-      </div>
+    </div>
+    <div class="bn">
+      <a class="act"><span class="i">⏱️</span>Início</a>
+      <a onclick="irRegistros()"><span class="i">📋</span>Registros</a>
     </div>
   </section>
 

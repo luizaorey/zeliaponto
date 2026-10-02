@@ -5,7 +5,7 @@
    - NUNCA cacheia os webhooks do n8n.
    - skipWaiting + clients.claim: um SW novo assume na hora; a página recarrega sozinha
      (listener controllerchange no app.js). */
-const CACHE = "zelia-v7";
+const CACHE = "zelia-v8";
 const ASSETS = ["./","./index.html","./style.css","./app.js","./manifest.json","./zelia.svg","./icons/icon-192.png","./icons/icon-512.png","./icons/icon-192-maskable.png","./icons/icon-512-maskable.png"];
 const WEBHOOK_BASE = "https://giantfalcon-n8n.cloudfy.live/webhook";
 
