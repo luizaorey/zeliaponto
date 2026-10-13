@@ -212,9 +212,9 @@
       <div class="profcard"><div class="pa" id="mais-ini">•</div><div><div class="nm" id="mais-nome">—</div><div class="em" id="mais-sub"></div></div></div>
       <div class="mtitle">Minha conta</div>
       <div class="mlist">
-        <div class="mitem" onclick="emBreve('Notificações')"><span class="mic ic"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span><span class="ml">Notificações</span><span class="chev ic"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
+        <div class="mitem" onclick="irNotif()"><span class="mic ic"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span><span class="ml">Notificações</span><span class="chev ic"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
         <div class="mitem" onclick="emBreve('Solicitações')"><span class="mic ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h4M9 17h6"/></svg></span><span class="ml">Solicitações<small>ajustes e abonos</small></span><span class="pend" id="mais-solic-pend" style="display:none"></span></div>
-        <div class="mitem" onclick="irRegistros()"><span class="mic ic"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></span><span class="ml">Espelho de ponto<small>sua jornada do mês</small></span><span class="chev ic"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
+        <div class="mitem" onclick="irEspelho()"><span class="mic ic"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></span><span class="ml">Espelho de ponto<small>sua jornada do mês</small></span><span class="chev ic"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
         <div class="mitem" onclick="verOffline()"><span class="mic ic"><svg viewBox="0 0 24 24"><path d="M17.5 19a4.5 4.5 0 0 0 .5-9 6 6 0 0 0-11.6-1.5A4.5 4.5 0 0 0 7 19z"/><path d="M12 11.5v6M9.5 15L12 17.5 14.5 15"/></svg></span><span class="ml">Pontos offline<small>aguardando sincronizar</small></span><span class="badge" id="mais-off-badge" style="display:none"></span></div>
         <div class="mitem" onclick="irConfig()"><span class="mic ic"><svg viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></span><span class="ml">Configurações<small>rosto, câmera, som</small></span><span class="chev ic"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
         <div class="mitem danger" onclick="sair()"><span class="mic ic"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></span><span class="ml">Sair</span></div>
@@ -241,6 +241,44 @@
       <div class="cfg" onclick="emBreve('Som')"><span class="ci" style="background:#3B82C4">🔊</span><b>Som</b><span class="chev">›</span></div>
       <div class="cfg" onclick="emBreve('Acessibilidade')"><span class="ci" style="background:var(--z-ambar)">♿</span><b>Acessibilidade</b><span class="chev">›</span></div>
       <div class="cfg" onclick="emBreve('Suporte')"><span class="ci" style="background:#22303a">🎧</span><b>Suporte</b><span class="chev">›</span></div>
+    </div>
+  </section>
+
+  <!-- 21 · DETALHE DO DIA -->
+  <section id="s-dia" class="screen scr-light2">
+    <div class="back-t two"><button class="bk2 ic" onclick="go('s-registros')" aria-label="Voltar"></button><div class="tt2"><b id="dia-data">—</b><small id="dia-dow">—</small></div></div>
+    <div class="hbody">
+      <div class="diacard"><div class="dc-l"><div class="dc-k">Trabalhado no dia</div><div class="dc-v" id="dia-trab">--</div></div><span id="dia-badge"></span></div>
+      <div class="sublbl">Batidas do dia</div>
+      <div id="dia-batidas"></div>
+    </div>
+  </section>
+
+  <!-- 14 · ESPELHO DO MÊS -->
+  <section id="s-espelho" class="screen scr-light2">
+    <div class="back-t"><button class="bk2 ic" onclick="irMais()" aria-label="Voltar"></button><span class="tt">Espelho do mês</span></div>
+    <div class="hbody">
+      <div class="monthsel"><button class="msbtn ic" onclick="espMes(-1)" aria-label="Mês anterior"></button><b id="esp-mes">—</b><button class="msbtn ic" onclick="espMes(1)" aria-label="Próximo mês"></button></div>
+      <div class="esp-sub" id="esp-sub"></div>
+      <div class="espcard">
+        <div class="eg"><div class="eg-k">Trabalhadas</div><div class="eg-v" id="esp-trab">--</div></div>
+        <div class="eg"><div class="eg-k">Horas extras</div><div class="eg-v amb" id="esp-extra">--</div></div>
+        <div class="eg"><div class="eg-k">Faltas</div><div class="eg-v" id="esp-faltas">--</div></div>
+        <div class="eg"><div class="eg-k">Banco de horas</div><div class="eg-v grn" id="esp-banco">--</div></div>
+      </div>
+      <div class="sublbl">Dias do mês</div>
+      <div class="esptable" id="esp-table"></div>
+    </div>
+    <button class="btn-verde-full auth-cta" onclick="toast('Exportar PDF chega em breve 🙂')"><span class="ic" id="esp-dl"></span> Exportar PDF</button>
+  </section>
+
+  <!-- 13 · NOTIFICAÇÕES -->
+  <section id="s-notif" class="screen scr-light2">
+    <div class="back-t"><button class="bk2 ic" onclick="irMais()" aria-label="Voltar"></button><span class="tt">Notificações</span></div>
+    <div class="hbody emptywrap">
+      <div class="empty-circle ic" id="notif-ic"></div>
+      <h2 class="empty-h">Nenhuma notificação ainda</h2>
+      <p class="empty-p">Quando tiver aviso de ponto, um ajuste aprovado ou o resumo do seu dia, ele aparece aqui.</p>
     </div>
   </section>
 

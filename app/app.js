@@ -59,6 +59,8 @@ const SVG = {
   lock:'<svg viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>',
   unlock:'<svg viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 7.5-2"/><circle cx="12" cy="15.5" r="1.3"/></svg>',
   wpp:'<svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.5L3 21l2.1-5.3A8.5 8.5 0 1 1 21 11.5z"/><path d="M8.5 9.5c0 3.3 2.7 6 6 6 .6 0 .9-.6.6-1.1l-.9-1.2a.7.7 0 0 0-.8-.2l-.9.4a4 4 0 0 1-1.9-1.9l.4-.9a.7.7 0 0 0-.2-.8l-1.2-.9c-.5-.3-1.1 0-1.1.6z"/></svg>',
+  download:'<svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>',
+  info:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
 };
 const REG_LABELS = { entrada:"Entrada", pausa:"Saída almoço", retorno:"Volta almoço", saida:"Saída" };  // rótulos explícitos no espelho (Figma 05)
 const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
@@ -144,6 +146,7 @@ function pintarIconesAuth(){
   document.querySelectorAll('.fhint-ok .ic.wpp').forEach(e=>{ e.innerHTML=SVG.wpp; });
   document.querySelectorAll('.fhint-ok .ic:not(.wpp)').forEach(e=>{ if(!e.innerHTML.trim()) e.innerHTML=SVG.check; });
   const c=document.querySelector('.auth-circle'); if(c) c.innerHTML=SVG.unlock;
+  document.querySelectorAll('.monthsel .msbtn').forEach((b,i)=>{ b.innerHTML = (i%2===0)?SVG.chevL:SVG.chevron; });
 }
 function renderEmpresas(empresas){
   const box=document.getElementById("lista-empresas"); box.innerHTML="";
@@ -330,6 +333,65 @@ async function renderMais(){
   // badge de pontos offline
   const n=await filaCount(); const off=document.getElementById("mais-off-badge");
   if(off){ if(n>0){ off.style.display=""; off.textContent=String(n); } else off.style.display="none"; }
+}
+
+/* =================== CONSULTA: 13 Notificações · 21 Detalhe do dia · 14 Espelho do mês =================== */
+function irNotif(){ const e=document.getElementById("notif-ic"); if(e) e.innerHTML=SVG.bell; pintarIconesAuth(); go("s-notif"); }
+function abrirDia(data){
+  const d=((ultimoHistorico&&ultimoHistorico.dias)||[]).find(x=>x.data===data); if(!d) return;
+  const [Y,M,D]=data.split("-"); const dt=new Date(Y, M-1, D);
+  document.getElementById("dia-data").textContent=parseInt(D,10)+" de "+(MESES[parseInt(M,10)-1]||"");
+  const dow=new Intl.DateTimeFormat("pt-BR",{weekday:"long"}).format(dt);
+  document.getElementById("dia-dow").textContent=dow.charAt(0).toUpperCase()+dow.slice(1);
+  const b=diaBatidas(d.registros);
+  const trab=(typeof d.trabalhado_min==="number")?d.trabalhado_min:workedAoVivo(b);
+  document.getElementById("dia-trab").textContent=fmtHoras(trab);
+  const pd=pendDia(b);
+  document.getElementById("dia-badge").innerHTML = pd>0 ? '<span class="warn">'+ic('alert')+' '+pd+' pendência'+(pd>1?'s':'')+'</span>'
+    : (ORDER.every(t=>b[t]) ? '<span class="ok">'+ic('check')+' Dia completo</span>' : '');
+  const box=document.getElementById("dia-batidas"); box.innerHTML="";
+  ORDER.forEach(t=>{ const done=!!b[t]; const el=document.createElement("div"); el.className="bcard"+(done?"":" miss");
+    el.innerHTML='<span class="bc-ic ic">'+(done?SVG.check:SVG.clock)+'</span>'+
+      '<div class="bc-txt"><b>'+REG_LABELS[t]+'</b><small>'+(done?("às "+b[t]):"Não registrado")+'</small></div>'+
+      (done ? '<a class="bc-cmp" onclick="toast(\'Comprovante chega em breve 🙂\')">Comprovante '+ic('chevron')+'</a>'
+            : '<button class="bc-adj" onclick="toast(\'Ajuste (Solicitações) chega em breve 🙂\')">Ajustar</button>');
+    box.appendChild(el); });
+  go("s-dia");
+}
+let espMesAtual=null;
+async function irEspelho(){ espMesAtual=mesBahia(new Date()); const e=document.getElementById("esp-dl"); if(e) e.innerHTML=SVG.download; pintarIconesAuth(); go("s-espelho"); await carregarEspelho(); }
+function espMes(delta){ const [y,m]=espMesAtual.split("-").map(Number); const dd=new Date(Date.UTC(y,m-1+delta,1));
+  const novo=`${dd.getUTCFullYear()}-${String(dd.getUTCMonth()+1).padStart(2,'0')}`; if(novo>mesBahia(new Date())) return; espMesAtual=novo; carregarEspelho(); }
+async function carregarEspelho(){
+  const [y,m]=espMesAtual.split("-").map(Number);
+  document.getElementById("esp-mes").textContent=(MESES[m-1]||"").replace(/^./,c=>c.toUpperCase())+" de "+y;
+  document.getElementById("esp-sub").textContent=[localStorage.getItem(LS_NOME),(PERFIL.local||PERFIL.empresa)].filter(Boolean).join(" · ");
+  const tb=document.getElementById("esp-table"); tb.innerHTML='<p class="hint" style="text-align:center;padding:16px">Carregando…</p>';
+  try{ const r=await fetch(EP.historico+"?token="+encodeURIComponent(getToken())+"&mes="+espMesAtual);
+    if(r.status===401){ sair(); return; } const d=await r.json(); renderEspelho(d);
+  }catch(e){ tb.innerHTML='<p class="hint" style="text-align:center;padding:16px">Sem conexão.</p>'; }
+}
+function renderEspelho(d){
+  const dias=(d.dias||[]); let extras=0,banco=0,faltas=0;
+  dias.forEach(x=>{ if(typeof x.saldo_min==="number"){ banco+=x.saldo_min; if(x.saldo_min>0) extras+=x.saldo_min; } if(x.status==="falta") faltas++; });
+  document.getElementById("esp-trab").textContent=fmtHoras((d.resumo_mes||{}).trabalhado_min||0);
+  document.getElementById("esp-extra").textContent="+"+fmtHoras(extras);
+  document.getElementById("esp-faltas").textContent=String(faltas);
+  document.getElementById("esp-banco").textContent=(banco>=0?"+":"-")+fmtHoras(Math.abs(banco));
+  const vis=dias.filter(x=>(x.registros&&x.registros.length)||x.status==="falta");
+  const tb=document.getElementById("esp-table");
+  if(!vis.length){ tb.innerHTML='<p class="hint" style="text-align:center;padding:16px">Sem registros neste mês.</p>'; return; }
+  vis.sort((a,b)=>a.data<b.data?-1:1);
+  let rows='<div class="et-head"><span>Dia</span><span>Jornada</span><span>Total</span></div>';
+  vis.forEach(x=>{ const [Y,M,D]=x.data.split("-"); const dt=new Date(Y,M-1,D);
+    const dw=new Intl.DateTimeFormat("pt-BR",{weekday:"short"}).format(dt).replace(".","");
+    const dia=dw.charAt(0).toUpperCase()+dw.slice(1)+", "+D;
+    const b=diaBatidas(x.registros); const falta=x.status==="falta"&&!ORDER.some(t=>b[t]);
+    const jornada=falta?"falta":((b.entrada||"--:--")+"–"+(b.saida||"--:--"));
+    const total=(typeof x.trabalhado_min==="number"&&!falta)?fmtHoras(x.trabalhado_min):"—";
+    rows+='<div class="et-row'+(falta?" falta":"")+'"><span>'+dia+'</span><span class="et-j">'+jornada+'</span><span class="et-t">'+total+'</span></div>';
+  });
+  tb.innerHTML=rows;
 }
 
 /* =================== CÂMERA + REGISTRO =================== */
@@ -548,7 +610,9 @@ function renderRegistros(d){
   const box=document.getElementById("dias-lista");
   // só dias com batida OU falta (esconde fim de semana / dias vazios)
   const vis=dias.filter(x=> (x.registros&&x.registros.length) || x.status==="falta");
-  if(!vis.length){ box.innerHTML='<p class="hint" style="text-align:center;padding:24px">Sem registros neste mês.</p>'; return; }
+  if(!vis.length){ box.innerHTML='<div class="emptywrap"><div class="empty-circle ic">'+SVG.list+'</div>'+
+    '<h2 class="empty-h">Nenhum registro ainda</h2><p class="empty-p">Quando você bater o seu ponto, ele aparece aqui — por dia, com os horários.</p>'+
+    '<button class="btn-verde-full" style="max-width:280px;margin-top:20px" onclick="voltarHome()"><span class="ic">'+SVG.camera+'</span> Bater meu 1º ponto</button></div>'; return; }
   vis.sort((a,b)=> ordemReg==="recentes" ? (a.data<b.data?1:-1) : (a.data<b.data?-1:1));
   box.innerHTML="";
   vis.forEach(x=>{
@@ -557,7 +621,7 @@ function renderRegistros(d){
     const cal='<span class="ic cal">'+SVG.calendar+'</span>';
     const b=diaBatidas(x.registros); const temAlgo=ORDER.some(t=>b[t]);
     if(!temAlgo && x.status==="falta"){
-      const el=document.createElement("div"); el.className="daycard";
+      const el=document.createElement("div"); el.className="daycard"; el.onclick=()=>abrirDia(x.data);
       el.innerHTML=`<div class="dh">${cal} ${dataLbl} <span class="falta">Falta</span></div><div class="nreg">Nenhuma batida registrada neste dia.</div>`;
       box.appendChild(el); return;
     }
@@ -568,7 +632,7 @@ function renderRegistros(d){
     const linhas=ORDER.map((t,i)=>{ const done=!!b[t]; const miss=!done && i<last;
       const val=done?b[t]:(miss?"faltou":"--:--");
       return `<div class="p ${miss?"miss":(!done?"fut":"")}"><span class="lb">${REG_LABELS[t]}</span><span class="tm">${val}</span></div>`; }).join("");
-    const el=document.createElement("div"); el.className="daycard";
+    const el=document.createElement("div"); el.className="daycard tap"; el.onclick=()=>abrirDia(x.data);
     el.innerHTML=`<div class="dh">${cal} ${dataLbl} ${badge}</div><div class="tl">${linhas}</div>`;
     box.appendChild(el);
   });

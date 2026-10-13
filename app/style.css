@@ -359,8 +359,8 @@ canvas{display:none}
 /* ===================== REDESIGN FIGMA — Entrar (15 Login · 16 Primeiro acesso · 20 Recuperar) ===================== */
 .scr-auth{background:radial-gradient(120% 80% at 15% 0%,#e6f5ee 0%,#eef4f0 45%,#e9f2ec 100%);padding:0}
 .scr-auth .auth-top{display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 14px) 20px 6px;flex:none}
-.scr-auth .bk2{width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid var(--z-linha);color:var(--z-verde-esc);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex:none}
-.scr-auth .bk2 svg{width:20px;height:20px}
+.bk2{width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid var(--z-linha);color:var(--z-verde-esc);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex:none}
+.bk2 svg{width:20px;height:20px}
 .scr-auth .auth-ttl{font-family:"Poppins";font-weight:600;font-size:18px;color:var(--z-verde-esc)}
 .auth-body{flex:1;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 24px) 20px 10px;overflow-y:auto}
 .auth-body2{flex:1;display:flex;flex-direction:column;padding:12px 20px 10px;overflow-y:auto}
@@ -401,3 +401,52 @@ canvas{display:none}
 /* escolher empresa */
 #s-empresa .list{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 #s-empresa .item{background:#fff;border:1px solid var(--z-linha);border-radius:14px;padding:16px;font-weight:600;font-size:15px;color:var(--z-verde-esc);text-align:left;cursor:pointer;width:100%}
+
+/* ===================== REDESIGN FIGMA — Consulta (21 Detalhe · 14 Espelho · 13 Notif · 22 Vazia) ===================== */
+#s-dia,#s-espelho,#s-notif,.scr-light2{background:radial-gradient(120% 80% at 15% 0%,#e6f5ee 0%,#eef4f0 45%,#e9f2ec 100%)}
+.back-t.two .tt2 b{display:block;font-family:"Poppins";font-weight:600;font-size:18px;color:var(--z-verde-esc);line-height:1.1}
+.back-t.two .tt2 small{color:var(--z-cinza);font-size:12.5px}
+.sublbl{font-weight:800;font-size:11.5px;color:#9AA7A1;letter-spacing:.06em;text-transform:uppercase;margin:18px 2px 10px}
+/* 21 detalhe do dia */
+.diacard{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--z-linha);border-radius:16px;padding:16px;margin-top:4px}
+.diacard .dc-k{font-size:12.5px;color:var(--z-cinza)}
+.diacard .dc-v{font-family:"Poppins";font-weight:600;font-size:26px;color:var(--z-verde-esc);margin-top:3px}
+#dia-badge .warn{display:inline-flex;align-items:center;gap:5px;background:var(--z-ambar-cl);color:#b57611;font-size:11px;font-weight:700;padding:6px 11px;border-radius:999px}
+#dia-badge .ok{display:inline-flex;align-items:center;gap:5px;background:var(--z-verde-cl);color:#0f7a52;font-size:11px;font-weight:700;padding:6px 11px;border-radius:999px}
+#dia-badge .ic{width:13px;height:13px}
+.bcard{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--z-linha);border-radius:14px;padding:13px;margin-bottom:9px}
+.bcard .bc-ic{width:36px;height:36px;border-radius:10px;background:var(--z-verde-cl);color:var(--z-verde);display:flex;align-items:center;justify-content:center;flex:none}
+.bcard.miss .bc-ic{background:var(--z-ambar-cl);color:#b57611}
+.bcard .bc-ic svg{width:19px;height:19px}
+.bcard .bc-txt{flex:1;min-width:0}
+.bcard .bc-txt b{display:block;font-weight:600;font-size:14px;color:var(--z-verde-esc)}
+.bcard .bc-txt small{color:var(--z-cinza);font-size:12px}
+.bcard.miss .bc-txt small{color:#b57611}
+.bcard .bc-cmp{color:var(--z-verde);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:2px;cursor:pointer;white-space:nowrap}
+.bcard .bc-cmp .ic{width:14px;height:14px}
+.bcard .bc-adj{background:var(--z-ambar);color:#fff;border:none;border-radius:10px;padding:8px 15px;font-weight:700;font-size:13px;cursor:pointer}
+.daycard.tap{cursor:pointer}
+/* 14 espelho do mês */
+.monthsel{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--z-linha);border-radius:13px;padding:9px 14px;margin-top:4px}
+.monthsel b{font-family:"Poppins";font-weight:600;font-size:14px;color:var(--z-verde-esc)}
+.monthsel .msbtn{width:28px;height:28px;background:none;border:none;color:var(--z-verde-esc);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.monthsel .msbtn svg{width:18px;height:18px}
+.esp-sub{text-align:center;color:var(--z-cinza);font-size:12.5px;margin:10px 0 0}
+.espcard{display:grid;grid-template-columns:1fr 1fr;gap:15px 12px;background:#fff;border:1px solid var(--z-linha);border-radius:16px;padding:16px;margin-top:12px}
+.espcard .eg-k{font-size:12px;color:var(--z-cinza)}
+.espcard .eg-v{font-family:"Poppins";font-weight:600;font-size:22px;color:var(--z-verde-esc);margin-top:3px}
+.espcard .eg-v.amb{color:#c98a12} .espcard .eg-v.grn{color:var(--z-verde)}
+.esptable{background:#fff;border:1px solid var(--z-linha);border-radius:16px;padding:4px 14px;margin-top:2px}
+.esptable .et-head{display:grid;grid-template-columns:1fr 1.3fr .7fr;padding:11px 0;font-size:11.5px;color:var(--z-cinza);border-bottom:1px solid var(--z-linha)}
+.esptable .et-row{display:grid;grid-template-columns:1fr 1.3fr .7fr;padding:12px 0;font-size:13.5px;align-items:center;border-bottom:1px solid #f0f3f1}
+.esptable .et-row:last-child{border-bottom:none}
+.esptable .et-row span:first-child{font-family:"Poppins";font-weight:600;color:var(--z-verde-esc)}
+.esptable .et-j{color:#48564f} .esptable .et-t{text-align:right;font-weight:700;color:var(--z-verde-esc);font-variant-numeric:tabular-nums}
+.esptable .et-row.falta span,.esptable .et-row.falta .et-j,.esptable .et-row.falta .et-t{color:#b57611}
+/* empty states (22 + notif) */
+.emptywrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+.empty-circle{width:92px;height:92px;border-radius:50%;background:var(--z-verde-cl);color:var(--z-verde);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.empty-circle svg{width:38px;height:38px}
+.empty-h{font-family:"Poppins";font-weight:600;font-size:20px;color:var(--z-verde-esc)}
+.empty-p{color:var(--z-cinza);font-size:14px;margin-top:8px;line-height:1.5;max-width:300px}
+.btn-verde-full .ic{width:18px;height:18px;vertical-align:-3px;margin-right:4px}
