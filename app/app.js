@@ -55,6 +55,10 @@ const SVG = {
   chevron:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
   chevL:'<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
   chevD:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
+  idcard:'<svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="2"/><circle cx="8.5" cy="11" r="2.2"/><path d="M5 15.6c.5-1.4 1.8-2.1 3.5-2.1s3 .7 3.5 2.1"/><path d="M14.5 9.5h4M14.5 13h4"/></svg>',
+  lock:'<svg viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>',
+  unlock:'<svg viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 7.5-2"/><circle cx="12" cy="15.5" r="1.3"/></svg>',
+  wpp:'<svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.5L3 21l2.1-5.3A8.5 8.5 0 1 1 21 11.5z"/><path d="M8.5 9.5c0 3.3 2.7 6 6 6 .6 0 .9-.6.6-1.1l-.9-1.2a.7.7 0 0 0-.8-.2l-.9.4a4 4 0 0 1-1.9-1.9l.4-.9a.7.7 0 0 0-.2-.8l-1.2-.9c-.5-.3-1.1 0-1.1.6z"/></svg>',
 };
 const REG_LABELS = { entrada:"Entrada", pausa:"Saída almoço", retorno:"Volta almoço", saida:"Saída" };  // rótulos explícitos no espelho (Figma 05)
 const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
@@ -115,9 +119,31 @@ async function fazerLogin(empresa_id){
     if(d.escolher_empresa){ localStorage.setItem(LS_CPF,cpf); renderEmpresas(d.empresas); go("s-empresa"); return; }
     if(!d.ok){ go("s-login"); document.getElementById("login-err").textContent=d.mensagem||"CPF ou senha incorretos"; return; }
     localStorage.setItem(LS_TOKEN,d.token); localStorage.setItem(LS_NOME,d.nome||""); localStorage.setItem(LS_CPF,cpf);
-    if(d.senha_provisoria){ go("s-trocar"); return; }
+    if(d.senha_provisoria){
+      const nm=d.nome||localStorage.getItem(LS_NOME)||"";
+      document.getElementById("trocar-ini").textContent=iniciais(nm);
+      document.getElementById("trocar-nome").textContent=nm||"Você";
+      const emp=d.empresa_nome||d.empresa||""; const es=document.getElementById("trocar-emp");
+      if(es){ es.textContent=emp; es.style.display=emp?"":"none"; }
+      go("s-trocar"); return;
+    }
     irHome();
   }catch(e){ go("s-login"); document.getElementById("login-err").textContent="Sem conexão. Tente de novo."; }
+}
+function irEsqueci(){ const e=document.getElementById("login-err"); if(e) e.textContent=""; go("s-esqueci"); }
+function enviarCodigo(){ const cpf=soDigitos((document.getElementById("in-rec-cpf")||{}).value||"");
+  if(cpf.length!==11){ toast("Digite um CPF válido (11 números)."); return; }
+  // recuperação por WhatsApp ainda não tem backend — orienta sem enganar
+  toast("Por enquanto, fale com seu gestor pra resetar sua senha 🙂"); }
+/* injeta os ícones de linha das telas de entrar (campos, voltar, hints) */
+function pintarIconesAuth(){
+  document.querySelectorAll('.inp').forEach(w=>{ const inp=w.querySelector('input'), icn=w.querySelector('.inp-ic');
+    if(inp&&icn) icn.innerHTML = (inp.type==='password') ? SVG.lock : SVG.idcard; });
+  document.querySelectorAll('.bk2').forEach(b=>{ b.innerHTML=SVG.chevL; });
+  document.querySelectorAll('.uc-ok').forEach(e=>{ e.innerHTML=SVG.check; });
+  document.querySelectorAll('.fhint-ok .ic.wpp').forEach(e=>{ e.innerHTML=SVG.wpp; });
+  document.querySelectorAll('.fhint-ok .ic:not(.wpp)').forEach(e=>{ if(!e.innerHTML.trim()) e.innerHTML=SVG.check; });
+  const c=document.querySelector('.auth-circle'); if(c) c.innerHTML=SVG.unlock;
 }
 function renderEmpresas(empresas){
   const box=document.getElementById("lista-empresas"); box.innerHTML="";
@@ -126,11 +152,13 @@ function renderEmpresas(empresas){
 }
 async function fazerTrocaSenha(){
   const nova=(document.getElementById("in-nova").value||"").trim();
+  const nova2=(document.getElementById("in-nova2")?document.getElementById("in-nova2").value:nova||"").trim();
   const cpf=soDigitos(localStorage.getItem(LS_CPF)||"");
   const err=document.getElementById("trocar-err"); err.textContent="";
   if(nova.length<6){ err.textContent="Mínimo de 6 caracteres."; return; }
   if(nova==="123"){ err.textContent='Não pode ser "123".'; return; }
   if(soDigitos(nova)===cpf){ err.textContent="Não pode ser seu CPF."; return; }
+  if(nova!==nova2){ err.textContent="As senhas não são iguais."; return; }
   go("s-loading");
   try{
     const r=await fetch(EP.trocarSenha,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token:getToken(),nova_senha:nova})});
@@ -561,6 +589,7 @@ async function boot(){
   window.addEventListener("offline", atualizarRede);
   setInterval(()=>{ if(navigator.onLine) sincronizarFila(); }, SYNC_INTERVAL_MS);
   setInterval(tickClock, 1000);
+  pintarIconesAuth();   // ícones de linha das telas de entrar
   document.getElementById("in-cpf").addEventListener("input", e=>{ e.target.value=soDigitos(e.target.value).slice(0,11); });
   if(getToken()){ irHome(); } else { go("s-login"); }
 }

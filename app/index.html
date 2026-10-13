@@ -16,35 +16,63 @@
   <section id="s-loading" class="screen center active"><div class="spinner"></div><p>Carregando…</p></section>
 
   <!-- LOGIN -->
-  <section id="s-login" class="screen center">
-    <div class="avatar-lg"><img src="zelia.svg" alt="Zélia"></div>
-    <h1>Zélia Ponto</h1>
-    <p class="big">Entre com seu <b>CPF</b> e <b>senha</b>.</p>
-    <div class="field"><label>CPF</label><input id="in-cpf" class="txt" inputmode="numeric" autocomplete="off" placeholder="Só números"></div>
-    <div class="field"><label>Senha</label><div class="pw-wrap"><input id="in-senha" class="txt" type="password" autocomplete="off" placeholder="Sua senha"><button type="button" class="pw-eye" aria-label="Mostrar senha" onclick="togglePw(this)"><svg class="eye-on" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div></div>
-    <div class="err" id="login-err"></div>
-    <button class="btn" onclick="fazerLogin()">Entrar</button>
-    <p class="hint">Primeiro acesso? A senha inicial é <b>123</b> (o app pede a troca).</p>
+  <!-- 15 · LOGIN -->
+  <section id="s-login" class="screen scr-auth">
+    <div class="auth-body">
+      <div class="auth-logo"><span class="zbig">Z</span></div>
+      <div class="auth-brand">Zélia<span>.</span></div>
+      <div class="auth-tag">Seu ponto, simples pelo celular.</div>
+      <h1 class="auth-h">Bem-vindo de volta! 👋</h1>
+      <p class="auth-sub">Entre pra bater o seu ponto.</p>
+      <label class="flbl">CPF ou telefone</label>
+      <div class="inp"><span class="inp-ic ic"></span><input id="in-cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00"></div>
+      <label class="flbl">Senha</label>
+      <div class="inp"><span class="inp-ic ic"></span><input id="in-senha" type="password" autocomplete="off" placeholder="••••••••"><button type="button" class="inp-eye" aria-label="Mostrar senha" onclick="togglePw(this)"><svg class="eye-on ic" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off ic" style="display:none" viewBox="0 0 24 24"><path d="M17.9 17.9A10 10 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 5.1-5.9M9.9 4.2A9 9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.2 3.2M1 1l22 22"/></svg></button></div>
+      <div class="flink"><a onclick="irEsqueci()">Esqueci minha senha</a></div>
+      <div class="err" id="login-err"></div>
+      <button class="btn-verde-full" onclick="fazerLogin()">Entrar</button>
+    </div>
+    <div class="auth-foot">Problemas pra entrar? Fale com seu gestor</div>
   </section>
 
   <!-- ESCOLHER EMPRESA -->
-  <section id="s-empresa" class="screen center">
-    <div class="avatar-lg"><img src="zelia.svg" alt="Zélia"></div>
-    <h1>Qual empresa?</h1>
-    <p>Seu CPF está em mais de uma empresa. Escolha:</p>
-    <div class="list" id="lista-empresas"></div>
-    <button class="linkbtn" onclick="sair()">Voltar</button>
+  <section id="s-empresa" class="screen scr-auth">
+    <div class="auth-top"><button class="bk2 ic" onclick="sair()" aria-label="Voltar"></button><span class="auth-ttl">Qual empresa?</span></div>
+    <div class="auth-body2">
+      <p class="auth-sub">Seu CPF está em mais de uma empresa. Escolha:</p>
+      <div class="list" id="lista-empresas"></div>
+    </div>
   </section>
 
-  <!-- TROCAR SENHA OBRIGATÓRIA -->
-  <section id="s-trocar" class="screen center">
-    <div class="avatar-lg"><img src="zelia.svg" alt="Zélia"></div>
-    <h1>Crie sua senha</h1>
-    <p class="big">No primeiro acesso, defina uma senha nova.</p>
-    <div class="field"><label>Nova senha</label><div class="pw-wrap"><input id="in-nova" class="txt" type="password" autocomplete="off" placeholder="Mínimo 6 caracteres"><button type="button" class="pw-eye" aria-label="Mostrar senha" onclick="togglePw(this)"><svg class="eye-on" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div></div>
-    <div class="err" id="trocar-err"></div>
-    <button class="btn" onclick="fazerTrocaSenha()">Salvar e entrar</button>
-    <p class="hint">Não pode ser "123" nem seu CPF.</p>
+  <!-- 16 · PRIMEIRO ACESSO -->
+  <section id="s-trocar" class="screen scr-auth">
+    <div class="auth-top"><button class="bk2 ic" onclick="sair()" aria-label="Voltar"></button><span class="auth-ttl">Primeiro acesso</span></div>
+    <div class="auth-body2">
+      <h1 class="auth-h">Crie a sua senha</h1>
+      <p class="auth-sub">É rapidinho. Depois é só usar seu CPF e essa senha pra entrar.</p>
+      <div class="usercard"><span class="uc-av" id="trocar-ini">•</span><div class="uc-txt"><b id="trocar-nome">—</b><small id="trocar-emp"></small></div><span class="uc-ok ic"></span></div>
+      <label class="flbl">Nova senha</label>
+      <div class="inp"><span class="inp-ic ic"></span><input id="in-nova" type="password" autocomplete="off" placeholder="Crie uma senha"><button type="button" class="inp-eye" aria-label="Mostrar senha" onclick="togglePw(this)"><svg class="eye-on ic" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off ic" style="display:none" viewBox="0 0 24 24"><path d="M17.9 17.9A10 10 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 5.1-5.9M9.9 4.2A9 9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.2 3.2M1 1l22 22"/></svg></button></div>
+      <label class="flbl">Confirmar senha</label>
+      <div class="inp"><span class="inp-ic ic"></span><input id="in-nova2" type="password" autocomplete="off" placeholder="Repita a senha"><button type="button" class="inp-eye" aria-label="Mostrar senha" onclick="togglePw(this)"><svg class="eye-on ic" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off ic" style="display:none" viewBox="0 0 24 24"><path d="M17.9 17.9A10 10 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 5.1-5.9M9.9 4.2A9 9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.2 3.2M1 1l22 22"/></svg></button></div>
+      <div class="fhint-ok"><span class="ic"></span> No mínimo 6 caracteres, com letras e números.</div>
+      <div class="err" id="trocar-err"></div>
+    </div>
+    <button class="btn-verde-full auth-cta" onclick="fazerTrocaSenha()">Criar senha e entrar</button>
+  </section>
+
+  <!-- 20 · RECUPERAR SENHA -->
+  <section id="s-esqueci" class="screen scr-auth">
+    <div class="auth-top"><button class="bk2 ic" onclick="go('s-login')" aria-label="Voltar"></button><span class="auth-ttl">Recuperar senha</span></div>
+    <div class="auth-body2 center-col">
+      <div class="auth-circle ic"></div>
+      <h1 class="auth-h" style="text-align:center">Esqueceu a senha?</h1>
+      <p class="auth-sub" style="text-align:center">Sem problema. Digite seu CPF ou telefone que a gente te manda um código pra criar uma nova.</p>
+      <label class="flbl self-start">CPF ou telefone</label>
+      <div class="inp"><span class="inp-ic ic"></span><input id="in-rec-cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00"></div>
+      <div class="fhint-ok"><span class="ic wpp"></span> O código chega no seu WhatsApp.</div>
+      <button class="btn-verde-full" style="margin-top:22px" onclick="enviarCodigo()">Enviar código</button>
+    </div>
   </section>
 
   <!-- HOME / BATER PONTO -->
