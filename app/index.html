@@ -65,7 +65,7 @@
       <div class="bigwrap">
         <button class="bigbtn off" id="big-btn" data-ready="0" onclick="tocarPonto()">
           <span class="ring"></span>
-          <span class="core locked" id="big-core"><span class="cam" id="big-cam">📍</span><span class="lb" id="big-lb">Localizando…</span></span>
+          <span class="core locked" id="big-core"><span class="cam" id="big-cam"></span><span class="lb" id="big-lb">Localizando…</span></span>
         </button>
         <div class="loc" id="loc-txt">Buscando sua localização…</div>
       </div>
@@ -74,48 +74,74 @@
         <div class="jh"><span class="jt">Sua jornada de hoje</span><span class="worked" id="worked">0h00 trabalhadas</span></div>
         <div class="track">
           <div class="fill" id="track-fill" style="width:0"></div>
-          <div class="stop" id="stop-entrada" onclick="selecionarTipo('entrada')"><div class="c">→</div><div class="lb">Entrada</div><div class="tm e">--:--</div></div>
-          <div class="stop" id="stop-pausa" onclick="selecionarTipo('pausa')"><div class="c">🍽️</div><div class="lb">Almoço</div><div class="tm e">--:--</div></div>
-          <div class="stop" id="stop-retorno" onclick="selecionarTipo('retorno')"><div class="c">↩</div><div class="lb">Retorno</div><div class="tm e">--:--</div></div>
-          <div class="stop" id="stop-saida" onclick="selecionarTipo('saida')"><div class="c">🏁</div><div class="lb">Saída</div><div class="tm e">--:--</div></div>
+          <div class="stop" id="stop-entrada" onclick="selecionarTipo('entrada')"><div class="c"><span class="ic"><svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg></span></div><div class="lb">Entrada</div><div class="tm e">--:--</div></div>
+          <div class="stop" id="stop-pausa" onclick="selecionarTipo('pausa')"><div class="c"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 3v6a2 2 0 0 0 4 0V3"/><path d="M7 9v12"/><path d="M17 3c-1.6 0-3 2-3 5s1.4 4 3 4"/><path d="M17 3v18"/></svg></span></div><div class="lb">Almoço</div><div class="tm e">--:--</div></div>
+          <div class="stop" id="stop-retorno" onclick="selecionarTipo('retorno')"><div class="c"><span class="ic"><svg viewBox="0 0 24 24"><path d="M9 10L4 15l5 5"/><path d="M20 4v6a5 5 0 0 1-5 5H4"/></svg></span></div><div class="lb">Retorno</div><div class="tm e">--:--</div></div>
+          <div class="stop" id="stop-saida" onclick="selecionarTipo('saida')"><div class="c"><span class="ic"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></span></div><div class="lb">Saída</div><div class="tm e">--:--</div></div>
         </div>
       </div>
       <p class="pend-hint" id="pend-hint" style="display:none"></p>
     </div>
     <div class="bn">
-      <a class="act" onclick="irInicio()"><span class="i">⏱️</span>Início</a>
-      <a onclick="irRegistros()"><span class="i">📋</span>Registros</a>
-      <a onclick="irMais()"><span class="i">☰</span>Mais</a>
+      <a class="act" onclick="irInicio()"><span class="i"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 1.8"/></svg></span>Início</a>
+      <a onclick="irRegistros()"><span class="i"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg></span>Registros</a>
+      <a onclick="irMais()"><span class="i"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></span>Mais</a>
     </div>
   </section>
 
   <!-- CÂMERA -->
-  <section id="s-camera" class="screen">
-    <div class="hdr" style="padding-bottom:16px"><div class="topbar"><span style="width:24px"></span><div class="name" id="cam-titulo">Registrar</div><button class="btn ghost" style="width:auto;padding:8px 12px;font-size:15px" onclick="cancelarCamera()">Cancelar</button></div></div>
+  <!-- 02 · PONTO FACIAL (reconhecendo) / câmera de batida -->
+  <section id="s-camera" class="screen scr-cam">
     <video id="cam-video" playsinline autoplay muted></video>
-    <div class="cam-body"><p class="hint" style="text-align:center" id="cam-hint">Enquadre o rosto e toque em registrar.</p><div style="flex:1"></div><button class="btn" id="cam-capturar" onclick="capturar()">Registrar ponto</button><button class="btn ghost" id="cam-selfie-fb" style="display:none;margin-top:8px" onclick="baterComSelfie()">Não reconheceu? Bater com selfie</button></div>
+    <div class="cam-ov">
+      <div class="cam-top">
+        <button class="cam-ic" onclick="cancelarCamera()" aria-label="Voltar"><svg class="ic" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="cam-ttl" id="cam-titulo">Ponto Facial</div>
+        <button class="cam-ic" onclick="flipCam()" aria-label="Trocar câmera"><svg class="ic" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button>
+      </div>
+      <div class="cam-inst" id="cam-hint">Posicione o rosto no quadro</div>
+      <div class="cam-frame"><span></span><span></span><span></span><span></span></div>
+      <div class="cam-actions">
+        <button class="btn-branco" id="cam-capturar" style="display:none" onclick="capturar()">Registrar ponto</button>
+        <button class="cam-link" id="cam-selfie-fb" style="display:none" onclick="baterComSelfie()">Não reconheceu? Bater com selfie</button>
+      </div>
+    </div>
     <input id="cam-fallback" type="file" accept="image/*" capture="user" style="display:none" onchange="capturarInput(event)">
   </section>
 
   <section id="s-enviando" class="screen center"><div class="spinner"></div><p id="enviando-msg">Registrando…</p></section>
 
-  <section id="s-resultado" class="screen">
-    <div class="appbar">
-      <div class="zlogo"><span class="zdot">Z</span><b>Zélia<span>.</span></b></div>
-      <div class="avrow"><button class="av" onclick="irMais()" aria-label="Minha conta">•</button></div>
+  <!-- 03 · PONTO REGISTRADO (sucesso) -->
+  <section id="s-resultado" class="screen scr-ok" onclick="voltarHome()">
+    <div class="okwrap">
+      <div class="ok-circle"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <h2 id="res-titulo">Ponto registrado!</h2>
+      <div class="ok-time" id="res-time"></div>
+      <div class="ok-tags" id="res-tags"></div>
     </div>
-    <div class="succ">
-      <div class="succ-self ok" id="res-self"><div class="rng"></div><div class="ph" id="res-ph">🧑</div><div class="ck" id="res-ck">✓</div></div>
-      <h2 id="res-titulo"></h2>
-      <div class="succ-time" id="res-time"></div>
-      <div class="succ-tags" id="res-tags"></div>
-      <div class="succ-msg" id="res-msg"></div>
-      <button class="succ-cta" id="res-cta" onclick="irRegistros()">Ver meus registros</button>
+  </section>
+
+  <!-- 04 · ERRO AO REGISTRAR -->
+  <section id="s-erro" class="screen scr-err">
+    <div class="errwrap">
+      <div class="err-circle"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+      <h2 id="erro-titulo">Erro ao Registrar</h2>
+      <p class="err-msg" id="erro-msg">Ops!! Não foi possível registrar o ponto.</p>
     </div>
-    <div class="bn">
-      <a class="act" onclick="irInicio()"><span class="i">⏱️</span>Início</a>
-      <a onclick="irRegistros()"><span class="i">📋</span>Registros</a>
-      <a onclick="irMais()"><span class="i">☰</span>Mais</a>
+    <div class="err-actions">
+      <button class="btn-branco" onclick="erroRetry()">Tentar novamente</button>
+      <button class="btn-outline-w" onclick="voltarHome()">Cancelar</button>
+    </div>
+  </section>
+
+  <!-- 23 · ERRO DE CONEXÃO (sem internet) -->
+  <section id="s-conexao" class="screen scr-light">
+    <div class="conxwrap">
+      <div class="conx-circle"><svg class="ic" viewBox="0 0 24 24"><path d="M1 1l22 22"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/></svg></div>
+      <h2>Você está sem internet</h2>
+      <p class="conx-msg" id="conx-msg">Mas pode ficar tranquilo: bata o ponto normal — ele fica salvo no celular e sincroniza sozinho quando a conexão voltar.</p>
+      <div class="conx-ok"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Nenhuma batida é perdida</div>
+      <button class="btn-verde" onclick="tentarReconectar()"><svg class="ic" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Tentar reconectar</button>
     </div>
   </section>
 
@@ -141,9 +167,9 @@
       <div id="dias-lista"></div>
     </div>
     <div class="bn">
-      <a onclick="irInicio()"><span class="i">⏱️</span>Início</a>
-      <a class="act" onclick="irRegistros()"><span class="i">📋</span>Registros</a>
-      <a onclick="irMais()"><span class="i">☰</span>Mais</a>
+      <a onclick="irInicio()"><span class="i"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 1.8"/></svg></span>Início</a>
+      <a class="act" onclick="irRegistros()"><span class="i"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg></span>Registros</a>
+      <a onclick="irMais()"><span class="i"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></span>Mais</a>
     </div>
   </section>
 
@@ -166,9 +192,9 @@
       </div>
     </div>
     <div class="bn">
-      <a onclick="irInicio()"><span class="i">⏱️</span>Início</a>
-      <a onclick="irRegistros()"><span class="i">📋</span>Registros</a>
-      <a class="act" onclick="irMais()"><span class="i">☰</span>Mais</a>
+      <a onclick="irInicio()"><span class="i"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 1.8"/></svg></span>Início</a>
+      <a onclick="irRegistros()"><span class="i"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg></span>Registros</a>
+      <a class="act" onclick="irMais()"><span class="i"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></span>Mais</a>
     </div>
   </section>
 

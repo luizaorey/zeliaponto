@@ -1,3 +1,11 @@
+/* ===================== REDESIGN FIGMA — fundação (fontes self-hosted + ícones de linha) ===================== */
+@font-face{font-family:"Inter";src:url("fonts/inter.woff2") format("woff2");font-weight:400 700;font-style:normal;font-display:swap}
+@font-face{font-family:"Poppins";src:url("fonts/poppins-600.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Sora";src:url("fonts/sora-800.woff2") format("woff2");font-weight:800;font-style:normal;font-display:swap}
+/* ícone de linha inline (svg) — stroke currentColor, herda a cor do contexto */
+.ic{display:inline-block;vertical-align:middle;flex:none}
+.ic svg,svg.ic{display:block;width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
 :root{
   --teal:#0B2A33; --orange:#E1592A; --orange-d:#C64A20; --navy:#1F2A3A;
   --body:#EDEEF0; --card:#FFFFFF; --ink:#25303F; --muted:#7A828E;
@@ -7,7 +15,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{height:100%}
 body{background:var(--body);color:var(--ink);
-  font-family:-apple-system,"SF Pro Rounded","SF Pro Display",system-ui,"Segoe UI",Roboto,sans-serif;
+  font-family:"Inter",-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
   -webkit-font-smoothing:antialiased;overscroll-behavior:none}
 #app{max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
 .screen{flex:1;display:none;flex-direction:column;min-height:100dvh}
@@ -111,7 +119,7 @@ canvas{display:none}
 :root{--z-verde:#14A673;--z-verde-esc:#0C4B35;--z-verde-cl:#E6F5EE;--z-ambar:#F6A93B;--z-ambar-cl:#FFF4E0;
   --z-bg:#EEF4F0;--z-cinza:#6B7B74;--z-linha:#E7ECE9;--z-track:#E2E9E5;}
 /* fundo claro + chrome compartilhado (home, registros, mais, sucesso) */
-#s-home,#s-registros,#s-mais,#s-resultado,#s-config{background:radial-gradient(120% 80% at 15% 0%,#e6f5ee 0%,#eef4f0 45%,#e9f2ec 100%)}
+#s-home,#s-registros,#s-mais,#s-config,#s-conexao{background:radial-gradient(120% 80% at 15% 0%,#e6f5ee 0%,#eef4f0 45%,#e9f2ec 100%)}
 .appbar{display:flex;align-items:center;justify-content:space-between;
   padding:calc(env(safe-area-inset-top) + 10px) 18px 4px;flex:none}
 .zlogo{display:flex;align-items:center;gap:8px}
@@ -183,23 +191,6 @@ canvas{display:none}
 :root{--z-verm:#E5533D;--z-verm-cl:#FCEBE7;}
 .page-t{font-weight:800;font-size:19px;color:var(--z-verde-esc)}
 .page-t small{display:block;font-weight:500;color:var(--z-cinza);font-size:12px;margin-top:1px}
-/* SUCESSO */
-#s-resultado .succ{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 24px}
-.succ-self{width:128px;height:128px;border-radius:50%;position:relative;margin-bottom:22px}
-.succ-self .rng{position:absolute;inset:-7px;border-radius:50%;border:4px solid var(--z-verde)}
-.succ-self.off .rng{border-color:#9fb0a8} .succ-self.err .rng{border-color:var(--z-verm)}
-.succ-self .ph{width:128px;height:128px;border-radius:50%;background:linear-gradient(160deg,#cfe0d7,#b9cec3);
-  display:flex;align-items:center;justify-content:center;overflow:hidden;border:5px solid #fff;box-shadow:0 14px 30px -14px rgba(6,48,31,.4);font-size:62px}
-.succ-self .ck{position:absolute;bottom:2px;right:2px;width:40px;height:40px;border-radius:50%;background:var(--z-verde);color:#fff;
-  display:flex;align-items:center;justify-content:center;font-size:22px;border:4px solid var(--z-bg)}
-.succ-self.off .ck{background:#9fb0a8} .succ-self.err .ck{background:var(--z-verm)}
-#s-resultado h2{font-weight:800;font-size:25px;color:var(--z-verde-esc)}
-.succ-time{font-weight:800;font-size:22px;color:var(--z-verde);margin-top:2px;font-variant-numeric:tabular-nums}
-.succ-tags{display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap}
-.succ-tags .tag{background:var(--z-verde-cl);color:#0f7a52;font-weight:700;font-size:12px;padding:6px 12px;border-radius:999px}
-.succ-tags .tag.warn{background:var(--z-ambar-cl);color:#b57611}
-.succ-msg{color:var(--z-cinza);font-size:14px;margin-top:16px;line-height:1.5}
-.succ-cta{margin-top:22px;background:var(--z-verde);color:#fff;font-weight:800;font-size:15px;padding:13px 26px;border-radius:14px;border:none;cursor:pointer}
 /* REGISTROS */
 .stat-row{display:flex;gap:9px;margin-top:10px}
 .stat-row .stat{background:#fff;border:1px solid var(--z-linha);border-radius:14px;padding:11px;flex:1;min-width:0;text-align:left}
@@ -260,3 +251,82 @@ canvas{display:none}
 .cfg:active{transform:scale(.99)}
 .cfg .ci{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex:none}
 .cfg b{font-weight:600;font-size:14px} .cfg .chev{margin-left:auto;color:#c3ccc7;font-size:15px}
+
+/* ===================== REDESIGN FIGMA — tipografia + ícones (tela 01 Home) ===================== */
+/* logo em Sora; títulos/números em Poppins; corpo segue Inter */
+.zlogo b{font-family:"Sora";letter-spacing:-.02em}
+#s-home .clock .t{font-family:"Poppins";font-weight:600}
+#s-home .greet{font-family:"Poppins";font-weight:600}
+#s-home .jcard .jt{font-family:"Poppins";font-weight:600}
+#s-home .bigbtn .core .lb{font-family:"Poppins";font-weight:600}
+.page-t,.back-t .tt,#s-resultado h2,#etapa-fim h1,.succ-time{font-family:"Poppins";font-weight:600}
+/* ícone grande do botão (câmera de linha) */
+#s-home .bigbtn .core .cam{width:46px;height:46px;font-size:0}
+#s-home .bigbtn .core .cam .ic{width:46px;height:46px}
+#s-home .bigbtn .core .cam .ic svg{stroke-width:1.6}
+/* ícones da trilha (dentro do círculo do stop) */
+#s-home .stop .c .ic{width:18px;height:18px}
+#s-home .stop.done .c .ic,#s-home .stop.now .c .ic{width:18px;height:18px}
+/* status pill: ícone de linha + texto (sem emoji) */
+#s-home .status{gap:6px}
+#s-home .status .ic{width:14px;height:14px}
+/* linha de localização: pin + check de linha */
+#s-home .loc .ic{width:14px;height:14px}
+#s-home .loc .ic.chk{width:15px;height:15px;color:var(--z-verde)}
+/* avatar vazio (sem iniciais ainda) não mostra bolinha */
+/* barra inferior: ícones de linha 25px */
+.bn a .i{width:25px;height:25px;display:flex;align-items:center;justify-content:center;font-size:0}
+.bn a .i .ic{width:25px;height:25px}
+
+/* ===================== REDESIGN FIGMA — fluxo de ponto (03 sucesso · 04 erro · 23 conexão) ===================== */
+/* 03 · sucesso (tela cheia verde) */
+.scr-ok{background:linear-gradient(170deg,#17b07d 0%,#14A673 45%,#0f8a5f 100%);color:#fff;align-items:center;justify-content:center;text-align:center;padding:24px;cursor:pointer}
+.okwrap{display:flex;flex-direction:column;align-items:center}
+.ok-circle{width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;margin-bottom:22px}
+.ok-circle .ic{width:46px;height:46px} .ok-circle .ic svg{stroke:#fff;stroke-width:2.4}
+.scr-ok h2{font-family:"Poppins";font-weight:600;font-size:26px;color:#fff}
+.ok-time{font-size:15px;color:rgba(255,255,255,.92);margin-top:8px}
+.ok-tags{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.ok-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);color:#fff;font-weight:600;font-size:12.5px;padding:7px 13px;border-radius:999px}
+.ok-tag .ic{width:14px;height:14px} .ok-tag.warn{background:rgba(255,244,224,.22)}
+/* 04 · erro ao registrar (tela cheia vermelha) */
+.scr-err{background:linear-gradient(175deg,#e8604b 0%,#E5533D 50%,#d1452f 100%);color:#fff;align-items:center;text-align:center;padding:24px;justify-content:space-between}
+.errwrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.err-circle{width:92px;height:92px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;margin-bottom:22px}
+.err-circle .ic{width:40px;height:40px} .err-circle .ic svg{stroke:#fff;stroke-width:2.4}
+.scr-err h2{font-family:"Poppins";font-weight:600;font-size:25px;color:#fff}
+.err-msg{font-size:14px;color:rgba(255,255,255,.92);margin-top:10px;line-height:1.5;max-width:300px}
+.err-actions{width:100%;display:flex;flex-direction:column;gap:11px;padding-bottom:calc(env(safe-area-inset-bottom) + 10px)}
+.btn-branco{width:100%;background:#fff;color:var(--z-verde-esc);border:none;border-radius:15px;padding:16px;font-family:"Poppins";font-weight:600;font-size:15px;cursor:pointer}
+.btn-outline-w{width:100%;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.7);border-radius:15px;padding:16px;font-family:"Poppins";font-weight:600;font-size:15px;cursor:pointer}
+/* 23 · sem internet (claro) */
+.scr-light{align-items:center;justify-content:center;text-align:center;padding:24px}
+.conxwrap{display:flex;flex-direction:column;align-items:center;max-width:330px}
+.conx-circle{width:96px;height:96px;border-radius:50%;background:var(--z-ambar-cl);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.conx-circle .ic{width:42px;height:42px;color:#b57611}
+.scr-light h2{font-family:"Poppins";font-weight:600;font-size:23px;color:var(--z-verde-esc)}
+.conx-msg{font-size:14px;color:var(--z-cinza);margin-top:10px;line-height:1.55}
+.conx-ok{display:inline-flex;align-items:center;gap:7px;color:#0f7a52;font-weight:700;font-size:13px;margin-top:18px}
+.conx-ok .ic{width:16px;height:16px}
+.btn-verde{display:inline-flex;align-items:center;justify-content:center;gap:9px;width:100%;background:var(--z-verde);color:#fff;border:none;border-radius:15px;padding:15px;font-family:"Poppins";font-weight:600;font-size:15px;margin-top:24px;cursor:pointer}
+.btn-verde .ic{width:18px;height:18px}
+
+/* ===================== REDESIGN FIGMA — 02 Ponto Facial / câmera de batida ===================== */
+.scr-cam{position:relative;background:#0c1512;overflow:hidden}
+#cam-video{position:absolute;inset:0;width:100%;height:100%;border-radius:0;aspect-ratio:auto;object-fit:cover;transform:scaleX(-1);background:#0c1512}
+.scr-cam .cam-ov{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;
+  padding:calc(env(safe-area-inset-top) + 14px) 18px calc(env(safe-area-inset-bottom) + 22px);
+  background:linear-gradient(180deg,rgba(6,20,15,.55) 0%,rgba(6,20,15,0) 22%,rgba(6,20,15,0) 70%,rgba(6,20,15,.55) 100%)}
+.cam-top{width:100%;display:flex;align-items:center;justify-content:space-between}
+.cam-ic{width:38px;height:38px;border:none;background:rgba(0,0,0,.3);border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.cam-ic .ic{width:20px;height:20px}
+.cam-ttl{font-family:"Poppins";font-weight:600;font-size:17px;color:#fff}
+.cam-inst{margin-top:20px;color:#fff;font-family:"Poppins";font-weight:600;font-size:15px;text-align:center;text-shadow:0 1px 8px rgba(0,0,0,.5);padding:0 10px}
+.cam-frame{position:relative;width:228px;height:286px;margin:auto 0}
+.cam-frame span{position:absolute;width:40px;height:40px;border:3px solid var(--z-ambar)}
+.cam-frame span:nth-child(1){top:0;left:0;border-right:0;border-bottom:0;border-radius:8px 0 0 0}
+.cam-frame span:nth-child(2){top:0;right:0;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
+.cam-frame span:nth-child(3){bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 8px}
+.cam-frame span:nth-child(4){bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 8px 0}
+.cam-actions{width:100%;display:flex;flex-direction:column;align-items:center;gap:12px}
+.cam-link{background:none;border:none;color:#fff;font-weight:600;font-size:13px;text-decoration:underline;cursor:pointer}

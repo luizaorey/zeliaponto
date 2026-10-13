@@ -32,7 +32,22 @@ let BIO_ATIVA=false, ROSTO_OK=false, FACE_TEMPLATE=null, HUMAN_INST=null, recog=
 /* ---- home (trilha + botão adaptativo + GPS) ---- */
 const ORDER = ["entrada","pausa","retorno","saida"];
 const BTN_LABEL = { entrada:"Bater entrada", pausa:"Sair pro almoço", retorno:"Voltar do almoço", saida:"Bater saída" };
-const TRILHA_ICON = { entrada:"→", pausa:"🍽️", retorno:"↩", saida:"🏁" };
+/* ícones de linha (SVG inline, stroke currentColor) — redesign Figma, nada de emoji */
+const SVG = {
+  camera:'<svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.5l1.7-2.6a1 1 0 0 1 .84-.46h5.92a1 1 0 0 1 .84.46L17.5 6H21a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+  pin:'<svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  check:'<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>',
+  clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 1.8"/></svg>',
+  login:'<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>',
+  utensils:'<svg viewBox="0 0 24 24"><path d="M5 3v6a2 2 0 0 0 4 0V3"/><path d="M7 9v12"/><path d="M17 3c-1.6 0-3 2-3 5s1.4 4 3 4"/><path d="M17 3v18"/></svg>',
+  back:'<svg viewBox="0 0 24 24"><path d="M9 10L4 15l5 5"/><path d="M20 4v6a5 5 0 0 1-5 5H4"/></svg>',
+  logout:'<svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>',
+  doc:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>',
+  menu:'<svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>',
+  alert:'<svg viewBox="0 0 24 24"><path d="M10.3 3.7L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+};
+function ic(name,cls){ return '<span class="ic'+(cls?' '+cls:'')+'">'+(SVG[name]||'')+'</span>'; }
+const TRILHA_ICON = { entrada:ic('login'), pausa:ic('utensils'), retorno:ic('back'), saida:ic('logout') };
 let BATIDAS_HOJE = { entrada:null, pausa:null, retorno:null, saida:null };
 let PROX_TIPO = "entrada", SEL_TIPO = "entrada", DIA_COMPLETO = false;
 let PERFIL = { cargo:null, local:null, empresa:null };  // best-effort (se o status trouxer)
@@ -184,10 +199,10 @@ function renderTrilha(){
     const sel = !done && !DIA_COMPLETO && t===SEL_TIPO;   // a da vez (selecionada)
     const miss = !done && i<lastDone;                      // pulou: vira pendência
     stop.className="stop"+(done?" done":sel?" now sel":miss?" miss":"");
-    if(done){ c.textContent="✓"; tm.className="tm"; tm.textContent=BATIDAS_HOJE[t]; }
-    else if(sel){ c.textContent=TRILHA_ICON[t]; tm.className="tm"; tm.textContent="agora"; }
-    else if(miss){ c.textContent="!"; tm.className="tm miss"; tm.textContent="faltou"; }
-    else { c.textContent=TRILHA_ICON[t]; tm.className="tm e"; tm.textContent="--:--"; }
+    if(done){ c.innerHTML=ic('check'); tm.className="tm"; tm.textContent=BATIDAS_HOJE[t]; }
+    else if(sel){ c.innerHTML=TRILHA_ICON[t]; tm.className="tm"; tm.textContent="agora"; }
+    else if(miss){ c.innerHTML="!"; tm.className="tm miss"; tm.textContent="faltou"; }
+    else { c.innerHTML=TRILHA_ICON[t]; tm.className="tm e"; tm.textContent="--:--"; }
   });
 }
 function renderStatusPill(ultimo){
@@ -198,13 +213,13 @@ function renderStatusPill(ultimo){
   let miss=0; ORDER.forEach((t,i)=>{ if(!BATIDAS_HOJE[t] && i<lastDone) miss++; });
   const pend = miss>0 ? ` · ${miss} pendência${miss>1?'s':''}` : "";
   const cls = miss>0 ? "wait" : "go";   // pendência pinta de âmbar (atenção)
-  if(BATIDAS_HOJE.saida){ el.className="status "+cls;
-    el.textContent = miss>0 ? ("🏁 Saída às "+h("saida")+pend) : ("🏁 Dia encerrado às "+h("saida")); return; }
-  if(!ultimo){ el.className="status wait"; el.textContent="⏰ Hora de bater a entrada"; return; }
-  if(ultimo==="entrada"){ el.className="status "+cls; el.textContent="✅ Entrada às "+h("entrada")+" — bom trabalho"+pend; return; }
-  if(ultimo==="pausa"){ el.className="status "+cls; el.textContent="🍽️ Você saiu pro almoço às "+h("pausa")+pend; return; }
-  if(ultimo==="retorno"){ el.className="status "+cls; el.textContent="💪 De volta desde "+h("retorno")+pend; return; }
-  el.className="status wait"; el.textContent="⏰ Hora de bater o ponto"+pend;
+  const set=(icon,txt,c)=>{ el.className="status "+c; el.innerHTML=ic(icon)+'<span>'+txt+'</span>'; };
+  if(BATIDAS_HOJE.saida){ set('logout', miss>0 ? ("Saída às "+h("saida")+pend) : ("Dia encerrado às "+h("saida")), cls); return; }
+  if(!ultimo){ set('clock',"Hora de bater a entrada","wait"); return; }
+  if(ultimo==="entrada"){ set('check',"Entrada às "+h("entrada")+" — bom trabalho"+pend, cls); return; }
+  if(ultimo==="pausa"){ set('utensils',"Você saiu pro almoço às "+h("pausa")+pend, cls); return; }
+  if(ultimo==="retorno"){ set('login',"De volta desde "+h("retorno")+pend, cls); return; }
+  set('clock',"Hora de bater o ponto"+pend,"wait");
 }
 function renderWorked(){ const el=document.getElementById("worked"); if(el) el.textContent=fmtHoras(workedAoVivo(BATIDAS_HOJE))+" trabalhadas"; }
 /* GPS: busca ao abrir a home; botão TRAVA até confirmar */
@@ -220,14 +235,15 @@ function atualizarBotao(){
         cam=document.getElementById("big-cam"), lb=document.getElementById("big-lb"), loc=document.getElementById("loc-txt");
   if(!btn) return;
   if(GPS_STATUS==="buscando"){ btn.classList.add("off"); btn.dataset.ready="0"; core.className="core locked";
-    cam.textContent="📍"; lb.textContent="Localizando…"; loc.innerHTML="Buscando sua localização…"; return; }
+    cam.innerHTML=ic('pin'); lb.textContent="Localizando…"; loc.innerHTML=ic('pin')+' Buscando sua localização…'; return; }
   if(GPS_STATUS==="falha" && !PERMITE_SEM_LOC){ btn.classList.add("off"); btn.dataset.ready="retry"; core.className="core locked";
-    cam.textContent="📍"; lb.textContent="Ativar GPS"; loc.innerHTML='<span class="warn">Ative a localização e toque pra tentar de novo</span>'; return; }
+    cam.innerHTML=ic('pin'); lb.textContent="Ativar GPS"; loc.innerHTML=ic('pin')+' <span class="warn">Ative a localização e toque pra tentar de novo</span>'; return; }
   // GPS ok, ou falhou mas o dono permite bater sem localização
   btn.classList.remove("off"); btn.dataset.ready="1"; core.className="core";
-  cam.textContent="📸"; lb.textContent=BTN_LABEL[SEL_TIPO]||"Bater ponto";
-  if(GPS_STATUS==="ok") loc.innerHTML='📍 <span class="ok">GPS confirmado ✓</span>';
-  else loc.innerHTML='<span class="warn">📍 Sem GPS — você ainda pode bater</span>';
+  cam.innerHTML=ic('camera'); lb.textContent=BTN_LABEL[SEL_TIPO]||"Bater ponto";
+  const loja=(PERFIL.local||PERFIL.empresa||"").trim();
+  if(GPS_STATUS==="ok") loc.innerHTML=ic('pin')+' '+(loja?('<span>'+loja+' · </span>'):'')+'<span class="ok">GPS confirmado</span> '+ic('check','chk');
+  else loc.innerHTML=ic('pin')+' <span class="warn">Sem GPS — você ainda pode bater</span>';
 }
 function tocarPonto(){
   const btn=document.getElementById("big-btn"); const st=btn&&btn.dataset.ready;
@@ -286,6 +302,7 @@ async function iniciarRegistro(tipo){
 }
 function pararCamera(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } }
 function cancelarCamera(){ pararCamera(); tipoPendente=null; voltarHome(); }
+function flipCam(){ const t=tipoPendente||SEL_TIPO||"entrada"; pararCamera(); iniciarRegistro(t); }   // reinicia a câmera (refresh seguro)
 function pegarGPS(){
   // reaproveita a posição que a home já confirmou, se for recente (<30s) — senão busca de novo
   if(GPS_CACHE && (Date.now()-GPS_CACHE.fetchedAt)<GPS_MAX_AGE_MS) return Promise.resolve(GPS_CACHE);
@@ -335,8 +352,8 @@ async function fetchTemplate(){
 }
 async function iniciarRegistroFacial(tipo){
   tipoPendente=tipo; recog=false;
-  document.getElementById("cam-titulo").textContent=LABELS[tipo]+" — olhe pra câmera";
-  document.getElementById("cam-hint").textContent="Reconhecendo seu rosto…";
+  document.getElementById("cam-titulo").textContent="Ponto Facial";
+  document.getElementById("cam-hint").textContent="Posicione o rosto no quadro";
   document.getElementById("cam-capturar").style.display="none";
   var fb=document.getElementById("cam-selfie-fb"); if(fb) fb.style.display="none";
   go("s-camera");
@@ -408,44 +425,36 @@ async function enviarRegistro(dados){
   }catch(e){ await guardarOffline(payload); enviando=false; } // só falha de rede vai pra fila
 }
 async function guardarOffline(p){ await filaAdd({...p, origem:"offline"}); mostrarResultado("offline", p.tipo, null); registrarSync(); }
+let okTimer=null, ULTIMO_RESULTADO=null;
 function mostrarResultado(estado, tipo, resp){
-  pintarAvatars();
-  const self=document.getElementById("res-self"), ck=document.getElementById("res-ck"), ph=document.getElementById("res-ph"),
-        tit=document.getElementById("res-titulo"), time=document.getElementById("res-time"),
-        tags=document.getElementById("res-tags"), msg=document.getElementById("res-msg"), cta=document.getElementById("res-cta");
-  const hora=horaBahia(new Date()); const nome=primeiroNome(localStorage.getItem(LS_NOME))||"";
-  const tagsHtml=arr=>arr.map(x=>`<span class="tag ${x.startsWith('⚠')?'warn':''}">${x}</span>`).join("");
+  const hora=horaBahia(new Date());
   if(estado==="ok"){
-    self.className="succ-self ok"; ck.textContent="✓"; ph.textContent="🧑";
-    tit.textContent=(CONF[tipo]||"Ponto registrado")+"!";
-    time.style.display=""; time.textContent=hora;
+    ULTIMO_RESULTADO={tipo, hora, resp};   // guarda p/ o comprovante (tela 19)
+    document.getElementById("res-titulo").textContent="Ponto registrado!";
+    const verbo=(tipo==='saida'||tipo==='pausa')?'registrada':'confirmada';
+    document.getElementById("res-time").textContent=(LABELS[tipo]||"Ponto")+" "+verbo+" às "+hora;
     const t=[];
-    if(resp&&resp.metodo==='facial') t.push('📸 Rosto reconhecido');   // só quando o facial está ligado
-    if(resp&&resp.dentro_raio===true) t.push('📍 GPS confirmado');
-    else if(resp&&resp.sem_localizacao===true) t.push('📍 Sem GPS');
-    else if(resp&&resp.dentro_raio===false) t.push('⚠️ Fora da área');
-    tags.innerHTML=tagsHtml(t);
-    let m=`Bom trabalho, ${nome}! 💚<br>Seu registro foi salvo com segurança.`;
-    if(resp&&resp.dentro_raio===false) m=`Registro salvo, ${nome}.<br>⚠️ Fora da área cadastrada — sujeito a revisão do seu gestor.`;
-    if(resp&&resp.duplicado) m="Esse ponto já estava registrado.";
-    msg.innerHTML=m;
-    cta.textContent="Ver meus registros"; cta.onclick=irRegistros;
-  } else if(estado==="recusa"){
-    self.className="succ-self err"; ck.textContent="✕"; ph.textContent="😕";
-    tit.textContent="Não registrado";
-    time.style.display="none"; tags.innerHTML="";
-    msg.innerHTML=(resp&&resp.mensagem)||"Não foi possível registrar.";
-    cta.textContent="Voltar"; cta.onclick=voltarHome;
-  } else { // offline
-    self.className="succ-self off"; ck.textContent="📴"; ph.textContent="🧑";
-    tit.textContent=(CONF[tipo]||"Registro")+" salvo";
-    time.style.display=""; time.textContent=hora;
-    tags.innerHTML=tagsHtml(['📴 Aguardando internet']);
-    msg.innerHTML=`Tudo certo, ${nome}.<br>Sem internet agora — enviamos sozinho quando a conexão voltar.`;
-    cta.textContent="Ver meus registros"; cta.onclick=irRegistros;
+    if(resp&&resp.metodo==='facial') t.push(['check','Rosto reconhecido',false]);   // só com facial ligado
+    if(resp&&resp.dentro_raio===true) t.push(['check','GPS confirmado',false]);
+    else if(resp&&resp.sem_localizacao===true) t.push(['pin','Sem GPS',false]);
+    else if(resp&&resp.dentro_raio===false) t.push(['alert','Fora da área',true]);
+    document.getElementById("res-tags").innerHTML=t.map(x=>'<span class="ok-tag'+(x[2]?' warn':'')+'">'+ic(x[0])+'<span>'+x[1]+'</span></span>').join("");
+    go("s-resultado");
+    clearTimeout(okTimer); okTimer=setTimeout(()=>{ if(document.getElementById('s-resultado').classList.contains('active')) voltarHome(); }, 2800);
+    return;
   }
-  go("s-resultado");
+  if(estado==="offline"){
+    const m=document.getElementById("conx-msg");
+    if(m) m.textContent="Tudo certo — a batida ficou salva no celular e vai sozinha assim que a conexão voltar.";
+    go("s-conexao"); return;
+  }
+  // recusa do servidor (fora do perímetro / sequência / tipo)
+  document.getElementById("erro-titulo").textContent="Erro ao Registrar";
+  document.getElementById("erro-msg").textContent=(resp&&resp.mensagem)||"Ops!! Não foi possível registrar o ponto.";
+  go("s-erro");
 }
+function erroRetry(){ const t=tipoPendente||SEL_TIPO||PROX_TIPO||"entrada"; iniciarRegistro(t); }
+function tentarReconectar(){ if(navigator.onLine){ sincronizarFila(); toast("Conectado! Enviando o que estava salvo…"); voltarHome(); } else toast("Ainda sem internet — tente de novo em instantes."); }
 async function voltarHome(){ tipoPendente=null; go("s-home"); await refreshHome(); }
 
 /* =================== SYNC (injeta token atual) =================== */
