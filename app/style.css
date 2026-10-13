@@ -450,3 +450,51 @@ canvas{display:none}
 .empty-h{font-family:"Poppins";font-weight:600;font-size:20px;color:var(--z-verde-esc)}
 .empty-p{color:var(--z-cinza);font-size:14px;margin-top:8px;line-height:1.5;max-width:300px}
 .btn-verde-full .ic{width:18px;height:18px;vertical-align:-3px;margin-right:4px}
+
+/* ===================== REDESIGN FIGMA — Pedidos + Conta (11/18/24 · 12 · 07 · 25) ===================== */
+/* header com botão + */
+.back-t .plusbtn{margin-left:auto;width:36px;height:36px;border-radius:50%;background:var(--z-verde);color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.back-t .plusbtn svg{width:20px;height:20px;stroke-width:2.2}
+/* 18 nova solicitação */
+.segm{display:flex;background:#e8eeea;border-radius:13px;padding:4px;gap:4px}
+.segm .seg{flex:1;border:none;background:none;border-radius:10px;padding:11px;font-family:"Inter";font-weight:600;font-size:13.5px;color:var(--z-cinza);cursor:pointer}
+.segm .seg.on{background:#fff;color:var(--z-verde);box-shadow:0 4px 12px -8px rgba(6,48,31,.4)}
+.inp input[type=date],.inp input[type=time]{color:var(--z-texto,#1C2926)}
+.ta{width:100%;min-height:96px;background:#fff;border:1px solid var(--z-linha);border-radius:15px;padding:13px 14px;font-family:"Inter";font-size:14.5px;color:var(--z-texto,#1C2926);resize:none;box-shadow:0 8px 22px -18px rgba(6,48,31,.4)}
+.ta::placeholder{color:var(--z-placeholder,#9AA7A1)}
+.anexo{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;background:none;border:1.5px dashed #c2cfc8;border-radius:14px;padding:16px;color:var(--z-verde-esc);font-weight:600;font-size:14px;cursor:pointer}
+.anexo .ic{width:19px;height:19px;color:var(--z-verde)}
+/* 24 enviada */
+.okwrap2{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 26px}
+.ok-circle2{width:104px;height:104px;border-radius:50%;background:var(--z-verde);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:22px;box-shadow:0 18px 40px -16px rgba(20,166,115,.7)}
+.ok-circle2 svg{width:46px;height:46px;stroke-width:2.4}
+.protoc{color:var(--z-verde);font-weight:700;font-size:13.5px;margin-top:16px}
+/* 12 pontos offline */
+.infobanner{display:flex;align-items:flex-start;gap:10px;background:var(--z-azul-cl,#E7F0F8);border-radius:13px;padding:13px 14px;margin-top:4px;color:#2b5f86;font-size:13px;line-height:1.45}
+.infobanner .ic{width:18px;height:18px;color:#3B82C4;flex:none;margin-top:1px}
+.offcard{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--z-linha);border-radius:14px;padding:13px;margin-bottom:9px}
+.offcard .oc-ic{width:36px;height:36px;border-radius:10px;background:var(--z-ambar-cl);color:#b57611;display:flex;align-items:center;justify-content:center;flex:none}
+.offcard .oc-ic svg{width:19px;height:19px}
+.offcard .oc-txt{flex:1;min-width:0}
+.offcard .oc-txt b{display:block;font-weight:600;font-size:14px;color:var(--z-verde-esc)}
+.offcard .oc-txt small{color:var(--z-cinza);font-size:12px}
+.offcard .oc-dot{width:9px;height:9px;border-radius:50%;background:var(--z-ambar);flex:none}
+.offempty{display:flex;align-items:center;gap:8px;justify-content:center;color:#0f7a52;font-weight:600;font-size:14px;padding:30px 10px;text-align:center}
+.offempty .ic{width:18px;height:18px}
+/* 25 diálogo sair */
+.dlg{position:fixed;inset:0;background:rgba(20,30,26,.55);display:none;align-items:center;justify-content:center;z-index:60;padding:28px}
+.dlg-card{background:#fff;border-radius:22px;padding:26px 22px 20px;max-width:330px;width:100%;text-align:center;box-shadow:0 30px 70px -30px rgba(0,0,0,.5)}
+.dlg-ic{width:64px;height:64px;border-radius:50%;background:var(--z-verm-cl);color:var(--z-verm);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.dlg-ic svg{width:30px;height:30px}
+.dlg-h{font-family:"Poppins";font-weight:600;font-size:20px;color:var(--z-verde-esc)}
+.dlg-p{color:var(--z-cinza);font-size:13.5px;margin-top:8px;line-height:1.5}
+.dlg-acts{display:flex;gap:11px;margin-top:22px}
+.dlg-cancel{flex:1;background:#eef1ef;color:var(--z-verde-esc);border:none;border-radius:13px;padding:14px;font-family:"Poppins";font-weight:600;font-size:14.5px;cursor:pointer}
+.dlg-sair{flex:1;background:var(--z-verm);color:#fff;border:none;border-radius:13px;padding:14px;font-family:"Poppins";font-weight:600;font-size:14.5px;cursor:pointer}
+/* 07 configurações — ícone facial verde + quadradinhos de linha */
+.facecard .fh .fi{background:var(--z-verde-cl)!important;color:var(--z-verde)}
+.facecard .fh .fi svg{width:22px;height:22px}
+.facecard .fcta .ic{width:17px;height:17px;vertical-align:-3px;margin-right:3px}
+.cfg .ci{background:var(--z-verde-cl);color:var(--z-verde)}
+.cfg .ci svg{width:19px;height:19px}
+.cfg .chev{width:16px;height:16px;flex:none;color:#c3ccc7;margin-left:auto}

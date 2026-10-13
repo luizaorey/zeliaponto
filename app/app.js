@@ -61,6 +61,14 @@ const SVG = {
   wpp:'<svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.5L3 21l2.1-5.3A8.5 8.5 0 1 1 21 11.5z"/><path d="M8.5 9.5c0 3.3 2.7 6 6 6 .6 0 .9-.6.6-1.1l-.9-1.2a.7.7 0 0 0-.8-.2l-.9.4a4 4 0 0 1-1.9-1.9l.4-.9a.7.7 0 0 0-.2-.8l-1.2-.9c-.5-.3-1.1 0-1.1.6z"/></svg>',
   download:'<svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>',
   info:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
+  facescan:'<svg viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 10h.01M15 10h.01M9.5 14.5a3.5 3.5 0 0 0 5 0"/></svg>',
+  sun:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  speaker:'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg>',
+  access:'<svg viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="1.6"/><path d="M12 7v6M8 9h8M9.5 21l2.5-5 2.5 5"/></svg>',
+  headset:'<svg viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2.5" y="14" width="4" height="6" rx="1.5"/><rect x="17.5" y="14" width="4" height="6" rx="1.5"/><path d="M20 20a4 4 0 0 1-4 3h-2"/></svg>',
+  upload:'<svg viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>',
+  refresh:'<svg viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg>',
+  plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
 };
 const REG_LABELS = { entrada:"Entrada", pausa:"Saída almoço", retorno:"Volta almoço", saida:"Saída" };  // rótulos explícitos no espelho (Figma 05)
 const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
@@ -169,7 +177,7 @@ async function fazerTrocaSenha(){
     if(d.ok){ irHome(); } else { go("s-trocar"); document.getElementById("trocar-err").textContent="Não foi possível trocar. "+(d.motivo||""); }
   }catch(e){ go("s-trocar"); document.getElementById("trocar-err").textContent="Sem conexão."; }
 }
-function sair(){ localStorage.removeItem(LS_TOKEN); localStorage.removeItem(LS_NOME); go("s-login"); }
+function sair(){ fecharSair(); localStorage.removeItem(LS_TOKEN); localStorage.removeItem(LS_NOME); go("s-login"); }
 
 /* =================== HOME =================== */
 async function irHome(){ go("s-home"); await refreshHome(); sincronizarFila(); }
@@ -306,10 +314,10 @@ function renderConfig(){
   const badge=document.getElementById("cfg-face-badge"), txt=document.getElementById("cfg-face-txt"), cta=document.getElementById("cfg-face-cta");
   if(ROSTO_OK){ if(badge) badge.style.display="";
     if(txt) txt.textContent="Seu rosto já está cadastrado. Você pode atualizar quando quiser.";
-    if(cta) cta.textContent="🔄 Atualizar meu rosto";
+    if(cta) cta.innerHTML=ic('refresh')+" Atualizar meu rosto";
   } else { if(badge) badge.style.display="none";
     if(txt) txt.textContent="Cadastre seu rosto uma vez e bata o ponto só olhando — rápido e seguro.";
-    if(cta) cta.textContent="⊕ Cadastrar meu rosto"; }
+    if(cta) cta.innerHTML=ic('plus')+" Cadastrar meu rosto"; }
 }
 function emBreve(nome){ toast(nome+" chega em breve 🙂"); }
 async function verOffline(){ const n=await filaCount();
@@ -393,6 +401,37 @@ function renderEspelho(d){
   });
   tb.innerHTML=rows;
 }
+
+/* =================== PEDIDOS + CONTA: 11/18/24 Solicitações · 12 Offline · 25 Sair =================== */
+let segSolic="ajuste";
+function irSolic(){ pintarIcones2(); go("s-solic"); }
+function irNovaSolic(){ selSeg("ajuste");
+  const dd=document.getElementById("ns-data"); if(dd) dd.value=diaBahia(new Date());
+  const hh=document.getElementById("ns-hora"); if(hh) hh.value="";
+  const mt=document.getElementById("ns-motivo"); if(mt) mt.value="";
+  pintarIcones2(); go("s-novasolic"); }
+function selSeg(t){ segSolic=t;
+  const a=document.getElementById("seg-ajuste"), b=document.getElementById("seg-abono");
+  if(a) a.classList.toggle("on", t==="ajuste"); if(b) b.classList.toggle("on", t==="abono"); }
+function enviarSolic(){ const motivo=(document.getElementById("ns-motivo").value||"").trim();
+  if(!motivo){ toast("Conte rapidinho o que aconteceu 🙂"); return; }
+  document.getElementById("solok-proto").textContent="Protocolo nº 2026-"+String(Math.floor(1000+Math.random()*9000));
+  pintarIcones2(); go("s-solic-ok"); }
+function irOffline(){ pintarIcones2(); renderOffline(); go("s-offline"); }
+async function renderOffline(){ const box=document.getElementById("off-list"); if(!box) return;
+  const itens=(await filaAll()).sort((a,b)=>a.registrado_em<b.registrado_em?-1:1);
+  if(!itens.length){ box.innerHTML='<div class="offempty"><span class="ic">'+SVG.check+'</span> Tudo sincronizado! Nenhum ponto na fila.</div>'; return; }
+  box.innerHTML=itens.map(it=>{ const [Y,M,D]=diaBahia(new Date(it.registrado_em)).split("-");
+    return '<div class="offcard"><span class="oc-ic ic">'+SVG.clock+'</span><div class="oc-txt"><b>'+(LABELS[it.tipo]||it.tipo)+' · '+D+'/'+M+'/'+Y+'</b><small>às '+horaBahia(new Date(it.registrado_em))+' · aguardando envio</small></div><span class="oc-dot"></span></div>';
+  }).join(""); }
+async function sincronizarAgora(){ if(!navigator.onLine){ toast("Ainda sem internet — assim que voltar, vai sozinho 🙂"); return; }
+  toast("Sincronizando…"); await sincronizarFila(); renderOffline(); }
+function confirmarSair(){ const d=document.getElementById("dlg-sair"); if(d){ const i=document.getElementById("sair-ic"); if(i) i.innerHTML=SVG.logout; d.style.display="flex"; } }
+function fecharSair(){ const d=document.getElementById("dlg-sair"); if(d) d.style.display="none"; }
+function pintarIcones2(){ const set=(id,name)=>{const e=document.getElementById(id); if(e) e.innerHTML=SVG[name];};
+  set("solic-ic","doc"); set("solic-plus2","plus"); set("ns-cal","calendar"); set("ns-clk","clock"); set("ns-up","upload");
+  set("solok-ic","check"); set("off-info","info"); set("off-sync","refresh");
+  document.querySelectorAll(".plusbtn").forEach(b=>{ b.innerHTML=SVG.plus; }); }
 
 /* =================== CÂMERA + REGISTRO =================== */
 async function iniciarRegistro(tipo){
