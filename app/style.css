@@ -330,3 +330,28 @@ canvas{display:none}
 .cam-frame span:nth-child(4){bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 8px 0}
 .cam-actions{width:100%;display:flex;flex-direction:column;align-items:center;gap:12px}
 .cam-link{background:none;border:none;color:#fff;font-weight:600;font-size:13px;text-decoration:underline;cursor:pointer}
+
+/* ===================== REDESIGN FIGMA — 05 Registros + 06 Mais (ícones de linha + Poppins) ===================== */
+/* cards de indicador */
+.stat-row .si{width:21px;height:21px;color:var(--z-verde);margin-bottom:6px}
+.stat-row .stat.warn .si{color:var(--z-ambar)} .stat-row .stat.pend .si{color:var(--z-ambar)}
+.stat-row .v{font-family:"Poppins";font-weight:600;margin-top:0}
+.stat-row .stat.warn .v{color:#c98a12} .stat-row .stat.pend .v{color:var(--z-ambar)}
+/* filterbar (filtro + mês + ordem) */
+.filterbar{gap:9px;padding:9px 12px}
+.filterbar .fil{width:18px;height:18px;color:var(--z-verde);flex:none}
+.filterbar .fbtn{width:24px;height:24px;background:none;border:none;color:var(--z-verde-esc);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex:none;border-radius:8px}
+.filterbar .fbtn .ic{width:16px;height:16px}
+.filterbar .fmes{font-family:"Poppins";font-weight:600;font-size:13.5px;color:var(--z-verde-esc)}
+.filterbar .ford{margin-left:auto;display:inline-flex;align-items:center;gap:4px;color:var(--z-cinza);font-size:12.5px;cursor:pointer}
+.filterbar .ford b{color:var(--z-texto,#1C2926);font-weight:600} .filterbar .ford .ic{width:14px;height:14px}
+/* daycard: data por extenso + ícone + selos com ícone de linha */
+.daycard .dh{font-family:"Poppins";font-weight:600;gap:8px}
+.daycard .dh .cal{width:17px;height:17px;color:var(--z-verde);flex:none}
+.daycard .dh .ok .ic,.daycard .dh .warn .ic,.daycard .dh .falta .ic{width:12px;height:12px;vertical-align:-1px}
+/* Mais: ícone de linha no quadradinho verde + chevron de linha */
+.mitem .mic{color:var(--z-verde-esc)}
+.mitem .mic svg{width:20px;height:20px}
+.mitem.danger .mic{color:var(--z-verm)}
+.mitem .chev{width:18px;height:18px;flex:none;color:#c3ccc7}
+.profcard .nm{font-family:"Poppins";font-weight:600}

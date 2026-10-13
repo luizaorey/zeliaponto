@@ -45,7 +45,19 @@ const SVG = {
   doc:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>',
   menu:'<svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>',
   alert:'<svg viewBox="0 0 24 24"><path d="M10.3 3.7L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  scale:'<svg viewBox="0 0 24 24"><path d="M12 3v18M6 21h12M5 7h14l-2.5-3h-9z"/><path d="M5 7l-3 6a3 3 0 0 0 6 0zM19 7l-3 6a3 3 0 0 0 6 0z"/></svg>',
+  filter:'<svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
+  calendar:'<svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>',
+  bell:'<svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
+  list:'<svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  cloud:'<svg viewBox="0 0 24 24"><path d="M17.5 19a4.5 4.5 0 0 0 .5-9 6 6 0 0 0-11.6-1.5A4.5 4.5 0 0 0 7 19z"/><path d="M12 12v6M9.5 15.5L12 18l2.5-2.5"/></svg>',
+  sliders:'<svg viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>',
+  chevron:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
+  chevL:'<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
+  chevD:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
 };
+const REG_LABELS = { entrada:"Entrada", pausa:"Saída almoço", retorno:"Volta almoço", saida:"Saída" };  // rótulos explícitos no espelho (Figma 05)
+const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
 function ic(name,cls){ return '<span class="ic'+(cls?' '+cls:'')+'">'+(SVG[name]||'')+'</span>'; }
 const TRILHA_ICON = { entrada:ic('login'), pausa:ic('utensils'), retorno:ic('back'), saida:ic('logout') };
 let BATIDAS_HOJE = { entrada:null, pausa:null, retorno:null, saida:null };
@@ -513,21 +525,23 @@ function renderRegistros(d){
   box.innerHTML="";
   vis.forEach(x=>{
     const [Y,M,D]=x.data.split("-");
+    const dataLbl=parseInt(D,10)+" de "+(MESES[parseInt(M,10)-1]||"");   // "29 de setembro"
+    const cal='<span class="ic cal">'+SVG.calendar+'</span>';
     const b=diaBatidas(x.registros); const temAlgo=ORDER.some(t=>b[t]);
     if(!temAlgo && x.status==="falta"){
       const el=document.createElement("div"); el.className="daycard";
-      el.innerHTML=`<div class="dh">🗓️ ${D}/${M}/${Y} <span class="falta">Falta</span></div><div class="nreg">Nenhuma batida registrada neste dia.</div>`;
+      el.innerHTML=`<div class="dh">${cal} ${dataLbl} <span class="falta">Falta</span></div><div class="nreg">Nenhuma batida registrada neste dia.</div>`;
       box.appendChild(el); return;
     }
     const pd=pendDia(b); const completo=ORDER.every(t=>b[t]);
-    let badge=""; if(completo) badge='<span class="ok">✓ Dia completo</span>';
-      else if(pd>0) badge=`<span class="warn">⚠ ${pd} pendência${pd>1?"s":""}</span>`;
+    let badge=""; if(completo) badge='<span class="ok">'+ic('check')+' Dia completo</span>';
+      else if(pd>0) badge=`<span class="warn">${ic('alert')} ${pd} pendência${pd>1?"s":""}</span>`;
     let last=-1; ORDER.forEach((t,i)=>{ if(b[t]) last=i; });
     const linhas=ORDER.map((t,i)=>{ const done=!!b[t]; const miss=!done && i<last;
       const val=done?b[t]:(miss?"faltou":"--:--");
-      return `<div class="p ${miss?"miss":(!done?"fut":"")}"><span class="lb">${LABELS[t]}</span><span class="tm">${val}</span></div>`; }).join("");
+      return `<div class="p ${miss?"miss":(!done?"fut":"")}"><span class="lb">${REG_LABELS[t]}</span><span class="tm">${val}</span></div>`; }).join("");
     const el=document.createElement("div"); el.className="daycard";
-    el.innerHTML=`<div class="dh">🗓️ ${D}/${M}/${Y} ${badge}</div><div class="tl">${linhas}</div>`;
+    el.innerHTML=`<div class="dh">${cal} ${dataLbl} ${badge}</div><div class="tl">${linhas}</div>`;
     box.appendChild(el);
   });
 }
