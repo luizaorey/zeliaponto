@@ -16,6 +16,7 @@ const EP = {
   localOff: WB + "/zelia-local-desativar", localOn: WB + "/zelia-local-reativar",
   aprovacoes: WB + "/zelia-aprovacoes-lista", decidir: WB + "/zelia-aprovacao-decidir",
   relatorio: WB + "/zelia-relatorio-mes", fechamentos: WB + "/zelia-fechamentos-lista",
+  cancelar: WB + "/zelia-dono-cancelar",
 };
 const LS_TOKEN = "zelia_painel_token", LS_NOME = "zelia_painel_nome", LS_EMPRESA = "zelia_painel_empresa";
 
@@ -423,6 +424,24 @@ async function resetarSenha(id){
   if (!await confirmar({ titulo: "Resetar senha", texto: `Resetar a senha de <b>${esc(nome)}</b>? A senha volta a ser <b>123</b> e ele deverá criar uma nova no próximo login. A sessão atual dele cai na hora.`, ok: "Resetar senha", cor: "amber" })) return;
   const d = await apiPost(EP.reset, { profissional_id: id });
   if (d.ok){ toast(`Senha de ${nome} resetada para 123.`); carregarFuncionarios(); } else toast("Não foi possível resetar.");
+}
+
+/* ---------- ASSINATURA ---------- */
+async function cancelarAssinatura(){
+  if (!await confirmar({
+    titulo: "Cancelar assinatura",
+    texto: "Tem certeza que quer cancelar? Você <b>continua usando até o fim do período já pago</b> e não recebe novas cobranças. Depois disso o acesso é suspenso.",
+    ok: "Sim, cancelar", cor: "red"
+  })) return;
+  const btn = $("btn-cancelar-ass"); if (btn){ btn.disabled = true; }
+  let d; try { d = await apiPost(EP.cancelar, {}); } catch(e){ d = null; }
+  if (btn){ btn.disabled = false; }
+  if (d && d.ok){
+    openModal(`<h3>Assinatura cancelada ✅</h3><p>${esc(d.mensagem || "Pronto, sua assinatura foi cancelada e você não será mais cobrado.")}</p>
+      <div class="modal-acts"><button class="btn" onclick="closeModal()">Entendi</button></div>`);
+  } else {
+    toast((d && d.mensagem) ? d.mensagem : "Não consegui cancelar agora. Tenta de novo ou fala com o Luizão.");
+  }
 }
 
 /* ---------- VISÃO DO DIA ---------- */
