@@ -856,7 +856,7 @@ function phoneSplit(canon){ // separa canônico salvo em {pais, local}
   for (const c of cods){ if (canon.startsWith(c) && canon.length > c.length) return { pais:c, local:canon.slice(c.length) }; }
   return { pais:"55", local:canon.replace(/^55/,"") };
 }
-function fmtWhats(w){ // máscara BR (71) 99212-3439
+function fmtWhats(w){ // máscara BR (71) 99999-9999
   w = String(w||"").replace(/\D/g,""); if (w.startsWith("55")) w = w.slice(2);
   w = w.slice(0,11); if (!w) return "";
   if (w.length <= 2) return "(" + w;
@@ -874,7 +874,7 @@ function phoneFieldHTML(idp, canonical){
   const opts = PHONE_PAISES.map(p => `<option value="${p.c}" ${p.c===pais?"selected":""}>${p.f} +${p.c}</option>`).join("");
   return `<div class="phone-row">
       <select class="txt ph-pais" id="${idp}-pais" onchange="phoneOnInput('${idp}')">${opts}</select>
-      <input class="txt ph-num" id="${idp}-num" inputmode="tel" placeholder="(71) 99212-3439" value="${esc(phoneMask(pais, local))}" oninput="phoneOnInput('${idp}')">
+      <input class="txt ph-num" id="${idp}-num" inputmode="tel" placeholder="(71) 99999-9999" value="${esc(phoneMask(pais, local))}" oninput="phoneOnInput('${idp}')">
     </div><div class="ph-warn" id="${idp}-warn"></div>`;
 }
 function phoneLocal(idp){ // dígitos locais (sem país), tratando colagem de +55
@@ -1040,7 +1040,7 @@ async function salvarConfig(){
   }
   if (scr === "config"){
     go("s-config");
-    CFGc = [{nome:"Dono Teste A",whatsapp:"5571992123439",recebe:true,fala:true,dono:true},{nome:"Gerente Ana",whatsapp:"5571988887777",recebe:true,fala:false}];
+    CFGc = [{nome:"Dono Teste A",whatsapp:"5571999999999",recebe:true,fala:true,dono:true},{nome:"Gerente Ana",whatsapp:"5571988888888",recebe:true,fala:false}];
     renderContatos();
     JOR3 = { uteis:{trabalha:true,entrada:"08:00",carga_h:8}, sab:{trabalha:true,entrada:"08:30",carga_h:4.5}, dom:{trabalha:false,entrada:"",carga_h:8} }; renderJornada();
     $("cfg-semloc").checked = true; $("cfg-fora").checked = true; $("cfg-atraso").checked = true; $("cfg-extra-sw").checked = true; $("cfg-resumo-sw").checked = true; $("cfg-fecham").checked = true;
