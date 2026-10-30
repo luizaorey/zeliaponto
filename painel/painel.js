@@ -12,6 +12,7 @@ const EP = {
   reset: WB + "/zelia-func-reset-senha",
   dia: WB + "/zelia-painel-dia", config: WB + "/zelia-config-salvar", configLer: WB + "/zelia-config-ler",
   conversas: WB + "/zelia-conversas",
+  empresaNome: WB + "/zelia-empresa-nome",
   locais: WB + "/zelia-locais", localSalvar: WB + "/zelia-local-salvar",
   localOff: WB + "/zelia-local-desativar", localOn: WB + "/zelia-local-reativar",
   aprovacoes: WB + "/zelia-aprovacoes-lista", decidir: WB + "/zelia-aprovacao-decidir",
@@ -903,6 +904,7 @@ async function carregarConfig(){
   let d; try { d = await apiGet(EP.configLer); } catch(e){ return; }
   if (!d.ok){ toast("Não foi possível carregar."); return; }
   CFG = d.config || {};
+  { const en = $("cfg-empresa-nome"); if (en) en.value = localStorage.getItem(LS_EMPRESA) || ""; }
   CFGc = (CFG.contatos && CFG.contatos.length) ? CFG.contatos.map(c => ({ ...c })) : [{ nome:"Dono", whatsapp:CFG.whatsapp_dono||"", recebe:true, fala:true, dono:true }];
   if (!CFGc.some(c => c.dono)) CFGc[0].dono = true;
   renderContatos();
@@ -998,7 +1000,13 @@ async function salvarConfig(){
   };
   $("cfg-salvar").disabled = true;
   let d; try { d = await apiPost(EP.config, payload); } finally { $("cfg-salvar").disabled = false; }
-  if (d && d.ok){ toast("Configurações salvas."); irHome(); }
+  if (d && d.ok){
+    const nomeLoja = ($("cfg-empresa-nome") ? $("cfg-empresa-nome").value : "").trim();
+    if (nomeLoja && nomeLoja !== (localStorage.getItem(LS_EMPRESA) || "")){
+      try { const dn = await apiPost(EP.empresaNome, { nome_loja: nomeLoja }); if (dn && dn.ok){ localStorage.setItem(LS_EMPRESA, dn.nome || nomeLoja); $("tb-empresa").textContent = dn.nome || nomeLoja; } } catch(e){}
+    }
+    toast("Configurações salvas."); irHome();
+  }
   else err.textContent = "Não foi possível salvar.";
 }
 
