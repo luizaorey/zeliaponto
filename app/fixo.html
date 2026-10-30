@@ -176,22 +176,20 @@ async function enrollLoop(){
   var v=$('cam');
   try{
     var r=await human.detect(v); var f=r.face&&r.face[0]; var hint=$('hint'), oval=$('oval');
-    var gest=(r.gesture||[]).map(function(g){return g.gesture||"";}).join(",");
-    if(/blink|piscad|eye/i.test(gest)) enrollBlink=true;
-    if(r.face&&r.face.length>1){ enrollStable=0; oval.className="oval bad"; hint.textContent="Só um rosto por vez"; }
-    else if(!f){ enrollStable=0; oval.className="oval"; hint.textContent="Posicione o rosto no oval…"; }
+    if(r.face&&r.face.length>1){ oval.className="oval bad"; hint.textContent="Só um rosto por vez"; }
+    else if(!f||!f.embedding||!f.embedding.length){ oval.className="oval"; hint.textContent="Olhe pra câmera…"; }
     else{
-      var score=f.faceScore||f.score||0, live=(typeof f.live==="number"?f.live:1), real=(typeof f.real==="number"?f.real:1), emb=f.embedding;
-      var bom=score>0.6&&emb&&emb.length>0, vivo=live>0.6&&real>0.5;
-      if(!bom){ enrollStable=0; oval.className="oval bad"; hint.textContent="Aproxime e ilumine o rosto"; }
-      else if(!enrollBlink){ enrollStable=0; oval.className="oval"; hint.textContent="Pisque os olhos 👀"; }
-      else if(!vivo){ enrollStable=0; oval.className="oval bad"; hint.textContent="Rosto não parece vivo (foto?)"; }
+      var score=f.faceScore||f.score||0;
+      if(score<0.5){ oval.className="oval bad"; hint.textContent="Aproxime o rosto"; }
       else{
         oval.className="oval good";
-        if(Date.now()<enrollCool){ hint.textContent="✓ guardei! "+(enrollStep<3?("foto "+(enrollStep+1)+" de 3"):""); }
-        else{ enrollStable++; hint.textContent="Segura… ("+Math.min(enrollStep+1,3)+" de 3)";
-          if(enrollStable>=10){ enrollStable=0; enrollCool=Date.now()+1500; try{navigator.vibrate&&navigator.vibrate(60);}catch(e){}
-            enrollEmbs.push(Array.from(emb)); enrollStep++; if(enrollStep>=3){ return salvarRosto(); } } }
+        if(Date.now()>=enrollCool){
+          enrollEmbs.push(Array.from(f.embedding)); enrollStep++;
+          try{navigator.vibrate&&navigator.vibrate(40);}catch(e){}
+          hint.textContent="Capturando… "+enrollStep+"/3";
+          enrollCool=Date.now()+300;
+          if(enrollStep>=3){ return salvarRosto(); }
+        }
       }
     }
   }catch(e){}
