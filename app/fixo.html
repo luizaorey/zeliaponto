@@ -4,42 +4,109 @@
 <title>Zélia Ponto · Fixo</title>
 <script src="https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.5/dist/human.js"></script>
 <style>
-:root{--verde:#0c6b3e;--verde2:#14a957;--ink:#14342A;--cream:#F7F4EE;--line:#e4e9e5;--red:#D9534F;--amber:#E0962B}
+/* fontes self-hosted — mesmo padrão do app */
+@font-face{font-family:"Inter";src:url("fonts/inter.woff2") format("woff2");font-weight:400 700;font-style:normal;font-display:swap}
+@font-face{font-family:"Poppins";src:url("fonts/poppins-600.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Sora";src:url("fonts/sora-800.woff2") format("woff2");font-weight:800;font-style:normal;font-display:swap}
+:root{--z-verde:#14A673;--z-verde-esc:#0C4B35;--z-verde-cl:#E6F5EE;--z-ambar:#F6A93B;--z-ambar-cl:#FFF4E0;
+  --z-cinza:#6B7B74;--z-linha:#E7ECE9;--z-verm:#E5533D;--z-verm-cl:#FCEBE7;--z-texto:#1C2926}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--cream);color:var(--ink);overflow:hidden}
-.scr{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center}
+html,body{height:100%;overflow:hidden}
+body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--z-texto);
+  background:radial-gradient(120% 80% at 15% 0%,#e6f5ee 0%,#eef4f0 45%,#e9f2ec 100%);-webkit-font-smoothing:antialiased}
+.scr{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:calc(env(safe-area-inset-top) + 28px) 28px calc(env(safe-area-inset-bottom) + 28px);text-align:center}
 .scr.on{display:flex}
-.logo{position:fixed;top:20px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:800;font-size:20px;color:var(--verde);letter-spacing:.5px}
-.logo .dot{width:11px;height:11px;border-radius:50%;background:var(--verde2)}
-.emp{position:fixed;top:48px;left:0;right:0;text-align:center;font-size:14px;color:#7c8c84;font-weight:600}
-h1{font-size:30px;font-weight:800;margin-bottom:10px}
-.sub{font-size:17px;color:#5a6a62;margin-bottom:26px;max-width:440px}
-.btn{background:var(--verde);color:#fff;border:none;border-radius:18px;padding:22px 30px;font-size:21px;font-weight:700;cursor:pointer;width:100%;max-width:420px;box-shadow:0 14px 30px -14px rgba(12,107,62,.6)}
-.btn.sec{background:#fff;color:var(--verde);box-shadow:none;border:2px solid var(--line)}
-.btn.big{padding:34px;font-size:26px;border-radius:24px}
-.btn+.btn{margin-top:14px}
-.codein{font-size:48px;letter-spacing:16px;text-align:center;width:260px;padding:18px 0;border:2px solid var(--line);border-radius:16px;font-weight:800;color:var(--ink);background:#fff}
-.err{color:var(--red);font-weight:600;margin-top:14px;min-height:20px}
-.list{width:100%;max-width:460px;overflow:auto;max-height:70vh}
-.pill{display:flex;align-items:center;justify-content:space-between;background:#fff;border:2px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:12px;font-size:20px;font-weight:700;cursor:pointer}
-.pill .tag{font-size:14px;font-weight:700;color:#fff;background:var(--amber);padding:5px 12px;border-radius:999px}
-.pill.ok{opacity:.55}.pill.ok .tag{background:var(--verde2)}
-.camwrap{position:relative;width:min(92vw,520px);aspect-ratio:3/4;border-radius:26px;overflow:hidden;background:#000;box-shadow:0 20px 50px -20px rgba(0,0,0,.5)}
-#cam{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-.oval{position:absolute;inset:8% 14%;border:4px dashed rgba(255,255,255,.7);border-radius:50%}
-.oval.good{border-color:#35e07f;border-style:solid}
-.oval.bad{border-color:#ff6b6b}
-.hint{position:absolute;left:0;right:0;bottom:16px;color:#fff;font-size:19px;font-weight:700;text-shadow:0 2px 8px rgba(0,0,0,.6);padding:0 16px}
-.camttl{font-size:24px;font-weight:800;margin-bottom:14px}
-.big-ok{font-size:70px;margin-bottom:8px}
-.topbtn{position:fixed;top:14px;right:14px;background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:700;font-size:14px;cursor:pointer;color:#5a6a62;z-index:5}
-.backbtn{position:fixed;top:14px;left:14px;background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-weight:700;font-size:15px;cursor:pointer;color:var(--ink);z-index:5}
-.muted{font-size:14px;color:#9aa8a1;margin-top:18px}
-.spin{width:44px;height:44px;border:4px solid var(--line);border-top-color:var(--verde);border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 16px}
+
+/* logo + empresa (topo) */
+.logo{position:fixed;top:calc(env(safe-area-inset-top) + 18px);left:0;right:0;display:flex;align-items:center;justify-content:center;gap:9px;z-index:4}
+.logo .dot{width:24px;height:24px;border-radius:50%;background:conic-gradient(from 0deg,#14A673,#25D366,#14A673);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;font-family:"Sora"}
+.logo b{font-family:"Sora";font-weight:800;font-size:19px;color:var(--z-verde-esc);letter-spacing:-.02em}
+.emp{position:fixed;top:calc(env(safe-area-inset-top) + 50px);left:0;right:0;text-align:center;font-size:13px;color:var(--z-cinza);font-weight:600;z-index:4}
+
+h1{font-family:"Poppins";font-weight:600;font-size:27px;color:var(--z-verde-esc);margin-bottom:10px}
+.sub{font-size:16px;color:var(--z-cinza);margin-bottom:24px;max-width:440px;line-height:1.5}
+.sub b{color:var(--z-verde-esc)}
+
+/* botões */
+.btn-verde{display:inline-flex;align-items:center;justify-content:center;gap:9px;background:var(--z-verde);color:#fff;border:none;
+  border-radius:15px;padding:17px 26px;font-family:"Poppins";font-weight:600;font-size:17px;cursor:pointer;width:100%;max-width:420px;
+  box-shadow:0 16px 34px -16px rgba(20,166,115,.7)}
+.btn-verde:active{transform:scale(.98)}
+.btn-ghost{background:#fff;color:var(--z-verde-esc);border:1px solid var(--z-linha);box-shadow:none}
+.btn-verde+.btn-ghost,.btn-verde+.btn-verde{margin-top:12px}
+
+/* HOME — botão redondo gigante (igual Home do app) */
+.bigwrap{display:flex;flex-direction:column;align-items:center;gap:14px;margin:8px 0 6px}
+.bigbtn{width:200px;height:200px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;background:none;border:none;padding:0;cursor:pointer}
+.bigbtn:active{transform:scale(.97)}
+.bigbtn .ring{position:absolute;inset:-9px;border-radius:50%;border:3px dashed var(--z-verde);opacity:.5;animation:sp 11s linear infinite}
+.bigbtn .core{width:180px;height:180px;border-radius:50%;border:7px solid #fff;
+  background:radial-gradient(120% 120% at 30% 20%,#1cc188,#14A673 55%,#0f8a5f);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;
+  box-shadow:0 22px 46px -16px rgba(20,166,115,.8)}
+.bigbtn .core .cam{font-size:48px;line-height:1}
+.bigbtn .core .lb{font-family:"Poppins";font-weight:600;font-size:18px;margin-top:7px}
+.clock-h{font-family:"Poppins";font-weight:600;font-size:52px;color:var(--z-verde-esc);letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums;margin-bottom:4px}
+.clock-d{font-size:14px;color:var(--z-cinza);text-transform:capitalize;margin-bottom:22px}
+.fila{margin-top:16px;font-size:13.5px;color:#b57611;font-weight:600;min-height:18px}
+
+/* pareamento */
+.codein{font-family:"Poppins";font-weight:600;font-size:46px;letter-spacing:16px;text-align:center;width:264px;padding:18px 0 18px 16px;
+  border:1px solid var(--z-linha);border-radius:16px;color:var(--z-verde-esc);background:#fff;box-shadow:0 10px 26px -20px rgba(6,48,31,.4)}
+.codein:focus{outline:none;border-color:var(--z-verde)}
+.err{color:var(--z-verm);font-weight:600;margin-top:14px;min-height:20px;font-size:14px}
+
+/* lista de cadastro */
+.list{width:100%;max-width:460px;overflow:auto;max-height:66vh}
+.pill{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--z-linha);border-radius:15px;
+  padding:18px 20px;margin-bottom:11px;font-weight:600;font-size:18px;color:var(--z-verde-esc);cursor:pointer;box-shadow:0 8px 22px -20px rgba(6,48,31,.4)}
+.pill:active{transform:scale(.99)}
+.pill .tag{font-size:12.5px;font-weight:700;color:#fff;background:var(--z-ambar);padding:5px 12px;border-radius:999px}
+.pill.ok .tag{background:var(--z-verde)}
+.pill.ok span:first-child{color:var(--z-cinza)}
+.muted{font-size:14px;color:var(--z-cinza);margin-top:18px;line-height:1.5}
+
+/* câmera — fullscreen escuro, moldura de cantos âmbar (igual app) */
+.scr-cam{padding:0;background:#0c1512;overflow:hidden}
+#cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);background:#0c1512}
+.cam-ov{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;
+  padding:calc(env(safe-area-inset-top) + 16px) 18px calc(env(safe-area-inset-bottom) + 24px);
+  background:linear-gradient(180deg,rgba(6,20,15,.55) 0%,rgba(6,20,15,0) 24%,rgba(6,20,15,0) 68%,rgba(6,20,15,.6) 100%)}
+.cam-top{width:100%;display:flex;align-items:center;justify-content:space-between}
+.cam-ic{width:40px;height:40px;border:none;background:rgba(0,0,0,.35);border-radius:50%;color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.cam-ttl{font-family:"Poppins";font-weight:600;font-size:18px;color:#fff}
+.oval{position:relative;width:min(70vw,250px);height:min(88vw,312px);margin:auto 0 0}
+.oval span{position:absolute;width:42px;height:42px;border:4px solid var(--z-ambar);transition:border-color .15s}
+.oval span:nth-child(1){top:0;left:0;border-right:0;border-bottom:0;border-radius:10px 0 0 0}
+.oval span:nth-child(2){top:0;right:0;border-left:0;border-bottom:0;border-radius:0 10px 0 0}
+.oval span:nth-child(3){bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 10px}
+.oval span:nth-child(4){bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 10px 0}
+.oval.good span{border-color:#2fe08a}
+.oval.bad span{border-color:#ff6b6b}
+.hint{margin:auto 0 0;color:#fff;font-family:"Poppins";font-weight:600;font-size:18px;text-shadow:0 2px 10px rgba(0,0,0,.6);padding:0 14px;min-height:26px}
+
+/* RESULTADO — tela cheia verde (sucesso) / vermelha (erro), igual app */
+.scr-ok{background:linear-gradient(170deg,#17b07d 0%,#14A673 45%,#0f8a5f 100%);color:#fff}
+.scr-err{background:linear-gradient(175deg,#e8604b 0%,#E5533D 50%,#d1452f 100%);color:#fff}
+.res-circle{width:132px;height:132px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;
+  font-size:72px;color:#fff;margin-bottom:24px;line-height:1}
+#s-res h1{font-family:"Poppins";font-weight:600;font-size:36px;color:#fff;margin-bottom:0}
+.res-time{font-size:19px;color:rgba(255,255,255,.92);margin-top:12px;max-width:420px;line-height:1.5}
+
+/* loading */
+.spin{width:46px;height:46px;border:4px solid var(--z-linha);border-top-color:var(--z-verde);border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 18px}
 @keyframes sp{to{transform:rotate(360deg)}}
+
+/* desativar (discreto) */
+.topbtn{position:fixed;top:calc(env(safe-area-inset-top) + 14px);right:14px;background:rgba(255,255,255,.85);border:1px solid var(--z-linha);
+  border-radius:12px;padding:9px 13px;font-weight:600;font-size:13px;cursor:pointer;color:var(--z-cinza);z-index:5}
+.backbtn{position:fixed;top:calc(env(safe-area-inset-top) + 14px);left:14px;background:#fff;border:1px solid var(--z-linha);
+  border-radius:12px;padding:10px 16px;font-weight:600;font-size:15px;cursor:pointer;color:var(--z-verde-esc);z-index:5}
 </style></head><body>
 
-<div class="logo"><span class="dot"></span>Zélia Ponto</div>
+<div class="logo"><span class="dot">Z</span><b>Zélia Ponto</b></div>
 <div class="emp" id="emp-nome"></div>
 
 <!-- PAREAR -->
@@ -48,39 +115,51 @@ h1{font-size:30px;font-weight:800;margin-bottom:10px}
   <div class="sub">No seu painel, gere o <b>código de pareamento</b> (Configurações → Ponto fixo) e digite ele aqui.</div>
   <input class="codein" id="cod" inputmode="numeric" maxlength="4" placeholder="----">
   <div class="err" id="parear-err"></div>
-  <button class="btn" style="margin-top:20px" onclick="parear()">Ativar</button>
+  <button class="btn-verde" style="margin-top:22px" onclick="parear()">Ativar</button>
 </section>
 
 <!-- HOME (kiosk) -->
 <section class="scr" id="s-home">
-  <button class="topbtn" onclick="desparear()">Desativar fixo</button>
-  <h1 id="home-hora" style="font-size:42px">--:--</h1>
-  <div class="sub" id="home-data"></div>
-  <button class="btn big" onclick="iniciarBatida()">📸 Bater ponto</button>
-  <button class="btn sec" id="btn-cadastrar" onclick="irCadastro()">Cadastrar rostos</button>
-  <div id="fila-info" style="margin-top:16px;font-size:14px;color:var(--amber);font-weight:600;min-height:18px"></div>
+  <button class="topbtn" onclick="desparear()">Desativar</button>
+  <div class="clock-h" id="home-hora">--:--</div>
+  <div class="clock-d" id="home-data"></div>
+  <div class="bigwrap">
+    <button class="bigbtn" onclick="iniciarBatida()">
+      <span class="ring"></span>
+      <span class="core"><span class="cam">📷</span><span class="lb">Bater ponto</span></span>
+    </button>
+  </div>
+  <button class="btn-ghost btn-verde" id="btn-cadastrar" style="margin-top:24px" onclick="irCadastro()">Cadastrar rostos</button>
+  <div class="fila" id="fila-info"></div>
 </section>
 
 <!-- LISTA CADASTRO -->
 <section class="scr" id="s-lista">
   <button class="backbtn" onclick="go('s-home')">‹ Voltar</button>
   <h1>Cadastrar rosto</h1>
-  <div class="sub">Toque no seu nome e tire a foto. Faltam <b id="falta-n">0</b>.</div>
+  <div class="sub">Toque no nome e olhe pra câmera. Faltam <b id="falta-n">0</b>.</div>
   <div class="list" id="lista-funcs"></div>
 </section>
 
-<!-- CÂMERA (cadastro + batida) -->
-<section class="scr" id="s-cam">
-  <button class="backbtn" onclick="cancelarCam()">‹ Voltar</button>
-  <div class="camttl" id="cam-ttl">Bater ponto</div>
-  <div class="camwrap"><video id="cam" playsinline muted></video><div class="oval" id="oval"></div><div class="hint" id="hint">Carregando…</div></div>
+<!-- CÂMERA (cadastro + batida) — fullscreen -->
+<section class="scr scr-cam" id="s-cam">
+  <video id="cam" playsinline muted></video>
+  <div class="cam-ov">
+    <div class="cam-top">
+      <button class="cam-ic" onclick="cancelarCam()">‹</button>
+      <div class="cam-ttl" id="cam-ttl">Bater ponto</div>
+      <div style="width:40px"></div>
+    </div>
+    <div class="oval" id="oval"><span></span><span></span><span></span><span></span></div>
+    <div class="hint" id="hint">Carregando…</div>
+  </div>
 </section>
 
 <!-- RESULTADO -->
 <section class="scr" id="s-res">
-  <div class="big-ok" id="res-ic">✅</div>
+  <div class="res-circle" id="res-circle">✓</div>
   <h1 id="res-ttl">Ponto registrado!</h1>
-  <div class="sub" id="res-sub"></div>
+  <div class="res-time" id="res-sub"></div>
 </section>
 
 <!-- LOADING -->
@@ -290,8 +369,12 @@ async function sincronizarFila(){
 }
 window.addEventListener('online', function(){ sincronizarFila(); });
 function mostrarRes(tipo,ttl,sub){
-  $('res-ic').textContent=tipo==='ok'?"✅":"⚠️"; $('res-ttl').textContent=ttl; $('res-sub').textContent=sub; go('s-res');
-  setTimeout(function(){ if($('s-res').classList.contains('on')){ go('s-home'); carregarFuncs(); } }, 3200);
+  var s=$('s-res');
+  document.querySelectorAll('.scr').forEach(function(e){ if(e!==s) e.classList.remove('on'); });
+  s.className='scr '+(tipo==='ok'?'scr-ok':'scr-err')+' on';
+  $('res-circle').textContent = tipo==='ok' ? "✓" : "!";
+  $('res-ttl').textContent=ttl; $('res-sub').textContent=sub;
+  setTimeout(function(){ if(s.classList.contains('on')){ s.className='scr'; go('s-home'); carregarFuncs(); } }, 3200);
 }
 
 /* ---- helpers ---- */
