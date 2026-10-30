@@ -46,7 +46,8 @@ h1{font-family:"Poppins";font-weight:600;font-size:27px;color:var(--z-verde-esc)
   background:radial-gradient(120% 120% at 30% 20%,#1cc188,#14A673 55%,#0f8a5f);
   display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;
   box-shadow:0 22px 46px -16px rgba(20,166,115,.8)}
-.bigbtn .core .cam{font-size:48px;line-height:1}
+.bigbtn .core .cam{width:56px;height:56px;line-height:0}
+.bigbtn .core .cam svg{width:100%;height:100%;fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .bigbtn .core .lb{font-family:"Poppins";font-weight:600;font-size:18px;margin-top:7px}
 .clock-h{font-family:"Poppins";font-weight:600;font-size:52px;color:var(--z-verde-esc);letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums;margin-bottom:4px}
 .clock-d{font-size:14px;color:var(--z-cinza);text-transform:capitalize;margin-bottom:22px}
@@ -90,8 +91,8 @@ h1{font-family:"Poppins";font-weight:600;font-size:27px;color:var(--z-verde-esc)
 /* RESULTADO — tela cheia verde (sucesso) / vermelha (erro), igual app */
 .scr-ok{background:linear-gradient(170deg,#17b07d 0%,#14A673 45%,#0f8a5f 100%);color:#fff}
 .scr-err{background:linear-gradient(175deg,#e8604b 0%,#E5533D 50%,#d1452f 100%);color:#fff}
-.res-circle{width:132px;height:132px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;
-  font-size:72px;color:#fff;margin-bottom:24px;line-height:1}
+.res-circle{width:132px;height:132px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;margin-bottom:24px}
+.res-circle svg{width:66px;height:66px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 #s-res h1{font-family:"Poppins";font-weight:600;font-size:36px;color:#fff;margin-bottom:0}
 .res-time{font-size:19px;color:rgba(255,255,255,.92);margin-top:12px;max-width:420px;line-height:1.5}
 
@@ -126,7 +127,7 @@ h1{font-family:"Poppins";font-weight:600;font-size:27px;color:var(--z-verde-esc)
   <div class="bigwrap">
     <button class="bigbtn" onclick="iniciarBatida()">
       <span class="ring"></span>
-      <span class="core"><span class="cam">📷</span><span class="lb">Bater ponto</span></span>
+      <span class="core"><span class="cam"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span><span class="lb">Bater ponto</span></span>
     </button>
   </div>
   <button class="btn-ghost btn-verde" id="btn-cadastrar" style="margin-top:24px" onclick="irCadastro()">Cadastrar rostos</button>
@@ -157,7 +158,7 @@ h1{font-family:"Poppins";font-weight:600;font-size:27px;color:var(--z-verde-esc)
 
 <!-- RESULTADO -->
 <section class="scr" id="s-res">
-  <div class="res-circle" id="res-circle">✓</div>
+  <div class="res-circle" id="res-circle"></div>
   <h1 id="res-ttl">Ponto registrado!</h1>
   <div class="res-time" id="res-sub"></div>
 </section>
@@ -372,7 +373,9 @@ function mostrarRes(tipo,ttl,sub){
   var s=$('s-res');
   document.querySelectorAll('.scr').forEach(function(e){ if(e!==s) e.classList.remove('on'); });
   s.className='scr '+(tipo==='ok'?'scr-ok':'scr-err')+' on';
-  $('res-circle').textContent = tipo==='ok' ? "✓" : "!";
+  $('res-circle').innerHTML = tipo==='ok'
+    ? '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>'
+    : '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
   $('res-ttl').textContent=ttl; $('res-sub').textContent=sub;
   setTimeout(function(){ if(s.classList.contains('on')){ s.className='scr'; go('s-home'); carregarFuncs(); } }, 3200);
 }
