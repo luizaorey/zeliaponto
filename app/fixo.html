@@ -58,6 +58,7 @@ h1{font-size:30px;font-weight:800;margin-bottom:10px}
   <div class="sub" id="home-data"></div>
   <button class="btn big" onclick="iniciarBatida()">📸 Bater ponto</button>
   <button class="btn sec" id="btn-cadastrar" onclick="irCadastro()">Cadastrar rostos</button>
+  <div id="fila-info" style="margin-top:16px;font-size:14px;color:var(--amber);font-weight:600;min-height:18px"></div>
 </section>
 
 <!-- LISTA CADASTRO -->
@@ -102,7 +103,8 @@ function tick(){ var d=new Date(); $('home-hora').textContent=String(d.getHours(
 setInterval(tick,1000);
 
 /* ---- init ---- */
-(function(){ if(dev()){ $('emp-nome').textContent=localStorage.getItem(LS_EMP)||""; tick(); go('s-home'); carregarFuncs(); } else { go('s-parear'); } })();
+if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('./sw.js'); }catch(e){} }
+(function(){ if(dev()){ $('emp-nome').textContent=localStorage.getItem(LS_EMP)||""; tick(); go('s-home'); carregarFuncs(); atualizarFilaInfo(); } else { go('s-parear'); } })();
 
 /* ---- parear ---- */
 async function parear(){
@@ -116,13 +118,23 @@ async function parear(){
 function desparear(){ if(!confirm("Desativar o ponto fixo neste aparelho?")) return; try{localStorage.removeItem(LS_DEV);localStorage.removeItem(LS_EMP);}catch(e){} location.reload(); }
 
 /* ---- funcionários + templates ---- */
+var TIPO_MAP={};
+function salvarCache(){ try{ localStorage.setItem('zelia_fixo_funcs', JSON.stringify(FUNCS.map(function(f){return {id:f.id,nome:f.nome,tem_rosto:f.tem_rosto,vetor:f.vetor};}))); localStorage.setItem('zelia_fixo_tipos', JSON.stringify(TIPO_MAP)); }catch(e){} }
+function carregarCache(){ try{ var f=JSON.parse(localStorage.getItem('zelia_fixo_funcs')||'[]'); FUNCS=f.map(function(x){return {id:x.id,nome:x.nome,tem_rosto:x.tem_rosto,vetor:x.vetor};}); TIPO_MAP=JSON.parse(localStorage.getItem('zelia_fixo_tipos')||'{}'); }catch(e){ FUNCS=[]; TIPO_MAP={}; } }
 async function carregarFuncs(){
-  var d=await post("/zelia-fixo-funcionarios",{device_token:dev()});
-  if(!d.ok){ if(d.motivo==='device_invalido'){ desparearSilencioso(); } return; }
-  FUNCS=(d.funcionarios||[]).map(function(f){ return {id:f.id, nome:f.nome, tem_rosto:f.tem_rosto, vetor:f.vetor? l2norm(f.vetor.map(Number)):null}; });
-  var pend=FUNCS.filter(function(f){return !f.tem_rosto;});
-  var btn=$('btn-cadastrar'); btn.textContent = pend.length? ("Cadastrar rostos ("+pend.length+")") : "Cadastrar / atualizar rostos";
+  try{
+    var d=await post("/zelia-fixo-funcionarios",{device_token:dev()});
+    if(d && d.ok){
+      FUNCS=(d.funcionarios||[]).map(function(f){ return {id:f.id, nome:f.nome, tem_rosto:f.tem_rosto, vetor:f.vetor? l2norm(f.vetor.map(Number)):null}; });
+      (d.funcionarios||[]).forEach(function(f){ if(f.ultimo_tipo) TIPO_MAP[f.id]=f.ultimo_tipo; });
+      salvarCache();
+    } else if(d && d.motivo==='device_invalido'){ desparearSilencioso(); return; }
+    else { carregarCache(); }
+  }catch(e){ carregarCache(); }   // sem internet → usa o cache do aparelho
+  atualizarBtnCadastro(); atualizarFilaInfo(); sincronizarFila();
 }
+function atualizarBtnCadastro(){ var pend=FUNCS.filter(function(f){return !f.tem_rosto;}); var btn=$('btn-cadastrar'); if(btn) btn.textContent = pend.length? ("Cadastrar rostos ("+pend.length+")") : "Cadastrar / atualizar rostos"; }
+function atualizarFilaInfo(){ var n=filaAll().length; var el=$('fila-info'); if(el) el.textContent = n? ("⏳ "+n+" batida"+(n>1?"s":"")+" aguardando internet") : ""; }
 function desparearSilencioso(){ try{localStorage.removeItem(LS_DEV);localStorage.removeItem(LS_EMP);}catch(e){} go('s-parear'); $('parear-err').textContent="Pareamento expirou. Gere um novo código no painel."; }
 
 /* ---- lista cadastro ---- */
@@ -231,19 +243,54 @@ function melhorMatch(e){
     if(s>best.sim){ second=best.sim; best={id:f.id,nome:f.nome,sim:s}; } else if(s>second){ second=s; } });
   best.sim2=second<0?0:second; return best;
 }
+var SEQ={'':'entrada', entrada:'pausa', pausa:'retorno', retorno:'saida', saida:'entrada'};
+var LABELS={entrada:"Entrada",saida:"Saída",pausa:"Almoço",retorno:"Retorno"};
 async function baterPonto(m){
-  fecharCam(); go('s-load'); $('load-msg').textContent="Registrando "+m.nome.split(" ")[0]+"…";
-  var sess=await post("/zelia-fixo-sessao",{device_token:dev(), funcionario_id:m.id});
-  if(!sess.ok){ mostrarRes("erro","Ops","Não consegui registrar. Tente de novo."); return; }
+  fecharCam();
+  var tipo = SEQ[TIPO_MAP[m.id]||''] || 'entrada';
   var gps=await pegarGPS(); var agora=new Date();
-  var payload={ tipo:sess.proximo_tipo, registrado_em:isoBahia(agora),
-    gps_timestamp:gps?isoBahia(new Date(gps.ts)):null, latitude:gps?gps.latitude:null, longitude:gps?gps.longitude:null,
-    accuracy_metros:gps?gps.accuracy:null, foto_base64:null, metodo:'facial', device_id:devId(), local_id:'fx'+Date.now(), token:sess.token };
-  var d=await post("/zelia-registrar",payload);
-  if(d.ok){ var tn={entrada:"Entrada",saida:"Saída",pausa:"Almoço",retorno:"Retorno"}[sess.proximo_tipo]||"Ponto";
-    mostrarRes("ok","Pronto, "+sess.nome.split(" ")[0]+"!", tn+" registrada às "+horaAgora()); }
-  else { mostrarRes("erro","Não deu", (d.mensagem||"Não foi possível registrar.")); }
+  var punch={ funcionario_id:m.id, nome:m.nome, tipo:tipo, registrado_em:isoBahia(agora),
+    gps_timestamp:gps?isoBahia(new Date(gps.ts)):null, latitude:gps?gps.latitude:null, longitude:gps?gps.longitude:null, accuracy_metros:gps?gps.accuracy:null };
+  var tn=LABELS[tipo]||"Ponto", pn=m.nome.split(" ")[0];
+  if(navigator.onLine){
+    go('s-load'); $('load-msg').textContent="Registrando "+pn+"…";
+    var r=await enviarPunch(punch);
+    if(r.ok){ TIPO_MAP[m.id]=tipo; salvarCache(); mostrarRes("ok","Pronto, "+pn+"!", tn+" registrada às "+horaAgora()); return; }
+    if(r.recusa){ mostrarRes("erro","Não deu", r.mensagem||"Não foi possível registrar."); return; }
+    // falha de rede → cai pra fila offline
+  }
+  filaAdd(punch); TIPO_MAP[m.id]=tipo; salvarCache(); atualizarFilaInfo();
+  mostrarRes("ok","Pronto, "+pn+"!", tn+" às "+horaAgora()+" — sem internet, sobe sozinho quando voltar.");
 }
+async function enviarPunch(punch){
+  try{
+    var sess=await post("/zelia-fixo-sessao",{device_token:dev(), funcionario_id:punch.funcionario_id});
+    if(!sess.ok){ if(sess.motivo==='device_invalido') return {ok:false}; return {ok:false, recusa:true, mensagem:"Funcionário não encontrado."}; }
+    var payload={ tipo:punch.tipo, registrado_em:punch.registrado_em, gps_timestamp:punch.gps_timestamp,
+      latitude:punch.latitude, longitude:punch.longitude, accuracy_metros:punch.accuracy_metros,
+      foto_base64:null, metodo:'facial', device_id:devId(), local_id:punch._id||('fx'+Date.now()), token:sess.token };
+    var d=await post("/zelia-registrar",payload);
+    if(d.ok) return {ok:true};
+    if(d.mensagem) return {ok:false, recusa:true, mensagem:d.mensagem};   // recusa do servidor (sequência/geofence)
+    return {ok:false};
+  }catch(e){ return {ok:false}; }   // rede
+}
+/* ---- fila offline ---- */
+function filaAll(){ try{ return JSON.parse(localStorage.getItem('zelia_fixo_fila')||'[]'); }catch(e){ return []; } }
+function filaSave(a){ try{ localStorage.setItem('zelia_fixo_fila', JSON.stringify(a)); }catch(e){} }
+function filaAdd(p){ var a=filaAll(); p._id='q'+Date.now()+Math.random().toString(36).slice(2,6); a.push(p); filaSave(a); }
+var sincronizando=false;
+async function sincronizarFila(){
+  if(sincronizando||!navigator.onLine) return; var a=filaAll(); if(!a.length) return; sincronizando=true;
+  a.sort(function(x,y){return x.registrado_em<y.registrado_em?-1:1;});
+  for(var i=0;i<a.length;i++){
+    var r=await enviarPunch(a[i]);
+    if(r.ok || r.recusa){ filaSave(filaAll().filter(function(q){return q._id!==a[i]._id;})); }
+    else { break; }   // rede caiu de novo: para e tenta depois
+  }
+  sincronizando=false; atualizarFilaInfo();
+}
+window.addEventListener('online', function(){ sincronizarFila(); });
 function mostrarRes(tipo,ttl,sub){
   $('res-ic').textContent=tipo==='ok'?"✅":"⚠️"; $('res-ttl').textContent=ttl; $('res-sub').textContent=sub; go('s-res');
   setTimeout(function(){ if($('s-res').classList.contains('on')){ go('s-home'); carregarFuncs(); } }, 3200);

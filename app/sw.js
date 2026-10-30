@@ -5,8 +5,8 @@
    - NUNCA cacheia os webhooks do n8n.
    - skipWaiting + clients.claim: um SW novo assume na hora; a página recarrega sozinha
      (listener controllerchange no app.js). */
-const CACHE = "zelia-v15";
-const ASSETS = ["./","./index.html","./style.css","./app.js","./manifest.json","./zelia.svg","./fonts/inter.woff2","./fonts/poppins-600.woff2","./fonts/sora-800.woff2","./icons/icon-192.png","./icons/icon-512.png","./icons/icon-192-maskable.png","./icons/icon-512-maskable.png"];
+const CACHE = "zelia-v16";
+const ASSETS = ["./","./index.html","./fixo.html","./style.css","./app.js","./manifest.json","./zelia.svg","./fonts/inter.woff2","./fonts/poppins-600.woff2","./fonts/sora-800.woff2","./icons/icon-192.png","./icons/icon-512.png","./icons/icon-192-maskable.png","./icons/icon-512-maskable.png"];
 const WEBHOOK_BASE = "https://giantfalcon-n8n.cloudfy.live/webhook";
 
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())); });
@@ -16,6 +16,11 @@ self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
   if (url.href.startsWith(WEBHOOK_BASE)) { e.respondWith(fetch(e.request)); return; }   // webhooks: sempre rede
   if (url.pathname.includes("/painel")) return;                                          // painel: fora do escopo do SW
+  // Human.js (lib + modelos de reconhecimento) do CDN: cache-first, pra funcionar OFFLINE no ponto fixo
+  if (e.request.method === "GET" && /jsdelivr\.net/.test(url.host)) {
+    e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request).then(resp => { if (resp && resp.ok) { const c = resp.clone(); caches.open(CACHE).then(k => k.put(e.request, c)); } return resp; }).catch(() => hit)));
+    return;
+  }
   if (e.request.method !== "GET" || url.origin !== self.location.origin) return;
 
   const isShell = e.request.mode === "navigate" || url.pathname.endsWith("/") || /\.(html|js|css)$/.test(url.pathname);
