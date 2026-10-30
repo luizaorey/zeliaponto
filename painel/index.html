@@ -300,6 +300,16 @@
         <div class="err" id="cfg-err"></div>
         <button class="btn" id="cfg-salvar" onclick="salvarConfig()">Salvar configurações</button>
 
+        <div class="cfg-sec">
+          <h3>Ponto fixo (aparelho na loja)</h3>
+          <p class="cfg-hint">Pra usar um tablet ou celular fixo onde todos batem o ponto só olhando pra câmera. No aparelho, abra <b>zeliaponto.com.br/app/fixo.html</b> e digite o código abaixo. Os funcionários você cadastra aqui no painel (nome e CPF); o rosto é cadastrado no próprio aparelho.</p>
+          <button class="btn small ghost" type="button" onclick="gerarCodigoFixo()">Gerar código de pareamento</button>
+          <div id="fixo-cod-box" style="display:none;margin-top:16px;text-align:center;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:18px">
+            <div style="font-size:14px;color:#7c8c84">Digite no aparelho fixo (vale 10 minutos):</div>
+            <div id="fixo-cod" style="font-size:52px;font-weight:800;letter-spacing:12px;color:#0c6b3e;margin-top:4px"></div>
+          </div>
+        </div>
+
         <div class="cfg-sec" style="margin-top:30px;border-top:1px solid var(--line);padding-top:24px">
           <h3>Minha assinatura</h3>
           <p class="cfg-hint">Você pode cancelar quando quiser, sem multa e sem ligação. Continua usando até o fim do período já pago e não recebe novas cobranças.</p>

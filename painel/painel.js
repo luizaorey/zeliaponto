@@ -13,6 +13,7 @@ const EP = {
   dia: WB + "/zelia-painel-dia", config: WB + "/zelia-config-salvar", configLer: WB + "/zelia-config-ler",
   conversas: WB + "/zelia-conversas",
   empresaNome: WB + "/zelia-empresa-nome",
+  fixoCodigo: WB + "/zelia-fixo-codigo",
   locais: WB + "/zelia-locais", localSalvar: WB + "/zelia-local-salvar",
   localOff: WB + "/zelia-local-desativar", localOn: WB + "/zelia-local-reativar",
   aprovacoes: WB + "/zelia-aprovacoes-lista", decidir: WB + "/zelia-aprovacao-decidir",
@@ -924,6 +925,11 @@ async function carregarConfig(){
   $("cfg-tol").value = CFG.tolerancia_minutos != null ? CFG.tolerancia_minutos : 10;
   $("cfg-extra").value = (CFG.limite_extra_semanal_minutos != null ? CFG.limite_extra_semanal_minutos : 600) / 60;
   $("cfg-loading").style.display = "none"; $("cfg-form").style.display = "block";
+}
+async function gerarCodigoFixo(){
+  let d; try { d = await apiPost(EP.fixoCodigo, {}); } catch(e){ toast("Sem conexão."); return; }
+  if (d && d.ok && d.codigo){ $("fixo-cod").textContent = d.codigo; $("fixo-cod-box").style.display = "block"; }
+  else toast("Não foi possível gerar o código.");
 }
 /* ---- Contatos ---- */
 function renderContatos(){
