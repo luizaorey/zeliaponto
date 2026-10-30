@@ -1,0 +1,263 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Zélia Ponto · Fixo</title>
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.5/dist/human.js"></script>
+<style>
+:root{--verde:#0c6b3e;--verde2:#14a957;--ink:#14342A;--cream:#F7F4EE;--line:#e4e9e5;--red:#D9534F;--amber:#E0962B}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--cream);color:var(--ink);overflow:hidden}
+.scr{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center}
+.scr.on{display:flex}
+.logo{position:fixed;top:20px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:800;font-size:20px;color:var(--verde);letter-spacing:.5px}
+.logo .dot{width:11px;height:11px;border-radius:50%;background:var(--verde2)}
+.emp{position:fixed;top:48px;left:0;right:0;text-align:center;font-size:14px;color:#7c8c84;font-weight:600}
+h1{font-size:30px;font-weight:800;margin-bottom:10px}
+.sub{font-size:17px;color:#5a6a62;margin-bottom:26px;max-width:440px}
+.btn{background:var(--verde);color:#fff;border:none;border-radius:18px;padding:22px 30px;font-size:21px;font-weight:700;cursor:pointer;width:100%;max-width:420px;box-shadow:0 14px 30px -14px rgba(12,107,62,.6)}
+.btn.sec{background:#fff;color:var(--verde);box-shadow:none;border:2px solid var(--line)}
+.btn.big{padding:34px;font-size:26px;border-radius:24px}
+.btn+.btn{margin-top:14px}
+.codein{font-size:48px;letter-spacing:16px;text-align:center;width:260px;padding:18px 0;border:2px solid var(--line);border-radius:16px;font-weight:800;color:var(--ink);background:#fff}
+.err{color:var(--red);font-weight:600;margin-top:14px;min-height:20px}
+.list{width:100%;max-width:460px;overflow:auto;max-height:70vh}
+.pill{display:flex;align-items:center;justify-content:space-between;background:#fff;border:2px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:12px;font-size:20px;font-weight:700;cursor:pointer}
+.pill .tag{font-size:14px;font-weight:700;color:#fff;background:var(--amber);padding:5px 12px;border-radius:999px}
+.pill.ok{opacity:.55}.pill.ok .tag{background:var(--verde2)}
+.camwrap{position:relative;width:min(92vw,520px);aspect-ratio:3/4;border-radius:26px;overflow:hidden;background:#000;box-shadow:0 20px 50px -20px rgba(0,0,0,.5)}
+#cam{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.oval{position:absolute;inset:8% 14%;border:4px dashed rgba(255,255,255,.7);border-radius:50%}
+.oval.good{border-color:#35e07f;border-style:solid}
+.oval.bad{border-color:#ff6b6b}
+.hint{position:absolute;left:0;right:0;bottom:16px;color:#fff;font-size:19px;font-weight:700;text-shadow:0 2px 8px rgba(0,0,0,.6);padding:0 16px}
+.camttl{font-size:24px;font-weight:800;margin-bottom:14px}
+.big-ok{font-size:70px;margin-bottom:8px}
+.topbtn{position:fixed;top:14px;right:14px;background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:700;font-size:14px;cursor:pointer;color:#5a6a62;z-index:5}
+.backbtn{position:fixed;top:14px;left:14px;background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-weight:700;font-size:15px;cursor:pointer;color:var(--ink);z-index:5}
+.muted{font-size:14px;color:#9aa8a1;margin-top:18px}
+.spin{width:44px;height:44px;border:4px solid var(--line);border-top-color:var(--verde);border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 16px}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style></head><body>
+
+<div class="logo"><span class="dot"></span>Zélia Ponto</div>
+<div class="emp" id="emp-nome"></div>
+
+<!-- PAREAR -->
+<section class="scr on" id="s-parear">
+  <h1>Ativar ponto fixo</h1>
+  <div class="sub">No seu painel, gere o <b>código de pareamento</b> (Configurações → Ponto fixo) e digite ele aqui.</div>
+  <input class="codein" id="cod" inputmode="numeric" maxlength="4" placeholder="----">
+  <div class="err" id="parear-err"></div>
+  <button class="btn" style="margin-top:20px" onclick="parear()">Ativar</button>
+</section>
+
+<!-- HOME (kiosk) -->
+<section class="scr" id="s-home">
+  <button class="topbtn" onclick="desparear()">Desativar fixo</button>
+  <h1 id="home-hora" style="font-size:42px">--:--</h1>
+  <div class="sub" id="home-data"></div>
+  <button class="btn big" onclick="iniciarBatida()">📸 Bater ponto</button>
+  <button class="btn sec" id="btn-cadastrar" onclick="irCadastro()">Cadastrar rostos</button>
+</section>
+
+<!-- LISTA CADASTRO -->
+<section class="scr" id="s-lista">
+  <button class="backbtn" onclick="go('s-home')">‹ Voltar</button>
+  <h1>Cadastrar rosto</h1>
+  <div class="sub">Toque no seu nome e tire a foto. Faltam <b id="falta-n">0</b>.</div>
+  <div class="list" id="lista-funcs"></div>
+</section>
+
+<!-- CÂMERA (cadastro + batida) -->
+<section class="scr" id="s-cam">
+  <button class="backbtn" onclick="cancelarCam()">‹ Voltar</button>
+  <div class="camttl" id="cam-ttl">Bater ponto</div>
+  <div class="camwrap"><video id="cam" playsinline muted></video><div class="oval" id="oval"></div><div class="hint" id="hint">Carregando…</div></div>
+</section>
+
+<!-- RESULTADO -->
+<section class="scr" id="s-res">
+  <div class="big-ok" id="res-ic">✅</div>
+  <h1 id="res-ttl">Ponto registrado!</h1>
+  <div class="sub" id="res-sub"></div>
+</section>
+
+<!-- LOADING -->
+<section class="scr" id="s-load"><div class="spin"></div><div class="sub" id="load-msg">Carregando…</div></section>
+
+<script>
+var WB="https://giantfalcon-n8n.cloudfy.live/webhook";
+var LS_DEV="zelia_fixo_device", LS_EMP="zelia_fixo_empresa", LS_DID="zelia_fixo_devid";
+var human=null, FUNCS=[], camStream=null, camMode=null, enrollFid=null, enrollNome=null, busy=false;
+var THRESH=0.52, MARGEM=0.04;
+function $(id){return document.getElementById(id);}
+function go(s){ document.querySelectorAll('.scr').forEach(function(e){e.classList.remove('on');}); $(s).classList.add('on'); }
+function dev(){ try{return localStorage.getItem(LS_DEV)||"";}catch(e){return "";} }
+function devId(){ try{ var d=localStorage.getItem(LS_DID); if(!d){ d='fx'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); localStorage.setItem(LS_DID,d);} return d; }catch(e){return 'fx0';} }
+function post(path,body){ return fetch(WB+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(function(r){return r.json().catch(function(){return {};});}); }
+
+/* ---- relógio ---- */
+function tick(){ var d=new Date(); $('home-hora').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  $('home-data').textContent=d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}); }
+setInterval(tick,1000);
+
+/* ---- init ---- */
+(function(){ if(dev()){ $('emp-nome').textContent=localStorage.getItem(LS_EMP)||""; tick(); go('s-home'); carregarFuncs(); } else { go('s-parear'); } })();
+
+/* ---- parear ---- */
+async function parear(){
+  var c=($('cod').value||"").replace(/\D/g,""); var e=$('parear-err'); e.textContent="";
+  if(c.length!==4){ e.textContent="Digite o código de 4 números."; return; }
+  go('s-load'); $('load-msg').textContent="Ativando…";
+  var d=await post("/zelia-fixo-parear",{codigo:c});
+  if(d.ok){ localStorage.setItem(LS_DEV,d.device_token); localStorage.setItem(LS_EMP,d.empresa_nome||""); $('emp-nome').textContent=d.empresa_nome||""; tick(); go('s-home'); carregarFuncs(); }
+  else { go('s-parear'); $('parear-err').textContent="Código inválido ou expirado. Gere outro no painel."; }
+}
+function desparear(){ if(!confirm("Desativar o ponto fixo neste aparelho?")) return; try{localStorage.removeItem(LS_DEV);localStorage.removeItem(LS_EMP);}catch(e){} location.reload(); }
+
+/* ---- funcionários + templates ---- */
+async function carregarFuncs(){
+  var d=await post("/zelia-fixo-funcionarios",{device_token:dev()});
+  if(!d.ok){ if(d.motivo==='device_invalido'){ desparearSilencioso(); } return; }
+  FUNCS=(d.funcionarios||[]).map(function(f){ return {id:f.id, nome:f.nome, tem_rosto:f.tem_rosto, vetor:f.vetor? l2norm(f.vetor.map(Number)):null}; });
+  var pend=FUNCS.filter(function(f){return !f.tem_rosto;});
+  var btn=$('btn-cadastrar'); btn.textContent = pend.length? ("Cadastrar rostos ("+pend.length+")") : "Cadastrar / atualizar rostos";
+}
+function desparearSilencioso(){ try{localStorage.removeItem(LS_DEV);localStorage.removeItem(LS_EMP);}catch(e){} go('s-parear'); $('parear-err').textContent="Pareamento expirou. Gere um novo código no painel."; }
+
+/* ---- lista cadastro ---- */
+function irCadastro(){ renderLista(); go('s-lista'); }
+function renderLista(){
+  var box=$('lista-funcs'); var pend=FUNCS.filter(function(f){return !f.tem_rosto;});
+  $('falta-n').textContent=pend.length;
+  if(!FUNCS.length){ box.innerHTML='<div class="muted">Nenhum funcionário cadastrado ainda. O dono cadastra no painel.</div>'; return; }
+  box.innerHTML=FUNCS.map(function(f){ return '<div class="pill '+(f.tem_rosto?'ok':'')+'" onclick="cadastrarRosto(\''+f.id+'\',\''+(f.nome||'').replace(/'/g,"")+'\')"><span>'+esc(f.nome)+'</span><span class="tag">'+(f.tem_rosto?'✓ rosto ok':'cadastrar')+'</span></div>'; }).join("");
+}
+function esc(s){ return String(s||"").replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+
+/* ---- Human ---- */
+async function loadHuman(){
+  if(human) return human;
+  if(typeof Human==="undefined") throw new Error("lib");
+  human=new Human.Human({ modelBasePath:"https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.5/models/", backend:"humangl", cacheModels:true, warmup:"none",
+    face:{enabled:true, detector:{maxDetected:1, rotation:false}, mesh:{enabled:true}, iris:{enabled:true}, description:{enabled:true}, antispoof:{enabled:true}, liveness:{enabled:true}, emotion:{enabled:false}},
+    body:{enabled:false}, hand:{enabled:false}, object:{enabled:false}, gesture:{enabled:false}, filter:{enabled:false} });
+  await human.load(); await human.warmup(); return human;
+}
+async function abrirCam(){
+  camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480}},audio:false});
+  var v=$('cam'); v.srcObject=camStream; await v.play().catch(function(){});
+}
+function fecharCam(){ try{camStream&&camStream.getTracks().forEach(function(t){t.stop();});}catch(e){} camStream=null; camMode=null; }
+function cancelarCam(){ fecharCam(); go(enrollFid?'s-lista':'s-home'); enrollFid=null; }
+
+/* ---- CADASTRO de rosto (3 fotos) ---- */
+var enrollEmbs=[], enrollStep=0, enrollBlink=false, enrollStable=0, enrollCool=0;
+async function cadastrarRosto(fid,nome){
+  enrollFid=fid; enrollNome=nome; enrollEmbs=[]; enrollStep=0; enrollBlink=false; enrollStable=0; enrollCool=0;
+  camMode='enroll'; $('cam-ttl').textContent="Cadastrar: "+nome; go('s-cam'); $('hint').textContent="Carregando câmera…"; $('oval').className="oval";
+  try{ await abrirCam(); await loadHuman(); }catch(e){ $('hint').textContent="Não consegui abrir a câmera/modelo."; return; }
+  enrollLoop();
+}
+async function enrollLoop(){
+  if(camMode!=='enroll'||!camStream) return;
+  var v=$('cam');
+  try{
+    var r=await human.detect(v); var f=r.face&&r.face[0]; var hint=$('hint'), oval=$('oval');
+    var gest=(r.gesture||[]).map(function(g){return g.gesture||"";}).join(",");
+    if(/blink|piscad|eye/i.test(gest)) enrollBlink=true;
+    if(r.face&&r.face.length>1){ enrollStable=0; oval.className="oval bad"; hint.textContent="Só um rosto por vez"; }
+    else if(!f){ enrollStable=0; oval.className="oval"; hint.textContent="Posicione o rosto no oval…"; }
+    else{
+      var score=f.faceScore||f.score||0, live=(typeof f.live==="number"?f.live:1), real=(typeof f.real==="number"?f.real:1), emb=f.embedding;
+      var bom=score>0.6&&emb&&emb.length>0, vivo=live>0.6&&real>0.5;
+      if(!bom){ enrollStable=0; oval.className="oval bad"; hint.textContent="Aproxime e ilumine o rosto"; }
+      else if(!enrollBlink){ enrollStable=0; oval.className="oval"; hint.textContent="Pisque os olhos 👀"; }
+      else if(!vivo){ enrollStable=0; oval.className="oval bad"; hint.textContent="Rosto não parece vivo (foto?)"; }
+      else{
+        oval.className="oval good";
+        if(Date.now()<enrollCool){ hint.textContent="✓ guardei! "+(enrollStep<3?("foto "+(enrollStep+1)+" de 3"):""); }
+        else{ enrollStable++; hint.textContent="Segura… ("+Math.min(enrollStep+1,3)+" de 3)";
+          if(enrollStable>=10){ enrollStable=0; enrollCool=Date.now()+1500; try{navigator.vibrate&&navigator.vibrate(60);}catch(e){}
+            enrollEmbs.push(Array.from(emb)); enrollStep++; if(enrollStep>=3){ return salvarRosto(); } } }
+      }
+    }
+  }catch(e){}
+  requestAnimationFrame(enrollLoop);
+}
+async function salvarRosto(){
+  $('hint').textContent="Guardando o rosto…"; var tpl=media(enrollEmbs); fecharCam();
+  go('s-load'); $('load-msg').textContent="Salvando "+enrollNome+"…";
+  var d=await post("/zelia-fixo-enroll",{device_token:dev(), funcionario_id:enrollFid, template:tpl, model_version:"human-3-desc"});
+  enrollFid=null;
+  if(d.ok){ await carregarFuncs(); renderLista(); go('s-lista'); }
+  else { alert("Não consegui salvar ("+(d.motivo||"erro")+"). Tente de novo."); go('s-lista'); }
+}
+
+/* ---- BATIDA (1-pra-todos) ---- */
+var punchStable=0, punchBest=null, punchDone=false;
+async function iniciarBatida(){
+  var matchers=FUNCS.filter(function(f){return f.vetor;});
+  if(!matchers.length){ alert("Nenhum rosto cadastrado ainda. Cadastre os rostos primeiro."); return; }
+  camMode='punch'; punchStable=0; punchBest=null; punchDone=false;
+  $('cam-ttl').textContent="Bater ponto"; go('s-cam'); $('hint').textContent="Carregando câmera…"; $('oval').className="oval";
+  try{ await abrirCam(); await loadHuman(); }catch(e){ $('hint').textContent="Não consegui abrir a câmera/modelo."; return; }
+  punchLoop();
+}
+async function punchLoop(){
+  if(camMode!=='punch'||!camStream||punchDone) return;
+  var v=$('cam');
+  try{
+    var r=await human.detect(v); var f=r.face&&r.face[0]; var hint=$('hint'), oval=$('oval');
+    if(!f||!f.embedding||!f.embedding.length){ punchStable=0; oval.className="oval"; hint.textContent="Olhe pra câmera…"; }
+    else{
+      var live=(typeof f.live==="number"?f.live:1), real=(typeof f.real==="number"?f.real:1), vivo=live>0.6&&real>0.5;
+      var e=l2norm(Array.from(f.embedding));
+      var m=melhorMatch(e);  // {id,nome,sim,sim2}
+      if(!vivo){ punchStable=0; oval.className="oval bad"; hint.textContent="Rosto não parece vivo (foto?)"; }
+      else if(m.sim>=THRESH && (m.sim-m.sim2)>=MARGEM){
+        oval.className="oval good";
+        if(punchBest && punchBest.id===m.id) punchStable++; else { punchBest=m; punchStable=1; }
+        hint.textContent="Reconhecendo "+m.nome.split(" ")[0]+"… "+(m.sim*100).toFixed(0)+"%";
+        if(punchStable>=3){ punchDone=true; return baterPonto(m); }
+      } else { punchStable=0; punchBest=null; oval.className="oval"; hint.textContent="Reconhecendo…"; }
+    }
+  }catch(e){}
+  requestAnimationFrame(punchLoop);
+}
+function melhorMatch(e){
+  var best={id:null,nome:"",sim:-1}, second=-1;
+  FUNCS.forEach(function(f){ if(!f.vetor) return; var s=cosSim(e,f.vetor);
+    if(s>best.sim){ second=best.sim; best={id:f.id,nome:f.nome,sim:s}; } else if(s>second){ second=s; } });
+  best.sim2=second<0?0:second; return best;
+}
+async function baterPonto(m){
+  fecharCam(); go('s-load'); $('load-msg').textContent="Registrando "+m.nome.split(" ")[0]+"…";
+  var sess=await post("/zelia-fixo-sessao",{device_token:dev(), funcionario_id:m.id});
+  if(!sess.ok){ mostrarRes("erro","Ops","Não consegui registrar. Tente de novo."); return; }
+  var gps=await pegarGPS(); var agora=new Date();
+  var payload={ tipo:sess.proximo_tipo, registrado_em:isoBahia(agora),
+    gps_timestamp:gps?isoBahia(new Date(gps.ts)):null, latitude:gps?gps.latitude:null, longitude:gps?gps.longitude:null,
+    accuracy_metros:gps?gps.accuracy:null, foto_base64:null, metodo:'facial', device_id:devId(), local_id:'fx'+Date.now(), token:sess.token };
+  var d=await post("/zelia-registrar",payload);
+  if(d.ok){ var tn={entrada:"Entrada",saida:"Saída",pausa:"Almoço",retorno:"Retorno"}[sess.proximo_tipo]||"Ponto";
+    mostrarRes("ok","Pronto, "+sess.nome.split(" ")[0]+"!", tn+" registrada às "+horaAgora()); }
+  else { mostrarRes("erro","Não deu", (d.mensagem||"Não foi possível registrar.")); }
+}
+function mostrarRes(tipo,ttl,sub){
+  $('res-ic').textContent=tipo==='ok'?"✅":"⚠️"; $('res-ttl').textContent=ttl; $('res-sub').textContent=sub; go('s-res');
+  setTimeout(function(){ if($('s-res').classList.contains('on')){ go('s-home'); carregarFuncs(); } }, 3200);
+}
+
+/* ---- helpers ---- */
+function l2norm(v){ var s=0; for(var i=0;i<v.length;i++) s+=v[i]*v[i]; s=Math.sqrt(s)||1; return v.map(function(x){return x/s;}); }
+function media(vs){ var n=vs[0].length,o=new Array(n).fill(0); vs.forEach(function(v){for(var i=0;i<n;i++)o[i]+=v[i];}); for(var i=0;i<n;i++)o[i]/=vs.length; return l2norm(o); }
+function cosSim(a,b){ if(!a||!b||a.length!==b.length) return -1; var s=0; for(var i=0;i<a.length;i++) s+=a[i]*b[i]; return s; }
+function horaAgora(){ var d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function isoBahia(d){ var utc=d.getTime()+d.getTimezoneOffset()*60000; var b=new Date(utc-3*3600000); var p=function(n){return String(n).padStart(2,'0');};
+  return b.getFullYear()+'-'+p(b.getMonth()+1)+'-'+p(b.getDate())+'T'+p(b.getHours())+':'+p(b.getMinutes())+':'+p(b.getSeconds())+'-03:00'; }
+function pegarGPS(){ return new Promise(function(res){ if(!navigator.geolocation) return res(null);
+  navigator.geolocation.getCurrentPosition(function(p){ res({latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy,ts:p.timestamp}); },
+  function(){ res(null); }, {enableHighAccuracy:true,timeout:6000,maximumAge:30000}); }); }
+</script>
+</body></html>
