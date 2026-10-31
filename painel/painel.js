@@ -254,7 +254,10 @@ function abrirCadastro(){
     <div class="field"><label>Data de admissão</label><input id="c-adm" class="txt" type="date"></div>
     <div class="field"><label>Sexo <span class="muted">(a Zélia usa em orientações trabalhistas)</span></label><select id="c-sexo" class="txt"><option value="">—</option><option value="feminino">Feminino</option><option value="masculino">Masculino</option></select></div>
     <div class="field"><label>Salário mensal (R$) <span class="muted">(a Zélia usa pra estimar rescisão)</span></label><input id="c-salario" class="txt" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Ex.: 1800.00"></div>
-    <div class="field"><label>Carga diária (horas)</label><input id="c-carga" class="txt" type="number" min="1" max="12" step="0.5" value="8"></div>
+    <div class="jorn-block">
+      <label class="lbl-sm" style="display:block;font-weight:700;margin-bottom:2px"><b>Jornada do funcionário</b> <span class="req">*</span> <span class="muted">(dias e horários — obrigatório)</span></label>
+      ${jornadaBlockHTML('c-', jornadaSimplesFromObj(null))}
+    </div>
     <details class="opt-block">
       <summary>Mais dados <span class="muted">(opcional — a Zélia usa se você preencher)</span></summary>
       <div class="field"><label>Cargo / função</label><input id="c-cargo" class="txt" maxlength="40" placeholder="Ex.: Vendedor(a)"></div>
@@ -273,7 +276,6 @@ function abrirCadastro(){
 async function salvarFuncionario(){
   const nome = $("c-nome").value.trim();
   const cpf = soDig($("c-cpf").value);
-  const horas = parseFloat($("c-carga").value);
   const err = $("c-err"); err.textContent = "";
   if (!nome){ err.textContent = "Informe o nome."; return; }
   if (!cpfValido(cpf)){ err.textContent = "CPF inválido — confira os números."; return; }
@@ -288,9 +290,11 @@ async function salvarFuncionario(){
   const data_nascimento = $("c-nasc") ? $("c-nasc").value : "";
   const sexo = $("c-sexo") ? $("c-sexo").value : "";
   const salario = $("c-salario") ? $("c-salario").value : "";
-  const carga = (horas > 0 && horas <= 24) ? Math.round(horas * 60) : 480;
+  const jb = jornadaBuild('c-');
+  if (jb.error){ err.textContent = jb.error; return; }
+  const carga = jb.carga_min;
   $("c-salvar").disabled = true;
-  const d = await apiPost(EP.criar, { nome, cpf, carga_horaria_minutos: carga, whatsapp, data_admissao, cargo, tipo_contrato, data_nascimento, sexo, salario });
+  const d = await apiPost(EP.criar, { nome, cpf, carga_horaria_minutos: carga, jornada: jb.jornada, whatsapp, data_admissao, cargo, tipo_contrato, data_nascimento, sexo, salario });
   $("c-salvar").disabled = false;
   if (d.ok){ closeModal(); toast("Funcionário cadastrado."); carregarFuncionarios(); return; }
   if (d.motivo === "cpf_existe"){ err.textContent = "Já há um funcionário com esse CPF."; return; }
@@ -316,12 +320,42 @@ function jornadaSimplesFromObj(j){
   let sem = null; for (let d=1; d<=5; d++){ const h = hrs(d); if (h){ sem = h; break; } }
   return { usar:true, dias, sem: sem||H(), sab: hrs(6)||H(), dom: hrs(0)||H() };
 }
+/* ---- Bloco de jornada OBRIGATÓRIA (compartilhado cadastrar/editar), prefixo de id px ---- */
+function jornadaBlockHTML(px, J){
+  const chks = DIAS_LBL.map((lbl,d)=>{ const tog = d===6 ? ` onchange="document.getElementById('${px}jor-sab').style.display=this.checked?'block':'none'"` : d===0 ? ` onchange="document.getElementById('${px}jor-dom').style.display=this.checked?'block':'none'"` : ""; return `<label class="jd-chk"><input type="checkbox" id="${px}d${d}" ${J.dias[d]?"checked":""}${tog}><span>${lbl}</span></label>`; }).join("");
+  const blk = (k,label,g)=>`<label class="lbl-sm" style="display:block;margin-top:12px">${label}</label><div class="grid2">
+      <div class="field"><label>Entrada</label><input id="${px}${k}-ent" class="txt" type="time" value="${esc(g.entrada)}"></div>
+      <div class="field"><label>Saída</label><input id="${px}${k}-sai" class="txt" type="time" value="${esc(g.saida)}"></div>
+      <div class="field"><label>Almoço — início</label><input id="${px}${k}-ai" class="txt" type="time" value="${esc(g.almoco_ini)}"></div>
+      <div class="field"><label>Almoço — fim</label><input id="${px}${k}-af" class="txt" type="time" value="${esc(g.almoco_fim)}"></div>
+    </div>`;
+  return `<label class="lbl-sm">Dias que trabalha</label><div class="jd-dias">${chks}</div>`
+    + blk('sem','Horário de segunda a sexta', J.sem)
+    + `<div id="${px}jor-sab" style="display:${J.dias[6]?"block":"none"}">`+blk('sab','Horário do sábado', J.sab)+`</div>`
+    + `<div id="${px}jor-dom" style="display:${J.dias[0]?"block":"none"}">`+blk('dom','Horário do domingo', J.dom)+`</div>`;
+}
+function jornadaBuild(px){
+  const g = k => ({ entrada:$(px+k+"-ent").value, saida:$(px+k+"-sai").value, ai:$(px+k+"-ai").value, af:$(px+k+"-af").value });
+  const dias = DIAS_LBL.map((_,d)=>$(px+"d"+d).checked);
+  if (!dias.some(Boolean)) return { error:"Marque ao menos um dia de trabalho." };
+  const sem=g("sem"), sab=g("sab"), dom=g("dom");
+  if (dias.slice(1,6).some(Boolean) && (!sem.entrada || !sem.saida)) return { error:"Informe entrada e saída de segunda a sexta." };
+  if (dias[6] && (!sab.entrada || !sab.saida)) return { error:"Informe entrada e saída do sábado." };
+  if (dias[0] && (!dom.entrada || !dom.saida)) return { error:"Informe entrada e saída do domingo." };
+  const pick = d => (d===6 ? sab : d===0 ? dom : sem);
+  const jornada = {};
+  for (let d=0; d<=6; d++){ if (dias[d]){ const h=pick(d); jornada[d] = { trabalha:true, entrada:h.entrada, saida:h.saida, almoco_ini:h.ai||null, almoco_fim:h.af||null }; } else jornada[d] = { trabalha:false }; }
+  const _m = t => { const x=/^(\d{1,2}):(\d{2})$/.exec(String(t||"")); return x ? (+x[1])*60+(+x[2]) : null; };
+  const cg = h => { const a=_m(h.entrada), b=_m(h.saida), ai=_m(h.ai), af=_m(h.af); if (a==null||b==null) return 0; let d=b-a; if (ai!=null&&af!=null&&af>ai) d-=(af-ai); return d>0?d:0; };
+  const rep = dias.slice(1,6).some(Boolean) ? sem : (dias[6] ? sab : dom);
+  let carga_min = cg(rep); if (!(carga_min>0)) carga_min = 480;
+  return { jornada, carga_min };
+}
 function abrirFicha(id){
   const f = FUNCS.find(x => x.id === id); if (!f) return;
   const J = jornadaSimplesFromObj(f.jornada);
   const horas = (Number(f.carga_horaria_minutos)||480)/60;
   const opt = (v,label,cur)=>`<option value="${v}" ${String(cur||"")===v?"selected":""}>${label}</option>`;
-  const chks = DIAS_LBL.map((lbl,d)=>{ const tog = d===6 ? ` onchange="document.getElementById('e-jor-sab').style.display=this.checked?'block':'none'"` : d===0 ? ` onchange="document.getElementById('e-jor-dom').style.display=this.checked?'block':'none'"` : ""; return `<label class="jd-chk"><input type="checkbox" id="e-d${d}" ${J.dias[d]?"checked":""}${tog}><span>${lbl}</span></label>`; }).join("");
   openModal(`
     <h3>Editar funcionário</h3>
     <div class="field"><label>Nome completo <span class="req">*</span></label><input id="e-nome" class="txt" value="${esc(f.nome)}" placeholder="Nome completo"></div>
@@ -334,43 +368,14 @@ function abrirFicha(id){
       <div class="field"><label>PIS / NIS</label><input id="e-pis" class="txt" inputmode="numeric" maxlength="20" value="${esc(f.pis_nis||'')}"></div>
       <div class="field"><label>Tipo de contrato <span class="muted">(Sentinela)</span></label><select id="e-contrato" class="txt">
         ${opt("","—",f.tipo_contrato)}${opt("clt","CLT",f.tipo_contrato)}${opt("experiencia","Contrato de experiência",f.tipo_contrato)}${opt("jovem_aprendiz","Jovem aprendiz",f.tipo_contrato)}</select></div>
-      <div class="field"><label>Carga diária (horas)</label><input id="e-carga" class="txt" type="number" min="1" max="24" step="0.5" value="${horas}"></div>
       <div class="field"><label>Data de admissão</label><input id="e-adm" class="txt" type="date" value="${esc(f.data_admissao||'')}"></div>
       <div class="field"><label>Data de nascimento</label><input id="e-nasc" class="txt" type="date" value="${esc(f.data_nascimento||'')}"></div>
       <div class="field"><label>Sexo <span class="muted">(orientações trabalhistas)</span></label><select id="e-sexo" class="txt">${opt("","—",f.sexo)}${opt("feminino","Feminino",f.sexo)}${opt("masculino","Masculino",f.sexo)}</select></div>
       <div class="field"><label>Salário mensal (R$) <span class="muted">(estimar rescisão)</span></label><input id="e-salario" class="txt" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(f.salario||'')}" placeholder="Ex.: 1800.00"></div>
     </div>
     <div class="jorn-block">
-      <label class="jd-toggle"><input type="checkbox" id="e-jorn-on" ${J.usar?"checked":""} onchange="document.getElementById('e-jorn-box').style.display=this.checked?'block':'none'"> <b>Jornada individual</b> <span class="muted">(se desligado, usa a jornada da empresa)</span></label>
-      <div id="e-jorn-box" style="display:${J.usar?"block":"none"};margin-top:8px">
-        <label class="lbl-sm">Dias que trabalha</label>
-        <div class="jd-dias">${chks}</div>
-        <label class="lbl-sm" style="display:block;margin-top:12px">Horário de segunda a sexta</label>
-        <div class="grid2">
-          <div class="field"><label>Entrada</label><input id="e-jent" class="txt" type="time" value="${esc(J.sem.entrada)}"></div>
-          <div class="field"><label>Saída</label><input id="e-jsai" class="txt" type="time" value="${esc(J.sem.saida)}"></div>
-          <div class="field"><label>Almoço — início</label><input id="e-jai" class="txt" type="time" value="${esc(J.sem.almoco_ini)}"></div>
-          <div class="field"><label>Almoço — fim</label><input id="e-jaf" class="txt" type="time" value="${esc(J.sem.almoco_fim)}"></div>
-        </div>
-        <div id="e-jor-sab" style="display:${J.dias[6]?"block":"none"}">
-          <label class="lbl-sm" style="display:block;margin-top:12px">Horário do sábado</label>
-          <div class="grid2">
-            <div class="field"><label>Entrada</label><input id="e-sent" class="txt" type="time" value="${esc(J.sab.entrada)}"></div>
-            <div class="field"><label>Saída</label><input id="e-ssai" class="txt" type="time" value="${esc(J.sab.saida)}"></div>
-            <div class="field"><label>Almoço — início</label><input id="e-sai" class="txt" type="time" value="${esc(J.sab.almoco_ini)}"></div>
-            <div class="field"><label>Almoço — fim</label><input id="e-saf" class="txt" type="time" value="${esc(J.sab.almoco_fim)}"></div>
-          </div>
-        </div>
-        <div id="e-jor-dom" style="display:${J.dias[0]?"block":"none"}">
-          <label class="lbl-sm" style="display:block;margin-top:12px">Horário do domingo</label>
-          <div class="grid2">
-            <div class="field"><label>Entrada</label><input id="e-dent" class="txt" type="time" value="${esc(J.dom.entrada)}"></div>
-            <div class="field"><label>Saída</label><input id="e-dsai" class="txt" type="time" value="${esc(J.dom.saida)}"></div>
-            <div class="field"><label>Almoço — início</label><input id="e-dai" class="txt" type="time" value="${esc(J.dom.almoco_ini)}"></div>
-            <div class="field"><label>Almoço — fim</label><input id="e-daf" class="txt" type="time" value="${esc(J.dom.almoco_fim)}"></div>
-          </div>
-        </div>
-      </div>
+      <label class="lbl-sm" style="display:block;font-weight:700;margin-bottom:2px"><b>Jornada do funcionário</b> <span class="req">*</span> <span class="muted">(dias e horários — obrigatório)</span></label>
+      ${jornadaBlockHTML('e-', J)}
     </div>
     <div class="field"><label>Status</label><select id="e-status" class="txt">${opt("ativo","Ativo",f.ativo?"ativo":"inativo")}${opt("inativo","Inativo",f.ativo?"ativo":"inativo")}</select></div>
     <div class="err" id="e-err"></div>
@@ -387,23 +392,9 @@ async function salvarEdicao(id){
   const vwa = phoneValido('e-wa');
   if (!vwa.ok){ err.textContent = vwa.msg; return; }
   const whatsapp = vwa.empty ? "" : vwa.canonical;
-  const horas = parseFloat($("e-carga").value);
-  const carga = (horas > 0 && horas <= 24) ? Math.round(horas * 60) : 480;
-  // jornada individual (opcional)
-  let jornada = null;
-  if ($("e-jorn-on").checked){
-    const dias = DIAS_LBL.map((_,d)=>$("e-d"+d).checked);
-    if (!dias.some(Boolean)){ err.textContent = "Marque ao menos um dia de trabalho."; return; }
-    const sem = { entrada:$("e-jent").value, saida:$("e-jsai").value, ai:$("e-jai").value, af:$("e-jaf").value };
-    const sab = { entrada:$("e-sent").value, saida:$("e-ssai").value, ai:$("e-sai").value, af:$("e-saf").value };
-    const dom = { entrada:$("e-dent").value, saida:$("e-dsai").value, ai:$("e-dai").value, af:$("e-daf").value };
-    if (dias.slice(1,6).some(Boolean) && (!sem.entrada || !sem.saida)){ err.textContent = "Informe entrada e saída de segunda a sexta."; return; }
-    if (dias[6] && (!sab.entrada || !sab.saida)){ err.textContent = "Informe entrada e saída do sábado."; return; }
-    if (dias[0] && (!dom.entrada || !dom.saida)){ err.textContent = "Informe entrada e saída do domingo."; return; }
-    const blk = d => (d===6 ? sab : d===0 ? dom : sem);
-    jornada = {};
-    for (let d=0; d<=6; d++){ if (dias[d]){ const h = blk(d); jornada[d] = { trabalha:true, entrada:h.entrada, saida:h.saida, almoco_ini:h.ai||null, almoco_fim:h.af||null }; } else jornada[d] = { trabalha:false }; }
-  }
+  const jb = jornadaBuild('e-');
+  if (jb.error){ err.textContent = jb.error; return; }
+  const jornada = jb.jornada, carga = jb.carga_min;
   const payload = {
     id, nome, cpf, whatsapp,
     cargo: $("e-cargo").value.trim(), setor: $("e-setor").value.trim(),
