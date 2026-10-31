@@ -914,7 +914,6 @@ async function carregarConfig(){
   $("cfg-ct-esc").value = ct.escritorio || "";
   $("cfg-ct-email").value = ct.email || "";
   $("cfg-ct-wa").innerHTML = phoneFieldHTML('ctwa', ct.whatsapp || "");
-  JOR3 = jornadaToUI(CFG.jornada_semanal); renderJornada();
   HORF = horarioToUI(CFG.horario_funcionamento); renderHorario();
   $("cfg-semloc").checked = CFG.permitir_sem_localizacao !== false;
   $("cfg-fora").checked = CFG.alerta_fora_raio !== false;
@@ -971,25 +970,38 @@ function renderJornada(){
     </div>`; };
   $("cfg-jornada").innerHTML = row("uteis","Dias úteis (seg–sex)") + row("sab","Sábado") + row("dom","Domingo");
 }
-/* ---- Horário de funcionamento da loja (seg-sex, sábado, domingo) ---- */
+/* ---- Horário de funcionamento da loja (seg-sex, sábado, domingo) + carga calculada ---- */
 function horarioToUI(h){
   const base = h && typeof h === "object";
-  const g = k => { const x = (base && h[k]) || {}; return { abre: !!x.abre, de: x.de || "", ate: x.ate || "" }; };
-  return { seg_sex: base ? g("seg_sex") : { abre:true, de:"08:00", ate:"18:00" },
-           sabado:  base ? g("sabado")  : { abre:false, de:"", ate:"" },
-           domingo: base ? g("domingo") : { abre:false, de:"", ate:"" } };
+  const g = (k,dde,date,dalm,dabre) => { const x = (base && h[k]) || {}; return {
+    abre: base ? !!x.abre : !!dabre,
+    de:   base ? (x.de||"")  : dde,
+    ate:  base ? (x.ate||"") : date,
+    almoco: (x.almoco!=null) ? x.almoco : dalm }; };
+  return { seg_sex: g("seg_sex","08:00","18:00",60,true),
+           sabado:  g("sabado","08:00","13:00",0,false),
+           domingo: g("domingo","08:00","13:00",0,false) };
 }
 function horarioFromUI(){
-  const mk = g => ({ abre: !!g.abre, de: g.abre ? (g.de||"") : "", ate: g.abre ? (g.ate||"") : "" });
+  const mk = g => ({ abre: !!g.abre, de: g.abre ? (g.de||"") : "", ate: g.abre ? (g.ate||"") : "", almoco: g.abre ? (parseInt(g.almoco,10)||0) : 0 });
   return { seg_sex: mk(HORF.seg_sex), sabado: mk(HORF.sabado), domingo: mk(HORF.domingo) };
+}
+function _hmin(t){ const m = /^(\d{1,2}):(\d{2})$/.exec(String(t||"")); return m ? (+m[1])*60 + (+m[2]) : null; }
+function cargaMin(g){ const a=_hmin(g.de), b=_hmin(g.ate); if (a==null||b==null) return 0; let d = b - a - (parseInt(g.almoco,10)||0); return d>0 ? d : 0; }
+function cargaLabel(g){ const m=cargaMin(g); const h=Math.floor(m/60), mm=m%60; return mm ? `${h}h${String(mm).padStart(2,"0")}` : `${h}h`; }
+function jornadaFromHorario(){
+  const mk = g => ({ trabalha: !!g.abre, entrada: g.abre ? (g.de||null) : null, carga_min: g.abre ? cargaMin(g) : 0 });
+  const j = {}; const u = mk(HORF.seg_sex); for (let d=1; d<=5; d++) j[d] = u; j[6] = mk(HORF.sabado); j[0] = mk(HORF.domingo); return j;
 }
 function renderHorario(){
   const row = (key,label) => { const g = HORF[key]; return `
     <div class="jor-row">
       <label class="cfg-switch mini jor-tr"><span>${label}</span><input type="checkbox" ${g.abre?"checked":""} onchange="HORF.${key}.abre=this.checked;renderHorario()"><i></i></label>
       ${g.abre ? `<div class="jor-inputs">
-        <div class="field"><label>Abre</label><input class="txt tw2" type="time" value="${g.de||""}" onchange="HORF.${key}.de=this.value"></div>
-        <div class="field"><label>Fecha</label><input class="txt tw2" type="time" value="${g.ate||""}" onchange="HORF.${key}.ate=this.value"></div>
+        <div class="field"><label>Abre</label><input class="txt tw2" type="time" value="${g.de||""}" onchange="HORF.${key}.de=this.value;renderHorario()"></div>
+        <div class="field"><label>Fecha</label><input class="txt tw2" type="time" value="${g.ate||""}" onchange="HORF.${key}.ate=this.value;renderHorario()"></div>
+        <div class="field"><label>Almoço (min)</label><input class="txt tw2" type="number" min="0" max="240" step="15" value="${g.almoco}" onchange="HORF.${key}.almoco=this.value;renderHorario()"></div>
+        <div style="align-self:center;font-size:12.5px;color:var(--muted);white-space:nowrap">carga: <b style="color:var(--ink)">${cargaLabel(g)}</b></div>
       </div>` : `<span class="jor-fechado">fechado</span>`}
     </div>`; };
   $("cfg-horario").innerHTML = row("seg_sex","Segunda a sexta") + row("sabado","Sábado") + row("domingo","Domingo");
@@ -1016,9 +1028,9 @@ async function salvarConfig(){
   const extraH = parseFloat($("cfg-extra").value);
   const payload = {
     contatos, contador, whatsapp_dono: dono.whatsapp,
-    jornada_semanal: jornadaFromUI(),
+    jornada_semanal: jornadaFromHorario(),
     horario_funcionamento: horarioFromUI(),
-    entrada_prevista: JOR3.uteis.trabalha ? (JOR3.uteis.entrada || "") : "",
+    entrada_prevista: HORF.seg_sex.abre ? (HORF.seg_sex.de || "") : "",
     horario_resumo_diario: $("cfg-resumo").value || "18:30",
     limite_extra_semanal_minutos: Math.round((isNaN(extraH) ? 10 : extraH) * 60),
     tolerancia_minutos: (tol >= 0 && tol <= 180) ? tol : 10,
