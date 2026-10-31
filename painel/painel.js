@@ -1093,7 +1093,7 @@ async function salvarConfig(){
     go("s-config");
     CFGc = [{nome:"Dono Teste A",whatsapp:"5571999999999",recebe:true,fala:true,dono:true},{nome:"Gerente Ana",whatsapp:"5571988888888",recebe:true,fala:false}];
     renderContatos();
-    JOR3 = { uteis:{trabalha:true,entrada:"08:00",carga_h:8}, sab:{trabalha:true,entrada:"08:30",carga_h:4.5}, dom:{trabalha:false,entrada:"",carga_h:8} }; renderJornada();
+    HORF = { seg_sex:{abre:true,de:"08:00",ate:"18:00",almoco:60}, sabado:{abre:true,de:"08:30",ate:"13:00",almoco:0}, domingo:{abre:false,de:"",ate:"",almoco:0} }; renderHorario();
     $("cfg-semloc").checked = true; $("cfg-fora").checked = true; $("cfg-atraso").checked = true; $("cfg-extra-sw").checked = true; $("cfg-resumo-sw").checked = true; $("cfg-fecham").checked = true;
     $("cfg-resumo").value = "18:30"; $("cfg-tol").value = 10; $("cfg-extra").value = 10;
     $("cfg-loading").style.display = "none"; $("cfg-form").style.display = "block"; return;
