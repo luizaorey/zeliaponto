@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0B2A33">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="painel.css?v=24">
+<link rel="stylesheet" href="painel.css?v=25">
 <title>Zélia · Painel</title>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ZeliaPonto">
@@ -299,19 +299,23 @@
 
         <div class="err" id="cfg-err"></div>
         <button class="btn" id="cfg-salvar" onclick="salvarConfig()">Salvar configurações</button>
+        <p class="cfg-hint" style="text-align:center;margin:8px 0 0">Salva tudo que está <b>acima</b>. As ações abaixo são separadas e não dependem deste botão.</p>
 
-        <div class="cfg-sec">
+        <div style="height:1px;background:var(--line);margin:36px 0 16px"></div>
+        <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9aa8a1;margin-bottom:12px">Outras ações</div>
+
+        <div class="cfg-sec" style="background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:18px;margin-top:0">
           <h3>Ponto fixo (aparelho na loja)</h3>
           <p class="cfg-hint">Pra usar um tablet ou celular fixo onde todos batem o ponto só olhando pra câmera. No aparelho, abra <b>zeliaponto.com.br/app/fixo.html</b> e digite o código abaixo. Os funcionários você cadastra aqui no painel (nome e CPF); o rosto é cadastrado no próprio aparelho.</p>
           <button class="btn small ghost" type="button" onclick="gerarCodigoFixo()">Gerar código de pareamento</button>
-          <div id="fixo-cod-box" style="display:none;margin-top:16px;text-align:center;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:18px">
+          <div id="fixo-cod-box" style="display:none;margin-top:16px;text-align:center;background:#f7f9f8;border:1.5px solid var(--line);border-radius:14px;padding:18px">
             <div style="font-size:14px;color:#7c8c84">Digite no aparelho fixo (vale 10 minutos):</div>
             <div id="fixo-cod" style="font-size:52px;font-weight:800;letter-spacing:12px;color:#0c6b3e;margin-top:4px"></div>
           </div>
         </div>
 
-        <div class="cfg-sec" style="margin-top:30px;border-top:1px solid var(--line);padding-top:24px">
-          <h3>Minha assinatura</h3>
+        <div class="cfg-sec" style="background:#fff;border:1.5px solid #f0d9d5;border-radius:16px;padding:18px;margin-top:16px">
+          <h3 style="color:#b23a2e">Minha assinatura</h3>
           <p class="cfg-hint">Você pode cancelar quando quiser, sem multa e sem ligação. Continua usando até o fim do período já pago e não recebe novas cobranças.</p>
           <button class="btn small ghost red" id="btn-cancelar-ass" type="button" onclick="cancelarAssinatura()">Cancelar assinatura</button>
         </div>
@@ -325,6 +329,6 @@
 <div id="modal-bg" class="modal-bg"><div id="modal" class="modal"></div></div>
 <div id="toast" class="toast"></div>
 
-<script src="painel.js?v=24"></script>
+<script src="painel.js?v=25"></script>
 </body>
 </html>
