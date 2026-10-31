@@ -899,7 +899,7 @@ function phoneValido(idp){ // avisos amigáveis, trava só o que é claramente i
   if (pais !== "55" && local.length < 6) return { ok:false, msg:"Número muito curto." };
   return { ok:true, canonical: pais+local };
 }
-let CFGc = [], JOR3 = null;
+let CFGc = [], JOR3 = null, HORF = null;
 async function carregarConfig(){
   $("cfg-loading").style.display = "block"; $("cfg-form").style.display = "none"; $("cfg-err").textContent = "";
   let d; try { d = await apiGet(EP.configLer); } catch(e){ return; }
@@ -915,6 +915,7 @@ async function carregarConfig(){
   $("cfg-ct-email").value = ct.email || "";
   $("cfg-ct-wa").innerHTML = phoneFieldHTML('ctwa', ct.whatsapp || "");
   JOR3 = jornadaToUI(CFG.jornada_semanal); renderJornada();
+  HORF = horarioToUI(CFG.horario_funcionamento); renderHorario();
   $("cfg-semloc").checked = CFG.permitir_sem_localizacao !== false;
   $("cfg-fora").checked = CFG.alerta_fora_raio !== false;
   $("cfg-atraso").checked = CFG.alerta_atraso !== false;
@@ -970,6 +971,29 @@ function renderJornada(){
     </div>`; };
   $("cfg-jornada").innerHTML = row("uteis","Dias úteis (seg–sex)") + row("sab","Sábado") + row("dom","Domingo");
 }
+/* ---- Horário de funcionamento da loja (seg-sex, sábado, domingo) ---- */
+function horarioToUI(h){
+  const base = h && typeof h === "object";
+  const g = k => { const x = (base && h[k]) || {}; return { abre: !!x.abre, de: x.de || "", ate: x.ate || "" }; };
+  return { seg_sex: base ? g("seg_sex") : { abre:true, de:"08:00", ate:"18:00" },
+           sabado:  base ? g("sabado")  : { abre:false, de:"", ate:"" },
+           domingo: base ? g("domingo") : { abre:false, de:"", ate:"" } };
+}
+function horarioFromUI(){
+  const mk = g => ({ abre: !!g.abre, de: g.abre ? (g.de||"") : "", ate: g.abre ? (g.ate||"") : "" });
+  return { seg_sex: mk(HORF.seg_sex), sabado: mk(HORF.sabado), domingo: mk(HORF.domingo) };
+}
+function renderHorario(){
+  const row = (key,label) => { const g = HORF[key]; return `
+    <div class="jor-row">
+      <label class="cfg-switch mini jor-tr"><span>${label}</span><input type="checkbox" ${g.abre?"checked":""} onchange="HORF.${key}.abre=this.checked;renderHorario()"><i></i></label>
+      ${g.abre ? `<div class="jor-inputs">
+        <div class="field"><label>Abre</label><input class="txt tw2" type="time" value="${g.de||""}" onchange="HORF.${key}.de=this.value"></div>
+        <div class="field"><label>Fecha</label><input class="txt tw2" type="time" value="${g.ate||""}" onchange="HORF.${key}.ate=this.value"></div>
+      </div>` : `<span class="jor-fechado">fechado</span>`}
+    </div>`; };
+  $("cfg-horario").innerHTML = row("seg_sex","Segunda a sexta") + row("sabado","Sábado") + row("domingo","Domingo");
+}
 async function salvarConfig(){
   const err = $("cfg-err"); err.textContent = "";
   const contatos = [];
@@ -993,6 +1017,7 @@ async function salvarConfig(){
   const payload = {
     contatos, contador, whatsapp_dono: dono.whatsapp,
     jornada_semanal: jornadaFromUI(),
+    horario_funcionamento: horarioFromUI(),
     entrada_prevista: JOR3.uteis.trabalha ? (JOR3.uteis.entrada || "") : "",
     horario_resumo_diario: $("cfg-resumo").value || "18:30",
     limite_extra_semanal_minutos: Math.round((isNaN(extraH) ? 10 : extraH) * 60),
