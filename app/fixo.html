@@ -24,6 +24,9 @@ body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans
   display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;font-family:"Sora"}
 .logo b{font-family:"Sora";font-weight:800;font-size:19px;color:var(--z-verde-esc);letter-spacing:-.02em}
 .emp{position:fixed;top:calc(env(safe-area-inset-top) + 50px);left:0;right:0;text-align:center;font-size:13px;color:var(--z-cinza);font-weight:600;z-index:4}
+/* na câmera e nas telas de resultado (verde/vermelha) o topo fica limpo */
+body:has(#s-cam.on) .logo,body:has(#s-cam.on) .emp,
+body:has(#s-res.on) .logo,body:has(#s-res.on) .emp{display:none}
 
 h1{font-family:"Poppins";font-weight:600;font-size:27px;color:var(--z-verde-esc);margin-bottom:10px}
 .sub{font-size:16px;color:var(--z-cinza);margin-bottom:24px;max-width:440px;line-height:1.5}
