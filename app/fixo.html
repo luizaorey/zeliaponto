@@ -178,7 +178,8 @@ function $(id){return document.getElementById(id);}
 function go(s){ document.querySelectorAll('.scr').forEach(function(e){e.classList.remove('on');}); $(s).classList.add('on'); }
 function dev(){ try{return localStorage.getItem(LS_DEV)||"";}catch(e){return "";} }
 function devId(){ try{ var d=localStorage.getItem(LS_DID); if(!d){ d='fx'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); localStorage.setItem(LS_DID,d);} return d; }catch(e){return 'fx0';} }
-function post(path,body){ return fetch(WB+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(function(r){return r.json().catch(function(){return {};});}); }
+function post(path,body,timeoutMs){ var ctrl=("AbortController" in window)?new AbortController():null; var t=ctrl?setTimeout(function(){try{ctrl.abort();}catch(e){}}, timeoutMs||5000):0;
+  return fetch(WB+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),signal:ctrl?ctrl.signal:undefined}).then(function(r){return r.json().catch(function(){return {};});}).then(function(j){ if(t)clearTimeout(t); return j; }, function(err){ if(t)clearTimeout(t); throw err; }); }
 
 /* ---- relógio ---- */
 function tick(){ var d=new Date(); $('home-hora').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
@@ -392,6 +393,6 @@ function isoBahia(d){ var utc=d.getTime()+d.getTimezoneOffset()*60000; var b=new
   return b.getFullYear()+'-'+p(b.getMonth()+1)+'-'+p(b.getDate())+'T'+p(b.getHours())+':'+p(b.getMinutes())+':'+p(b.getSeconds())+'-03:00'; }
 function pegarGPS(){ return new Promise(function(res){ if(!navigator.geolocation) return res(null);
   navigator.geolocation.getCurrentPosition(function(p){ res({latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy,ts:p.timestamp}); },
-  function(){ res(null); }, {enableHighAccuracy:true,timeout:6000,maximumAge:30000}); }); }
+  function(){ res(null); }, {enableHighAccuracy:true,timeout:4000,maximumAge:600000}); }); }
 </script>
 </body></html>
