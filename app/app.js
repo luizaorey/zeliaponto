@@ -502,7 +502,7 @@ async function fetchTemplate(){
 async function iniciarRegistroFacial(tipo){
   tipoPendente=tipo; recog=false;
   document.getElementById("cam-titulo").textContent="Ponto Facial";
-  document.getElementById("cam-hint").textContent="Posicione o rosto no quadro";
+  document.getElementById("cam-hint").textContent="Olhe para a câmera 🙂";
   document.getElementById("cam-capturar").style.display="none";
   var fb=document.getElementById("cam-selfie-fb"); if(fb) fb.style.display="none";
   go("s-camera");
@@ -527,10 +527,14 @@ async function reconhecerLoop(){
         var live=(typeof f.live==="number"?f.live:1), real=(typeof f.real==="number"?f.real:1);
         var sim=cosSim(l2v(Array.from(f.embedding)), FACE_TEMPLATE);
         var vivo = live>0.6 && real>0.5;
-        if(sim>=FACE_THRESH && vivo){ okFrames++; hint.textContent="Reconhecendo… "+(sim*100).toFixed(0)+"%"; if(okFrames>=2){ recog=true; return baterReconhecido(v); } }
-        else if(sim>=FACE_THRESH && !vivo){ okFrames=0; hint.textContent="Rosto não parece vivo (foto?)"; }
-        else { okFrames=0; hint.textContent="Reconhecendo… "+(sim*100).toFixed(0)+"%"; }
-      } else { okFrames=0; document.getElementById("cam-hint").textContent="Enquadre o rosto no centro…"; }
+        // distância pelo tamanho do rosto (largura relativa ao vídeo) — guia "chegue perto / afaste"
+        var wr = (f.boxRaw && f.boxRaw[2]) || ((f.box && f.box[2] && v.videoWidth) ? f.box[2]/v.videoWidth : 0);
+        if(wr && wr < 0.18){ okFrames=0; hint.textContent="Chegue um pouco mais perto 🙂"; }
+        else if(wr && wr > 0.85){ okFrames=0; hint.textContent="Afaste um pouquinho"; }
+        else if(sim>=FACE_THRESH && vivo){ okFrames++; hint.textContent="Reconhecendo você…"; if(okFrames>=2){ recog=true; return baterReconhecido(v); } }
+        else if(sim>=FACE_THRESH && !vivo){ okFrames=0; hint.textContent="Olhe direto para a câmera"; }
+        else { okFrames=0; hint.textContent="Reconhecendo você…"; }
+      } else { okFrames=0; document.getElementById("cam-hint").textContent="Mostre o rosto para bater o ponto"; }
     }catch(e){}
     if(Date.now()-t0>8000 && !recog) mostrarSelfieFallback();
     requestAnimationFrame(step);
