@@ -196,10 +196,9 @@ async function refreshHome(){
    quando um fetch REALMENTE falha por rede; o evento "online" do SO religa. No Android (TWA)
    o navigator.onLine funciona certo e isso não muda o comportamento (lá o fetch também responde). */
 let REDE_OK = true;
-let ZDBG = "";  /* DIAGNÓSTICO TEMPORÁRIO (iOS) — remover depois */
 function online(){ return REDE_OK; }
 function atualizarRede(){ const on=REDE_OK; const d=document.getElementById("net-dot"), t=document.getElementById("net-txt");
-  if(d) d.className="dot "+(on?"on":"off"); if(t) t.textContent = ZDBG ? ("🔎 "+ZDBG) : (on?"":"⚠️ Sem conexão"); }
+  if(d) d.className="dot "+(on?"on":"off"); if(t) t.textContent = on?"":"⚠️ Sem conexão"; }
 async function atualizarPendentes(){
   const n=await filaCount(); const h=document.getElementById("pend-hint");
   if(!h) return;
@@ -207,9 +206,8 @@ async function atualizarPendentes(){
 }
 /* lê flags do dono (status) + monta as batidas de hoje (histórico + fila offline) */
 async function carregarEstadoHome(){
-  ZDBG = "tok:"+(getToken()?getToken().length:0)+" onL:"+navigator.onLine+" cap:"+(!!window.Capacitor)+" org:"+location.origin;
   if(getToken()){
-    try{ const r=await fetch(EP.status+"?token="+encodeURIComponent(getToken())); REDE_OK=true; ZDBG+=" st:"+r.status;
+    try{ const r=await fetch(EP.status+"?token="+encodeURIComponent(getToken())); REDE_OK=true;
       if(r.status===401){ sair(); return; }
       if(r.ok){ const d=await r.json()||{};
         PERMITE_SEM_LOC = d.permitir_sem_localizacao !== false; try{localStorage.setItem("zelia_semloc", PERMITE_SEM_LOC?"1":"0");}catch(e){}
@@ -218,9 +216,9 @@ async function carregarEstadoHome(){
         PERFIL.local = d.nome_local || d.local_nome || PERFIL.local;
         PERFIL.empresa = d.empresa_nome || d.empresa || PERFIL.empresa;
         const cta=document.getElementById("face-cta"); if(cta) cta.style.display = (BIO_ATIVA && !ROSTO_OK) ? "block" : "none";
-      } }catch(e){ REDE_OK=false; ZDBG+=" ERRO:"+((e&&e.message)||e); }
-  } else { ZDBG+=" (sem token)"; }
-  atualizarRede();   /* mostra o diagnóstico na barra de rede */
+      } }catch(e){ REDE_OK=false; }
+  }
+  atualizarRede();   /* reflete o resultado real da conexão na barra de rede */
   BATIDAS_HOJE = await baterTimesHoje();
   DIA_COMPLETO = ORDER.every(t=>BATIDAS_HOJE[t]);
   const ultimo = [...ORDER].reverse().find(t=>BATIDAS_HOJE[t]) || null;
