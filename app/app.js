@@ -190,7 +190,14 @@ async function refreshHome(){
   await carregarEstadoHome();     // flags do dono + batidas de hoje + trilha/status/botão
   iniciarGPSHome();               // dispara a busca de GPS e trava o botão até confirmar
 }
-function atualizarRede(){ const on=navigator.onLine; const d=document.getElementById("net-dot"), t=document.getElementById("net-txt");
+/* Rede: navigator.onLine é FURADO no WKWebView do iOS (diz "offline" mesmo com net ok),
+   e isso bloqueava carregar as flags do dono (facial não ligava) e mandava a batida pra fila.
+   Correção: a VERDADE é o resultado das requisições. REDE_OK começa otimista e só vira false
+   quando um fetch REALMENTE falha por rede; o evento "online" do SO religa. No Android (TWA)
+   o navigator.onLine funciona certo e isso não muda o comportamento (lá o fetch também responde). */
+let REDE_OK = true;
+function online(){ return REDE_OK; }
+function atualizarRede(){ const on=REDE_OK; const d=document.getElementById("net-dot"), t=document.getElementById("net-txt");
   if(d) d.className="dot "+(on?"on":"off"); if(t) t.textContent=on?"":"⚠️ Sem conexão"; }
 async function atualizarPendentes(){
   const n=await filaCount(); const h=document.getElementById("pend-hint");
@@ -199,8 +206,8 @@ async function atualizarPendentes(){
 }
 /* lê flags do dono (status) + monta as batidas de hoje (histórico + fila offline) */
 async function carregarEstadoHome(){
-  if(navigator.onLine && getToken()){
-    try{ const r=await fetch(EP.status+"?token="+encodeURIComponent(getToken()));
+  if(getToken()){
+    try{ const r=await fetch(EP.status+"?token="+encodeURIComponent(getToken())); REDE_OK=true;
       if(r.status===401){ sair(); return; }
       if(r.ok){ const d=await r.json()||{};
         PERMITE_SEM_LOC = d.permitir_sem_localizacao !== false; try{localStorage.setItem("zelia_semloc", PERMITE_SEM_LOC?"1":"0");}catch(e){}
@@ -209,7 +216,7 @@ async function carregarEstadoHome(){
         PERFIL.local = d.nome_local || d.local_nome || PERFIL.local;
         PERFIL.empresa = d.empresa_nome || d.empresa || PERFIL.empresa;
         const cta=document.getElementById("face-cta"); if(cta) cta.style.display = (BIO_ATIVA && !ROSTO_OK) ? "block" : "none";
-      } }catch(e){}
+      } }catch(e){ REDE_OK=false; }
   }
   BATIDAS_HOJE = await baterTimesHoje();
   DIA_COMPLETO = ORDER.every(t=>BATIDAS_HOJE[t]);
@@ -227,8 +234,8 @@ function selecionarTipo(t){
 async function baterTimesHoje(){
   const hoje=diaBahia(new Date());
   const b={entrada:null,pausa:null,retorno:null,saida:null};
-  if(navigator.onLine && getToken()){
-    try{ const r=await fetch(EP.historico+"?token="+encodeURIComponent(getToken())+"&mes="+mesBahia(new Date()));
+  if(getToken()){
+    try{ const r=await fetch(EP.historico+"?token="+encodeURIComponent(getToken())+"&mes="+mesBahia(new Date())); REDE_OK=true;
       if(r.status===401){ sair(); return b; }
       if(r.ok){ const d=await r.json(); const dia=(d.dias||[]).find(x=>x.data===hoje);
         if(dia){ (dia.registros||[]).forEach(rr=>{ if(b[rr.tipo]==null && rr.hora) b[rr.tipo]=rr.hora; }); } } }catch(e){}
@@ -335,7 +342,7 @@ async function renderMais(){
   const es=document.getElementById("mais-sub"); if(es){ es.textContent=sub; es.style.display=sub?"":"none"; }
   // selo de pendências do mês em "Solicitações"
   let pend=0;
-  try{ if(navigator.onLine && getToken()){ const r=await fetch(EP.historico+"?token="+encodeURIComponent(getToken())+"&mes="+mesBahia(new Date()));
+  try{ if(getToken()){ const r=await fetch(EP.historico+"?token="+encodeURIComponent(getToken())+"&mes="+mesBahia(new Date()));
     if(r.ok){ const d=await r.json(); (d.dias||[]).forEach(x=>{ pend+=pendDia(diaBatidas(x.registros)); }); } } }catch(e){}
   const ps=document.getElementById("mais-solic-pend"); if(ps){ if(pend>0){ ps.style.display=""; ps.textContent=pend+" pend."; } else ps.style.display="none"; }
   // badge de pontos offline
@@ -424,7 +431,7 @@ async function renderOffline(){ const box=document.getElementById("off-list"); i
   box.innerHTML=itens.map(it=>{ const [Y,M,D]=diaBahia(new Date(it.registrado_em)).split("-");
     return '<div class="offcard"><span class="oc-ic ic">'+SVG.clock+'</span><div class="oc-txt"><b>'+(LABELS[it.tipo]||it.tipo)+' · '+D+'/'+M+'/'+Y+'</b><small>às '+horaBahia(new Date(it.registrado_em))+' · aguardando envio</small></div><span class="oc-dot"></span></div>';
   }).join(""); }
-async function sincronizarAgora(){ if(!navigator.onLine){ toast("Ainda sem internet — assim que voltar, vai sozinho 🙂"); return; }
+async function sincronizarAgora(){ if(!online()){ toast("Ainda sem internet — assim que voltar, vai sozinho 🙂"); return; }
   toast("Sincronizando…"); await sincronizarFila(); renderOffline(); }
 function confirmarSair(){ const d=document.getElementById("dlg-sair"); if(d){ const i=document.getElementById("sair-ic"); if(i) i.innerHTML=SVG.logout; d.style.display="flex"; } }
 function fecharSair(){ const d=document.getElementById("dlg-sair"); if(d) d.style.display="none"; }
@@ -554,16 +561,16 @@ function montarPayload({tipo,agora,foto,gps,metodo}){
 async function enviarRegistro(dados){
   enviando=true; go("s-enviando"); document.getElementById("enviando-msg").textContent="Registrando "+LABELS[dados.tipo].toLowerCase()+"…";
   const payload=montarPayload(dados);
-  if(!navigator.onLine){ await guardarOffline(payload); enviando=false; return; }
   try{
     const r=await fetch(EP.registrar,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...payload, token:getToken()})});
+    REDE_OK=true;
     const d=await r.json().catch(()=>({}));
     enviando=false;
     if(r.status===401){ toast("Sessão expirada — entre de novo."); sair(); return; }
     if(d.ok){ mostrarResultado("ok", payload.tipo, d); return; }
     // recusa do servidor (travar / sequência / tipo): mostra mensagem, NÃO enfileira
     mostrarResultado("recusa", payload.tipo, d);
-  }catch(e){ await guardarOffline(payload); enviando=false; } // só falha de rede vai pra fila
+  }catch(e){ REDE_OK=false; await guardarOffline(payload); enviando=false; } // só falha de rede (offline real) vai pra fila
 }
 async function guardarOffline(p){ await filaAdd({...p, origem:"offline"}); mostrarResultado("offline", p.tipo, null); registrarSync(); }
 let okTimer=null, ULTIMO_RESULTADO=null;
@@ -595,12 +602,12 @@ function mostrarResultado(estado, tipo, resp){
   go("s-erro");
 }
 function erroRetry(){ const t=tipoPendente||SEL_TIPO||PROX_TIPO||"entrada"; iniciarRegistro(t); }
-function tentarReconectar(){ if(navigator.onLine){ sincronizarFila(); toast("Conectado! Enviando o que estava salvo…"); voltarHome(); } else toast("Ainda sem internet — tente de novo em instantes."); }
+function tentarReconectar(){ if(online()){ sincronizarFila(); toast("Conectado! Enviando o que estava salvo…"); voltarHome(); } else toast("Ainda sem internet — tente de novo em instantes."); }
 async function voltarHome(){ tipoPendente=null; go("s-home"); await refreshHome(); }
 
 /* =================== SYNC (injeta token atual) =================== */
 let sincronizando=false;
-async function sincronizarFila(){ if(sincronizando||!navigator.onLine||!getToken()) return; sincronizando=true;
+async function sincronizarFila(){ if(sincronizando||!online()||!getToken()) return; sincronizando=true;
   try{ const itens=(await filaAll()).sort((a,b)=>a.registrado_em<b.registrado_em?-1:1);
     for(const it of itens){
       const {local_id, origem, ...campos}=it;
@@ -688,9 +695,9 @@ async function boot(){
       navigator.serviceWorker.addEventListener("controllerchange", ()=>{ if(recarregou) return; recarregou=true; location.reload(); });
     }catch(e){}
     navigator.serviceWorker.addEventListener("message", e=>{ if(e.data&&e.data.type==="zelia-sync") sincronizarFila(); }); }
-  window.addEventListener("online", ()=>{ atualizarRede(); sincronizarFila(); });
+  window.addEventListener("online", ()=>{ REDE_OK=true; atualizarRede(); sincronizarFila(); });
   window.addEventListener("offline", atualizarRede);
-  setInterval(()=>{ if(navigator.onLine) sincronizarFila(); }, SYNC_INTERVAL_MS);
+  setInterval(()=>{ if(online()) sincronizarFila(); }, SYNC_INTERVAL_MS);
   setInterval(tickClock, 1000);
   pintarIconesAuth();   // ícones de linha das telas de entrar
   document.getElementById("in-cpf").addEventListener("input", e=>{ e.target.value=soDigitos(e.target.value).slice(0,11); });
