@@ -955,6 +955,7 @@ function renderContatos(){
         ${c.dono ? '<span class="ct-dono">dono</span>' : `<button class="ct-rm" type="button" onclick="removeContato(${i})" aria-label="Remover">✕</button>`}
       </div>
       ${phoneFieldHTML('ct'+i, c.whatsapp)}
+      ${c.dono ? `<div class="field" style="margin-top:6px"><label>E-mail (recebe cópia dos relatórios 📄)</label><input class="txt" type="email" inputmode="email" autocomplete="email" value="${esc(c.email||"")}" placeholder="voce@empresa.com" oninput="CFGc[${i}].email=this.value"></div>` : ''}
       <div class="ct-sw">
         <label class="cfg-switch mini"><span>📬 Recebe</span><input type="checkbox" ${c.recebe?"checked":""} onchange="CFGc[${i}].recebe=this.checked"><i></i></label>
         <label class="cfg-switch mini"><span>💬 Fala</span><input type="checkbox" ${c.fala?"checked":""} onchange="CFGc[${i}].fala=this.checked"><i></i></label>
@@ -1029,10 +1030,11 @@ async function salvarConfig(){
     if (!v.ok){ err.textContent = `WhatsApp de "${(c.nome||'contato').trim()}": ${v.msg}`; return; }
     const wa = v.canonical || "";
     const nome = (c.nome||"").trim();
-    if (nome || wa) contatos.push({ nome, whatsapp: wa, recebe: !!c.recebe, fala: !!c.fala, dono: !!c.dono });
+    if (nome || wa) contatos.push({ nome, whatsapp: wa, recebe: !!c.recebe, fala: !!c.fala, dono: !!c.dono, email: (c.email||"").trim() });
   }
   const dono = contatos.find(c => c.dono);
   if (!dono || !dono.whatsapp){ err.textContent = "O contato do dono precisa de um WhatsApp."; return; }
+  if (dono.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dono.email)){ err.textContent = "E-mail do dono inválido."; return; }
   const ctWa = phoneValido('ctwa');
   if (!ctWa.ok){ err.textContent = "WhatsApp do contador: " + ctWa.msg; return; }
   const ctEmail = $("cfg-ct-email").value.trim();
