@@ -9,7 +9,7 @@ const EP = {
   recuperar: WB + "/zelia-dono-recuperar", novaSenha: WB + "/zelia-dono-nova-senha",
   lista: WB + "/zelia-func-lista", criar: WB + "/zelia-func-criar", editar: WB + "/zelia-func-editar",
   desativar: WB + "/zelia-func-desativar", reativar: WB + "/zelia-func-reativar",
-  reset: WB + "/zelia-func-reset-senha",
+  reset: WB + "/zelia-func-reset-senha", foto: WB + "/zelia-func-foto",
   dia: WB + "/zelia-painel-dia", config: WB + "/zelia-config-salvar", configLer: WB + "/zelia-config-ler",
   conversas: WB + "/zelia-conversas",
   empresaNome: WB + "/zelia-empresa-nome",
@@ -214,7 +214,7 @@ function statusBadges(f){
   return st + pr;
 }
 function acoesHtml(f){
-  const foto = `<button class="act" disabled title="Em breve (app)">Atualizar fotos</button>`;
+  const foto = `<button class="act" onclick="atualizarFoto('${f.id}')">Atualizar foto</button>`;
   const editar = `<button class="act" onclick="abrirFicha('${f.id}')">Editar</button>`;
   const reset = `<button class="act" onclick="resetarSenha('${f.id}')">Resetar senha</button>`;
   const toggle = f.ativo
@@ -440,6 +440,39 @@ async function resetarSenha(id){
   if (!await confirmar({ titulo: "Resetar senha", texto: `Resetar a senha de <b>${esc(nome)}</b>? A senha volta a ser <b>123</b> e ele deverá criar uma nova no próximo login. A sessão atual dele cai na hora.`, ok: "Resetar senha", cor: "amber" })) return;
   const d = await apiPost(EP.reset, { profissional_id: id });
   if (d.ok){ toast(`Senha de ${nome} resetada para 123.`); carregarFuncionarios(); } else toast("Não foi possível resetar.");
+}
+// Atualizar foto: o dono escolhe uma imagem do computador → comprime pequeno → vira a foto do funcionário no painel (ganha da selfie).
+function atualizarFoto(id){
+  const nome = nomeDe(id);
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
+  inp.onchange = async () => {
+    const file = inp.files && inp.files[0]; if (!file) return;
+    if (!/^image\//.test(file.type)){ toast("Escolha um arquivo de imagem."); return; }
+    let uri;
+    try { uri = await comprimirFoto(file, 512, 0.82); } catch(e){ toast("Não consegui ler essa imagem."); return; }
+    if (uri.length > 680000){ try { uri = await comprimirFoto(file, 360, 0.7); } catch(e){} }
+    if (uri.length > 680000){ toast("Imagem muito pesada. Tente outra."); return; }
+    toast("Enviando foto…");
+    let d; try { d = await apiPost(EP.foto, { profissional_id: id, foto: uri }); } catch(e){ return; }
+    if (d.ok){ toast(`Foto de ${nome} atualizada.`); if (typeof carregarDia === "function") carregarDia(); }
+    else toast("Não foi possível salvar a foto.");
+  };
+  inp.click();
+}
+function comprimirFoto(file, maxLado, q){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, maxLado / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.round(img.naturalWidth * s), h = Math.round(img.naturalHeight * s);
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(img.src);
+      try { resolve(c.toDataURL("image/jpeg", q)); } catch(e){ reject(e); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(img.src); reject(new Error("img")); };
+    img.src = URL.createObjectURL(file);
+  });
 }
 
 /* ---------- ASSINATURA ---------- */
