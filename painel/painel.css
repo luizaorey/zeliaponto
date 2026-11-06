@@ -115,9 +115,13 @@ h1{font-size:25px;font-weight:700} h2{font-size:21px;font-weight:700}
 .dia-sec{background:var(--card);border-radius:16px;margin-bottom:14px;overflow:hidden;box-shadow:0 8px 24px -20px rgba(31,42,58,.5)}
 .dia-sec h3{font-size:15.5px;font-weight:700;padding:14px 16px 12px;display:flex;align-items:center;gap:9px}
 .dia-sec h3 .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.dia-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;border-top:1px solid var(--line);font-size:16px}
-.dia-row .nm{font-weight:600;color:var(--ink)}
-.dia-row .det{font-size:14.5px;font-weight:600;white-space:nowrap}
+.dia-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 16px;border-top:1px solid var(--line);font-size:16px}
+.dia-who{display:flex;align-items:center;gap:11px;min-width:0}
+.dia-row .nm{font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dia-row .det{font-size:14.5px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.dia-av{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#E7E8EB;border:1px solid var(--line)}
+.dia-av.ini{display:flex;align-items:center;justify-content:center;font-size:14.5px;font-weight:800;color:#fff;border:none;letter-spacing:.3px}
+.dia-av.c0{background:#E8663B}.dia-av.c1{background:#2E9E6B}.dia-av.c2{background:#D99A2B}.dia-av.c3{background:#3F7DD6}.dia-av.c4{background:#8E5BD0}.dia-av.c5{background:#179E73}
 .det-ok{color:var(--green)} .det-pausa{color:var(--amber)} .det-saiu{color:var(--muted)}
 .det-atraso{color:var(--amber)} .det-extra{color:var(--orange)} .det-ausente{color:var(--red)}
 .dia-vazio{color:var(--muted);font-size:14px;padding:8px 2px}

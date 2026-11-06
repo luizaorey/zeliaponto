@@ -479,7 +479,15 @@ function tile(cls,k,n,sub){ return `<div class="dtile dt-${cls}"><div class="k">
 function tileNeutro(k,sub){ return `<div class="dtile dt-neutro"><div class="k">${k}</div><div class="n">—</div><div class="sub">${sub||""}</div></div>`; }
 function tileConfig(){ return `<div class="dtile dt-neutro"><div class="k">Atrasados</div><div class="n">—</div><button class="cfg" onclick="abrirConfigDia()">Configurar horário</button></div>`; }
 function secao(titulo,cor,linhas){ return `<div class="dia-sec"><h3><span class="dot" style="background:${cor}"></span>${titulo} <span class="muted" style="font-weight:600">(${linhas.length})</span></h3>${linhas.join("")}</div>`; }
-function row(nome,det,cls){ return `<div class="dia-row"><span class="nm">${esc(nome)}</span><span class="det ${cls||""}">${det}</span></div>`; }
+// avatar da pessoa na Visão do dia: selfie da batida se tiver, senão iniciais num círculo colorido (cor estável por nome)
+function iniciais(nome){ const p = String(nome||"").trim().split(/\s+/).filter(Boolean); if (!p.length) return "?"; const a = p[0][0]||""; const b = p.length>1 ? (p[p.length-1][0]||"") : ""; return (a+b).toUpperCase(); }
+function corIdx(nome){ let h = 0; const s = String(nome||""); for (let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) >>> 0; return h%6; }
+function avFallback(img){ img.outerHTML = `<span class="dia-av ini c${img.dataset.c||0}">${esc(img.dataset.ini||"?")}</span>`; } // selfie quebrada/expirada → iniciais
+function avatar(nome,foto){
+  if (foto) return `<img class="dia-av" src="${esc(foto)}" alt="" loading="lazy" data-ini="${esc(iniciais(nome))}" data-c="${corIdx(nome)}" onerror="avFallback(this)">`;
+  return `<span class="dia-av ini c${corIdx(nome)}">${esc(iniciais(nome))}</span>`;
+}
+function row(x,det,cls){ const nome = x && x.nome || ""; return `<div class="dia-row"><div class="dia-who">${avatar(nome, x && x.foto_url)}<span class="nm">${esc(nome)}</span></div><span class="det ${cls||""}">${det}</span></div>`; }
 function renderDia(){
   const d = DIA, t = d.tiles, L = d.listas;
   $("dia-data").textContent = fmtData(d.data);
@@ -499,10 +507,10 @@ function renderDia(){
   $("dia-tiles").innerHTML = ts.join("");
   // seções: problema primeiro (ausentes → atrasados → em extra → presentes)
   const sec = [];
-  if (d.dia_util && (L.ausentes||[]).length) sec.push(secao("Ausentes","var(--red)", L.ausentes.map(x=>row(x.nome,"não compareceu","det-ausente"))));
-  if ((L.atrasados||[]).length) sec.push(secao("Atrasados","var(--amber)", L.atrasados.map(x=>row(x.nome,`${x.entrada} · +${minToH(x.atraso_min)} atrasado`,"det-atraso"))));
-  if ((L.em_extra||[]).length) sec.push(secao("Em extra","var(--orange)", L.em_extra.map(x=>row(x.nome,`+${minToH(x.extra_min)}`,"det-extra"))));
-  if ((L.presentes||[]).length) sec.push(secao("Presentes","var(--green)", L.presentes.map(x=>row(x.nome, `${STATUS[x.status]||x.status} · desde ${x.desde}`, STCLS[x.status]||""))));
+  if (d.dia_util && (L.ausentes||[]).length) sec.push(secao("Ausentes","var(--red)", L.ausentes.map(x=>row(x,"não compareceu","det-ausente"))));
+  if ((L.atrasados||[]).length) sec.push(secao("Atrasados","var(--amber)", L.atrasados.map(x=>row(x,`${x.entrada} · +${minToH(x.atraso_min)} atrasado`,"det-atraso"))));
+  if ((L.em_extra||[]).length) sec.push(secao("Em extra","var(--orange)", L.em_extra.map(x=>row(x,`+${minToH(x.extra_min)}`,"det-extra"))));
+  if ((L.presentes||[]).length) sec.push(secao("Presentes","var(--green)", L.presentes.map(x=>row(x, `${STATUS[x.status]||x.status} · desde ${x.desde}`, STCLS[x.status]||""))));
   $("dia-secoes").innerHTML = sec.join("") || `<div class="dia-vazio">Nenhum registro hoje.</div>`;
 }
 function abrirConfigDia(){
