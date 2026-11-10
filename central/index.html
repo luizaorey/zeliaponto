@@ -233,6 +233,7 @@ tbody tr.clk{cursor:pointer;transition:background .12s}tbody tr.clk:hover{backgr
       <label class="fld">Nome do comerciante<input id="cort-dono" maxlength="80" placeholder="Ex.: João Silva"></label>
       <label class="fld">WhatsApp do comerciante<input id="cort-wa" inputmode="numeric" placeholder="(71) 99999-9999"></label>
       <label class="fld">E-mail de login <small style="color:var(--cinza)">(opcional — vazio gera automático)</small><input id="cort-login" placeholder="comerciante@email.com"></label>
+      <label class="fld">Quantos funcionários ele tem? <small style="color:var(--cinza)">(pro valor certo no fim)</small><input id="cort-func" type="number" min="1" inputmode="numeric" placeholder="Ex.: 8"></label>
       <label class="fld">Dias de degustação<select id="cort-dias" style="width:100%;padding:11px;border:1px solid var(--linha);border-radius:10px;font-size:15px"><option value="15">15 dias</option><option value="30" selected>30 dias</option><option value="7">7 dias</option></select></label>
       <label class="fld">Seu PIN<input id="cort-pin" type="password" inputmode="numeric" maxlength="6" placeholder="••••"></label>
       <div class="modal-actions"><button class="mbtn-cancel" onclick="closeModal('modal-cortesia')">Cancelar</button><button class="mbtn-ok" id="cort-ok" onclick="doCortesia()">Criar degustação</button></div>
@@ -495,7 +496,7 @@ async function confirmAcao(){
 // ---------- DEGUSTAÇÃO ----------
 function openCortesia(){
   document.getElementById('cort-err').classList.remove('on');
-  ['cort-emp','cort-dono','cort-wa','cort-login','cort-pin'].forEach(function(i){document.getElementById(i).value='';});
+  ['cort-emp','cort-dono','cort-wa','cort-login','cort-func','cort-pin'].forEach(function(i){document.getElementById(i).value='';});
   document.getElementById('cort-dias').value='30';
   document.getElementById('cort-form').style.display='';
   document.getElementById('cort-result').style.display='none';
@@ -506,12 +507,14 @@ async function doCortesia(){
   var emp=document.getElementById('cort-emp').value.trim(),dono=document.getElementById('cort-dono').value.trim();
   var wa=document.getElementById('cort-wa').value.replace(/\D/g,''),login=document.getElementById('cort-login').value.trim();
   var dias=document.getElementById('cort-dias').value,pin=document.getElementById('cort-pin').value.trim();
+  var func=parseInt(document.getElementById('cort-func').value,10);
   if(!emp||!dono){e.textContent='Informe a empresa e o nome do comerciante.';e.classList.add('on');return;}
   if(wa.length<10){e.textContent='WhatsApp inválido.';e.classList.add('on');return;}
+  if(!(func>0)){e.textContent='Informe quantos funcionários a empresa tem (pro valor certo na hora de renovar).';e.classList.add('on');return;}
   if(!/^\d{4,6}$/.test(pin)){e.textContent='Informe seu PIN (4 a 6 dígitos).';e.classList.add('on');return;}
   b.disabled=true;b.innerHTML='<span class="spin"></span>';
   try{
-    var j=await api('admin-cortesia',{empresa_nome:emp,dono_nome:dono,whatsapp:wa,login:login,dias:dias,pin:pin});
+    var j=await api('admin-cortesia',{empresa_nome:emp,dono_nome:dono,whatsapp:wa,login:login,dias:dias,qtd_funcionarios:func,pin:pin});
     if(!j.ok){
       var msg=j.motivo==='pin'?'PIN incorreto. (Defina/valide em Segurança 🔒)':j.motivo==='whatsapp_existe'?'Esse WhatsApp já tem conta na Zélia. Use outro número.':'Não consegui criar. Confira os dados.';
       e.textContent=msg;e.classList.add('on');return;
