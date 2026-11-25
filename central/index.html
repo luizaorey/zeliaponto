@@ -563,8 +563,7 @@ function openPrecos(){
 // ---------- SIMULADOR (abre o painel da empresa demo, vitalícia — só p/ apresentação) ----------
 async function abrirSimulador(){
   try{
-    var r=await fetch('https://giantfalcon-n8n.cloudfy.live/webhook/zelia-dono-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'demo@zeliaponto.com.br',senha:'demo123'})});
-    var d=await r.json().catch(function(){return {};});
+    var d=await api('admin-demo-entrar',{});  // login da demo sai do servidor (senha nunca no front) + só super-admin
     if(!d.ok||!d.token){ toast('Não consegui abrir o simulador 🙈'); return; }
     localStorage.setItem('zelia_painel_token',d.token);
     localStorage.setItem('zelia_painel_nome',d.nome||'');
